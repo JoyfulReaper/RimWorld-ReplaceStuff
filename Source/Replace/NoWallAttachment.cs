@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using HarmonyLib;
+using Replace_Stuff.NewThing;
 using UnityEngine;
 using Verse;
 
@@ -15,7 +16,6 @@ namespace Replace_Stuff
 	[HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.GetWallAttachedTo), [typeof(IntVec3), typeof(Rot4), typeof(Map)])]
 	public static class NoWallAttachment
 	{
-		//public static Thing GetWallAttachedTo(IntVec3 pos, Rot4 rot, Map map)
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
 		{
 			// In the loop: foreach (Thing thing in c.GetThingList(map))
@@ -58,7 +58,6 @@ namespace Replace_Stuff
 	{
 		private static List<Thing> emptyList = [];
 
-		//public static List<Thing> GetAttachedBuildings(Thing thing)
 		public static bool Prefix(Thing thing, ref List<Thing> __result)
 		{
 			if (thing is ReplaceFrame)
@@ -67,6 +66,50 @@ namespace Replace_Stuff
 				return false;
 			}
 			return true;
+		}
+	}
+
+	[HarmonyPatch(typeof(Placeworker_AttachedToWall), nameof(Placeworker_AttachedToWall.AllowsPlacing))]
+	public static class AllowAttachedWallReplacement
+	{
+		public static void Postfix(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, ref AcceptanceReport __result)
+		{
+			if (__result.Accepted || checkingDef is not ThingDef newDef || map == null)
+				return;
+
+			List<Thing> thingList = loc.GetThingList(map);
+			for (int i = 0; i < thingList.Count; i++)
+			{
+				Thing oldThing = thingList[i];
+				if (oldThing.Rotation != rot)
+					continue;
+
+				ThingDef oldBuiltDef = GenConstruct.BuiltDefOf(oldThing.def) as ThingDef;
+				if (oldBuiltDef?.building?.isAttachment != true)
+					continue;
+
+				if (newDef.CanReplace(oldThing.def))
+				{
+					__result = AcceptanceReport.WasAccepted;
+					return;
+				}
+			}
+		}
+	}
+
+	[HarmonyPatch(typeof(GenSpawn), nameof(GenSpawn.SpawningWipes))]
+	public static class AttachmentsCanWipeReplacementTargets
+	{
+		public static void Postfix(BuildableDef newEntDef, BuildableDef oldEntDef, ref bool __result)
+		{
+			if (__result || newEntDef is not ThingDef newDef || oldEntDef is not ThingDef oldDef)
+				return;
+
+			if ((!newDef.building?.isAttachment ?? true) || (!oldDef.building?.isAttachment ?? true))
+				return;
+
+			if (newDef.CanReplace(oldDef))
+				__result = true;
 		}
 	}
 }
