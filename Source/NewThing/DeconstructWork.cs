@@ -16,8 +16,6 @@ namespace Replace_Stuff.NewThing
 		{
 			if (__instance.IsNewThingReplacement(out Thing oldThing))
 				__result += ReplaceFrame.WorkToDeconstructDef(oldThing.def, oldThing.Stuff);
-
-			//Log.Message($"NewThingDeconstructWork: {__result}, new: {__instance.def.defName}, old: {(oldThing != null ? oldThing.def.defName : "")}");
 		}
 	}
 	[HarmonyPatch(typeof(Blueprint_Build), "WorkTotal", MethodType.Getter)]
@@ -28,8 +26,6 @@ namespace Replace_Stuff.NewThing
 		{
 			if (__instance.IsNewThingReplacement(out Thing oldThing))
 				__result += ReplaceFrame.WorkToDeconstructDef(oldThing.def, oldThing.Stuff);
-
-			//Log.Message($"NewThingDeconstructWork_Blueprint: {__result}, new: {__instance.def.defName}, old: {(oldThing != null ? oldThing.def.defName : "")}");
 		}
 	}
 }
