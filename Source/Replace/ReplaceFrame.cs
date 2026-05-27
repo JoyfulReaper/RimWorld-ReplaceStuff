@@ -14,7 +14,6 @@ using Replace_Stuff.NewThing;
 
 using CostListPair = RimWorld.CostListCalculator.CostListPair;
 using FastCostListPairComparer = RimWorld.CostListCalculator.FastCostListPairComparer;
-using System.Configuration;
 
 
 namespace Replace_Stuff
@@ -23,7 +22,7 @@ namespace Replace_Stuff
 	{
 		public Thing oldThing;
 		public ThingDef oldStuff;
-		
+
 		public override void ExposeData()
 		{
 			base.ExposeData();
@@ -31,49 +30,12 @@ namespace Replace_Stuff
 			Scribe_Defs.Look(ref oldStuff, "oldStuff");
 		}
 
-		private static readonly Dictionary<ThingDef, float> nullStuffCache = new();
-		private static readonly Dictionary<(ThingDef def, ThingDef stuff), float> stuffedCache = new();
-
 		private const float MaxDeconstructWork = 3000f;
-
-		public static float Orig_WorkToDeconstructDef(ThingDef def, ThingDef oldStuff = null)
+		public static float WorkToDeconstructDef(ThingDef def, ThingDef oldStuff = null)
 		{
 			float deWork = (def.entityDefToBuild as ThingDef ?? def)
 				.GetStatValueAbstract(StatDefOf.WorkToBuild, oldStuff);
 			return Mathf.Min(deWork, MaxDeconstructWork);
-		}
-		public static float Cached_WorkToDeconstruct(ThingDef def, ThingDef oldStuff = null)
-		{
-			// No def
-			if (def == null)
-				return 0f;
-
-			// No stuff
-			if (oldStuff == null)
-			{
-				if (nullStuffCache.TryGetValue(def, out float nullStuffCached))
-					return nullStuffCached;
-
-				float nullStuffValue = Orig_WorkToDeconstructDef(def);
-				nullStuffCache[def] = nullStuffValue;
-
-				return nullStuffValue;
-			}
-
-			// Has stuff
-			(ThingDef, ThingDef) key = (def, oldStuff);
-
-			if (stuffedCache.TryGetValue(key, out float stuffCached))
-				return stuffCached;
-
-			float stuffedValue = Orig_WorkToDeconstructDef(def, oldStuff);
-			stuffedCache[key] = stuffedValue;
-
-			return stuffedValue;
-		}
-		public static float WorkToDeconstructDef(ThingDef def, ThingDef oldStuff = null)
-		{
-			return Cached_WorkToDeconstruct(def, oldStuff);
 		}
 
 		public float WorkToDeconstruct
@@ -161,9 +123,9 @@ namespace Replace_Stuff
 				CostListCalculator.cachedDifficulty = Find.Storyteller.difficulty;
 			}
 
-			if (!cachedReplaceCosts.TryGetValue(new (def.entityDefToBuild, Stuff), out var value))
+			if (!cachedReplaceCosts.TryGetValue(new(def.entityDefToBuild, Stuff), out var value))
 			{
-				value = new() { new (Stuff, TotalStuffNeeded()) };
+				value = new() { new(Stuff, TotalStuffNeeded()) };
 			}
 			return value;
 		}
@@ -204,7 +166,7 @@ namespace Replace_Stuff
 			if (workDone < WorkToDeconstructDef(def, oldStuff)) return;  //Deconstruction doesn't fail
 
 			GenLeaving.DoLeavingsFor(this, Map, DestroyMode.FailConstruction);
-			
+
 			MoteMaker.ThrowText(this.DrawPos, Map, "TextMote_ConstructionFail".Translate());
 			if (base.Faction == Faction.OfPlayer && this.WorkToReplace > 1400f)
 			{
@@ -219,7 +181,7 @@ namespace Replace_Stuff
 
 		public static void DeconstructDropStuff(Thing oldThing)
 		{
-			if (Current.ProgramState != ProgramState.Playing)	return;
+			if (Current.ProgramState != ProgramState.Playing) return;
 
 			ThingDef oldDef = oldThing.def;
 			ThingDef stuffDef = oldThing.Stuff;
