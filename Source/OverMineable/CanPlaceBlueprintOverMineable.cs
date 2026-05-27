@@ -79,7 +79,6 @@ namespace Replace_Stuff.OverMineable
 							continue;
 
 						map.designationManager.AddDesignation(new Designation(mineThing, DesignationDefOf.Mine));
-						designated.Add(mineThing);
 
 						if (mineThing.def.building?.mineableYieldWasteable ?? false)
 							TutorUtility.DoModalDialogIfNotKnown(ConceptDefOf.BuildersTryMine);
