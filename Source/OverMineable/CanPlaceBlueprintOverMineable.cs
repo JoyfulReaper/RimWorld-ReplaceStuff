@@ -66,8 +66,6 @@ namespace Replace_Stuff.OverMineable
 		//public static Blueprint_Build PlaceBlueprintForBuild(BuildableDef sourceDef, IntVec3 center, Map map, Rot4 rotation, Faction faction, ThingDef stuff)
 		public static void Prefix(BuildableDef sourceDef, IntVec3 center, Map map, Rot4 rotation, Faction faction)
 		{
-			HashSet<Thing> designated = new HashSet<Thing>();
-
 			if (faction != Faction.OfPlayer) return;
 			if (sourceDef is not ThingDef thingDef) return;
 
