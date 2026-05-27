@@ -64,15 +64,6 @@ namespace Replace_Stuff.Replace
 
 			Designator_ReplaceStuff.DoReplace(thingToReplace, __instance.stuffDef);
 
-			// Original Code
-			/*List<Thing> replaceables = c.GetThingList(__instance.Map).FindAll(
-				t =>
-					t.Position == c &&
-					t.Rotation == ___placingRot &&
-					Designator_ReplaceStuff.CanReplaceStuffFor(__instance.StuffDef, t, thingDef)
-			);*/
-			//Designator_ReplaceStuff.ChooseReplace(replaceables, __instance.StuffDef);
-
 			return false;
 		}
 	}

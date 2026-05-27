@@ -25,27 +25,6 @@ namespace Replace_Stuff.PlaceBridges
 			IEnumerable<IntVec3> cells = dragger.Dragging ? dragger.DragCells :
 				GenAdj.OccupiedRect(UI.MouseCell(), placingRot(__instance), __instance.PlacingDef.Size).Cells;
 
-			// Original Code
-			//List<TerrainDef> neededBridges = new List<TerrainDef>();
-			/*foreach (IntVec3 dragPos in cells)
-				if (PlaceBridges.GetNeededBridge(__instance.PlacingDef, dragPos, __instance.Map, stuff) is TerrainDef tdef)
-					neededBridges.Add(tdef);
-
-			if (neededBridges.Count == 0) return;
-
-			Dictionary<ThingDef, int> bridgeTotalCost = new Dictionary<ThingDef, int>();
-			float work = 0;
-			foreach(TerrainDef bridgeDef in neededBridges)
-			{
-				work += bridgeDef.GetStatValueAbstract(StatDefOf.WorkToBuild);
-				if(bridgeDef.costList != null)
-					foreach (ThingDefCountClass bridgeCost in bridgeDef.costList)
-					{
-						bridgeTotalCost.TryGetValue(bridgeCost.thingDef, out int costCount);
-						bridgeTotalCost[bridgeCost.thingDef] = costCount + bridgeCost.count;
-					}
-			}*/
-
 			Dictionary<ThingDef, int> bridgeTotalCost = new Dictionary<ThingDef, int>();
 			int bridgeCount = 0;
 			float work = 0;

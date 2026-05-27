@@ -216,10 +216,6 @@ namespace Replace_Stuff
 			Thing thingToReplace = firstBlueprintOrFrame ?? firstReplaceable;
 
 			DoReplace(thingToReplace, stuffDef);
-
-			// Original Code
-			//List<Thing> replaceable = cell.GetThingList(map).FindAll(t => CanReplaceStuffFor(stuffDef, t));
-			//ChooseReplace(replaceable, stuffDef);
 		}
 
 		// Unused for the time being.
