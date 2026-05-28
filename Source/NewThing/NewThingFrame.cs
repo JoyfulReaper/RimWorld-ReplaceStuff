@@ -256,12 +256,6 @@ namespace Replace_Stuff.NewThing
 
 		private static readonly Dictionary<int, Thing> thingReplacementCache = new Dictionary<int, Thing>();
 
-		[HarmonyPatch(typeof(Thing), "Destroy"), HarmonyPrefix]
-		public static void ThingDestroyPatch_Prefix(Thing __instance)
-		{
-			thingReplacementCache.Remove(__instance.thingIDNumber);
-		}
-
 		public static bool Cached_IsNewThingReplacement(this Thing newThing, out Thing oldThing)
 		{
 			oldThing = null;
@@ -275,6 +269,13 @@ namespace Replace_Stuff.NewThing
 
 			if (thingReplacementCache.TryGetValue(thingID, out oldThing))
 				return oldThing != null && !oldThing.Destroyed;
+
+			if (thingReplacementCache.Count > 10000)
+			{
+				// Periodic cache clear to ensure it doesn't build up needlessly.
+				// Note to self: find a more reliable way to to this.
+				thingReplacementCache.Clear();
+			}
 
 			bool result = newThing.def.IsNewThingReplacement(newThing.Position, newThing.Rotation, newThing.Map, out oldThing);
 			thingReplacementCache[thingID] = result ? oldThing : null;
