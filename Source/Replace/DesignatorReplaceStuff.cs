@@ -212,7 +212,7 @@ namespace Replace_Stuff
 			FindReplace(Map, cell, stuffDef);
 		}
 
-		// Credit: 
+		// Credit: https://github.com/MemeGoddess/RimWorld-ReplaceStuff/pull/10
 		public static void FindReplace(Map map, IntVec3 cell, ThingDef stuffDef)
 		{
 			Thing firstReplaceable = null;
