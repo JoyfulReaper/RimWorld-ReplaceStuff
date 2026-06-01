@@ -11,6 +11,7 @@
 	
 	<ThingDef ParentName="Cooler" Name="Cooler_Over">
 		<defName>Cooler_Over</defName>
+		<thingClass>Building_Cooler</thingClass>
 		<label>over-wall cooler</label>
 		<designatorDropdown>OverWallCooler</designatorDropdown>
 		<graphicData>
@@ -19,15 +20,16 @@
 		<altitudeLayer>BuildingOnTop</altitudeLayer>
 		<passability>PassThroughOnly</passability>
 		<blockWind>false</blockWind>
-		<fillPercent>.6</fillPercent>
+		<fillPercent>1</fillPercent>
+		<passability>Impassable</passability>
 		<coversFloor>false</coversFloor>
 		<blockLight>false</blockLight>
 		<staticSunShadowHeight>.6</staticSunShadowHeight>
 		<building>
-			<canPlaceOverWall>false</canPlaceOverWall>
-			<isEdifice>false</isEdifice>
+			<canPlaceOverWall>true</canPlaceOverWall>
+			<isEdifice>true</isEdifice>
 			<canExchangeVacuum>false</canExchangeVacuum>
-			<isAirtight>false</isAirtight>
+			<isAirtight>true</isAirtight>
 		</building>
 		<designationHotKey>Misc6</designationHotKey>
 	</ThingDef>

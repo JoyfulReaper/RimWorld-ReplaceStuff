@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Reflection;
-using System.Diagnostics;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -37,6 +34,9 @@ namespace Replace_Stuff.Replace
 		//public bool CanReserve(Pawn claimant, LocalTargetInfo target, int maxPawns = 1, int stackCount = -1, ReservationLayerDef layer = null, bool ignoreOtherReservations = false)
 		public static void Prefix(ref LocalTargetInfo target)//Luckily each parameter is named 'target' or this wouldn't work
 		{
+			if (!target.IsValid || !target.HasThing)
+				return;
+
 			if (target.Thing is ReplaceFrame replaceFrame)
 				target = replaceFrame.oldThing;
 			else if (target.Thing is Frame frame && frame.IsNewThingReplacement(out Thing oldThing))
