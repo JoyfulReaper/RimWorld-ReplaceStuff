@@ -16,6 +16,7 @@ OPTIMIZATIONS:
 - Implemented an early exit in Harmony patches to prevent unnecessary processing of unaffected cells.
 - Eliminated mid-frame Garbage Collection spikes during construction.
 - Hardened deconstruction frame logic for better reliability.
+- Removed old Assemblies (I can't update them without decompiling them anyway) and update folder structure
 
 Original mod by Uuugggg. 
 This fork is dedicated to maintaining the functionality of the original while removing the performance tax previously associated with complex base management.
@@ -34,7 +35,7 @@ CREDITS AND CONTRIBUTIONS:
 - Includes performance optimizations originally identified by Hexnet111 (https://github.com/MemeGoddess/RimWorld-ReplaceStuff/pull/10).
 </description>
 
-	<url>https://steamcommunity.com/sharedfiles/filedetails/?id=YOUR_NEW_ID_HERE</url>
+	<url>https://steamcommunity.com/sharedfiles/filedetails/?id=3736701303</url>
 	<modDependencies>
 		<li>
 			<packageId>brrainz.harmony</packageId>
