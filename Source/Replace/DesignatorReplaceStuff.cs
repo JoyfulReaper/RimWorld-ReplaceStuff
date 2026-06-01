@@ -61,8 +61,30 @@ namespace Replace_Stuff
 			if (!ArchitectCategoryTab.InfoRect.Contains(UI.MousePositionOnUIInverted))
 			{
 				int cost = 0;
-				foreach (IntVec3 cell in Find.DesignatorManager.Dragger.DragCells)
-					cost += cell.GetThingList(Map).FindAll(t => CanReplaceStuffFor(stuffDef, t) && !(t is ReplaceFrame)).Sum(t => Mathf.RoundToInt((float)GenConstruct.BuiltDefOf(t.def).costStuffCount / stuffDef.VolumePerUnit));
+				List<IntVec3> dragCells = Find.DesignatorManager.Dragger.DragCells;
+
+				// Loop over the cells being dragged
+				for (int c = 0; c < dragCells.Count; c++)
+				{
+					IntVec3 cell = dragCells[c];
+					List<Thing> thingsInCell = cell.GetThingList(Map);
+
+					// Loop through the things inside the cell directly without using FindAll() or LINQ Sum()
+					for (int t = 0; t < thingsInCell.Count; t++)
+					{
+						Thing thing = thingsInCell[t];
+
+						if (thing is not ReplaceFrame && CanReplaceStuffFor(stuffDef, thing))
+						{
+							// Safely check if the built def is a ThingDef and cast it inline!
+							if (GenConstruct.BuiltDefOf(thing.def) is ThingDef builtDef)
+							{
+								cost += Mathf.RoundToInt((float)builtDef.costStuffCount / stuffDef.VolumePerUnit);
+							}
+						}
+					}
+				}
+
 				Vector2 drawPoint = Event.current.mousePosition + DragPriceDrawOffset;
 				Rect iconRect = new Rect(drawPoint.x, drawPoint.y, 27f, 27f);
 				GUI.color = stuffDef.uiIconColor;
@@ -190,25 +212,33 @@ namespace Replace_Stuff
 			FindReplace(Map, cell, stuffDef);
 		}
 
+		// Credit: 
 		public static void FindReplace(Map map, IntVec3 cell, ThingDef stuffDef)
 		{
-			List<Thing> replaceable = cell.GetThingList(map).FindAll(t => CanReplaceStuffFor(stuffDef, t));
+			Thing firstReplaceable = null;
+			Thing firstBlueprintOrFrame = null;
 
-			ChooseReplace(replaceable, stuffDef);
-		}
+			List<Thing> replaceables = cell.GetThingList(map);
 
-		public static void ChooseReplace(List<Thing> replaceables, ThingDef stuffDef)
-		{
-			//TODO Godmode. Replace the thing and kill any blueprints/frames.
+			// Using simple for loop for better performance.
+			for (int i = 0; i < replaceables.Count; i++)
+			{
+				Thing replaceable = replaceables[i];
 
-			//If there is a blueprint or frame, replace that and ignore the underlying replaceable thing - it's already being replaced.
-			//If there's not, just use the thing, starting a basic replacement
-			Thing thing = replaceables.FirstOrFallback(t => t is Blueprint_Build || t is Frame, replaceables.FirstOrDefault());
+				if (!CanReplaceStuffFor(stuffDef, replaceable)) continue;
 
-			if (thing == null)//should not happen, CanDesignateCell
-				return;
+				firstReplaceable ??= replaceable;
 
-			DoReplace(thing, stuffDef);
+				if (replaceable is Blueprint_Build || replaceable is Frame)
+				{
+					firstBlueprintOrFrame = replaceable;
+					break;
+				}
+			}
+
+			Thing thingToReplace = firstBlueprintOrFrame ?? firstReplaceable;
+
+			DoReplace(thingToReplace, stuffDef);
 		}
 
 		public static void DoReplace(Thing thing, ThingDef stuffDef)

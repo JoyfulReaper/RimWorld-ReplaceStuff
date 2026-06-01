@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Credit: https://github.com/Hexnet111/RimWorld-ReplaceStuff-Performance-Patch/blob/cf542b03449131de9393b6dc3e35229a292e38ed/Source/Replace/ReplaceFrame.cs
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,14 +24,14 @@ namespace Replace_Stuff
 	{
 		public Thing oldThing;
 		public ThingDef oldStuff;
-		
+
 		public override void ExposeData()
 		{
 			base.ExposeData();
 			Scribe_References.Look(ref oldThing, "oldThing");
 			Scribe_Defs.Look(ref oldStuff, "oldStuff");
 		}
-		
+
 		private const float MaxDeconstructWork = 3000f;
 		public static float WorkToDeconstructDef(ThingDef def, ThingDef oldStuff = null)
 		{
@@ -123,9 +125,9 @@ namespace Replace_Stuff
 				CostListCalculator.cachedDifficulty = Find.Storyteller.difficulty;
 			}
 
-			if (!cachedReplaceCosts.TryGetValue(new (def.entityDefToBuild, Stuff), out var value))
+			if (!cachedReplaceCosts.TryGetValue(new(def.entityDefToBuild, Stuff), out var value))
 			{
-				value = new() { new (Stuff, TotalStuffNeeded()) };
+				value = new() { new(Stuff, TotalStuffNeeded()) };
 			}
 			return value;
 		}
@@ -166,7 +168,7 @@ namespace Replace_Stuff
 			if (workDone < WorkToDeconstructDef(def, oldStuff)) return;  //Deconstruction doesn't fail
 
 			GenLeaving.DoLeavingsFor(this, Map, DestroyMode.FailConstruction);
-			
+
 			MoteMaker.ThrowText(this.DrawPos, Map, "TextMote_ConstructionFail".Translate());
 			if (base.Faction == Faction.OfPlayer && this.WorkToReplace > 1400f)
 			{
@@ -181,7 +183,7 @@ namespace Replace_Stuff
 
 		public static void DeconstructDropStuff(Thing oldThing)
 		{
-			if (Current.ProgramState != ProgramState.Playing)	return;
+			if (Current.ProgramState != ProgramState.Playing) return;
 
 			ThingDef oldDef = oldThing.def;
 			ThingDef stuffDef = oldThing.Stuff;
