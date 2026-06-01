@@ -35,6 +35,13 @@ namespace Replace_Stuff
 	{
 		public static ReplaceFrame PlaceReplaceFrame(Thing oldThing, ThingDef stuff)
 		{
+			if (stuff == null)
+			{
+				// Log a warning instead of letting it crash/default if appropriate
+				Verse.Log.Warning("ReplaceStuff: PlaceReplaceFrame called with null stuffDef for " + oldThing.def.defName);
+				return null;
+			}
+
 			ThingDef replaceFrameDef = ThingDefGenerator_ReplaceFrame.ReplaceFrameDefFor(oldThing.def);
 
 			if (replaceFrameDef == null) return null;

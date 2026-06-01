@@ -21,6 +21,13 @@ namespace Replace_Stuff.Replace
 
 			ThingDef thingDef = ___entDef as ThingDef;
 
+			// If the building requires stuff but no stuff is selected, 
+			// or if the building doesn't use stuff at all, just return true.
+			if (__instance.StuffDef == null && thingDef.MadeFromStuff)
+			{
+				return true;
+			}
+
 			if (thingDef == null)//Terrain?
 				return true;
 

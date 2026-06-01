@@ -238,7 +238,10 @@ namespace Replace_Stuff
 
 			Thing thingToReplace = firstBlueprintOrFrame ?? firstReplaceable;
 
-			DoReplace(thingToReplace, stuffDef);
+			if (thingToReplace != null)
+			{
+				DoReplace(thingToReplace, stuffDef);
+			}
 		}
 
 		public static void DoReplace(Thing thing, ThingDef stuffDef)
@@ -270,7 +273,10 @@ namespace Replace_Stuff
 				{
 					//replacement frame should keep deconstruction work mount
 					ReplaceFrame newFrame = GenReplace.PlaceReplaceFrame(oldRF.oldThing, stuffDef);
-					newFrame.workDone = Mathf.Min(oldRF.workDone, oldRF.WorkToDeconstruct);
+					if (newFrame != null)
+					{
+						newFrame.workDone = Mathf.Min(oldRF.workDone, oldRF.WorkToDeconstruct);
+					}
 				}
 				//else, if same stuff as old stuff, we just chose replace with original stuff, so we're already done - just destroy the frame.
 				//upgrade frames/blueprints
