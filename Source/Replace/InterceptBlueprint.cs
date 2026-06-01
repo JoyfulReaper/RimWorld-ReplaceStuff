@@ -42,7 +42,6 @@ namespace Replace_Stuff.Replace
 			{
 				Thing replaceable = replaceables[i];
 
-				if (replaceable.Position != c) continue;
 				if (replaceable.Rotation != ___placingRot) continue;
 				if (!Designator_ReplaceStuff.CanReplaceStuffFor(__instance.StuffDef, replaceable, thingDef)) continue;
 

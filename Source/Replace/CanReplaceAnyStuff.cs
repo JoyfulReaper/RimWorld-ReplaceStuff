@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using RimWorld;
-using Replace_Stuff.NewThing;
 using Verse;
 
 namespace Replace_Stuff
@@ -33,30 +29,24 @@ namespace Replace_Stuff
 	{
 		// Normal stuff replacement only here.
 		// public static bool CanReplace(BuildableDef placing, BuildableDef existing, ThingDef placingStuff = null, ThingDef existingStuff = null)
-		public static void Postfix(ref bool __result,  BuildableDef placing, BuildableDef existing, ThingDef placingStuff = null, ThingDef existingStuff = null)
+		public static void Postfix(ref bool __result, BuildableDef placing, BuildableDef existing, ThingDef placingStuff = null, ThingDef existingStuff = null)
 		{
-			// Only care to find new cases of true
-			if (__result) return;
+			if (__result || placingStuff == existingStuff) return; // Fast fail if already true or same material
 
-			if (placing is not ThingDef) return;
+			if (placing is ThingDef placingDef && existing is ThingDef existingDef && placingDef.MadeFromStuff)
+			{
+				// Calculate base definitions once
+				var placingBuiltDef = placingDef.entityDefToBuild ?? placingDef;
+				var existingBuiltDef = existingDef.entityDefToBuild ?? existingDef;
 
-			if (!placing.MadeFromStuff) return;
-
-			ThingDef placingDef = placing as ThingDef;
-			ThingDef existingDef = existing as ThingDef;
-			if (placingDef == null || existingDef == null)
-				return;
-			BuildableDef placingBuiltDef = placingDef.entityDefToBuild ?? placingDef;
-			BuildableDef existingBuiltDef = existingDef.entityDefToBuild ?? existingDef;
-
-			// Whether or not this an existing thing, blueprint or frame,
-			// if it's the same builtDef and different stuff, so it can be replaced.
-			__result = 
-				placingBuiltDef == existingBuiltDef && 
-				placingBuiltDef.MadeFromStuff && 
-				placingStuff != existingStuff;
+				if (placingBuiltDef == existingBuiltDef && placingBuiltDef.MadeFromStuff)
+				{
+					__result = true;
+				}
+			}
 		}
 	}
+
 
 	[HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.CanPlaceBlueprintAt))]
 	public static class CanPlaceBlueprintRotDoesntMatter
@@ -77,11 +67,13 @@ namespace Replace_Stuff
 			}
 		}
 
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 		public static bool OrRotDoesntMatter(bool result, BuildableDef entDef)
 		{
 			return result || PlacingRotationDoesntMatter(entDef);
 		}
 
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 		public static bool PlacingRotationDoesntMatter(BuildableDef entDef)
 		{
 			return entDef is ThingDef def &&

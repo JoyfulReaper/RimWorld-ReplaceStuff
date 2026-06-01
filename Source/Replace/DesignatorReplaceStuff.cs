@@ -22,6 +22,7 @@ namespace Replace_Stuff
 		public override DrawStyleCategoryDef DrawStyleCategory => DrawStyleCategoryDefOf.Orders;
 
 		private static readonly Vector2 DragPriceDrawOffset = new Vector2(19f, 17f);
+		private static readonly Dictionary<BuildableDef, HashSet<ThingDef>> _allowedStuffCache = new();
 
 		public Designator_ReplaceStuff()
 		{
@@ -160,51 +161,86 @@ namespace Replace_Stuff
 		public override AcceptanceReport CanDesignateCell(IntVec3 cell)
 		{
 			DesignatorContext.designating = true;
-			bool result = CanReplaceStuffAt(stuffDef, cell, Map)
-				&& !cell.GetThingList(Map).Any(t => t is ReplaceFrame rf && rf.EntityToBuildStuff() == stuffDef);
+			bool canReplace = CanReplaceStuffAt(stuffDef, cell, Map);
+
+			// Manual check to avoid .Any() allocation
+			bool hasFrame = false;
+			List<Thing> things = cell.GetThingList(Map);
+			for (int i = 0; i < things.Count; i++)
+			{
+				if (things[i] is ReplaceFrame rf && rf.EntityToBuildStuff() == stuffDef)
+				{
+					hasFrame = true;
+					break;
+				}
+			}
+
 			DesignatorContext.designating = false;
-			return result;
+			return canReplace && !hasFrame;
 		}
 
 		public static bool CanReplaceStuffAt(ThingDef stuff, IntVec3 cell, Map map)
 		{
-			return cell.GetThingList(map).Any(t => t.Position == cell && CanReplaceStuffFor(stuff, t));
+			List<Thing> things = cell.GetThingList(map);
+			for (int i = 0; i < things.Count; i++)
+			{
+				Thing t = things[i];
+				// The Position check is technically redundant because GetThingList 
+				// already returns things specifically in that cell, but it's safe to keep.
+				if (t.Position == cell && CanReplaceStuffFor(stuff, t))
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 
 		public static bool CanReplaceStuffFor(ThingDef stuff, Thing thing, ThingDef matchDef = null)
 		{
-			if (thing.Faction != Faction.OfPlayer && thing.Faction != null)	//can't replace enemy things
+			// 1. Basic validation: Don't replace enemy items or items already being upgraded
+			if (thing.Faction != Faction.OfPlayer && thing.Faction != null)
 				return false;
 
-			BuildableDef builtDef = GenConstruct.BuiltDefOf(thing.def);
+			if (thing.BeingReplacedByNewThing() != null)
+				return false;
 
+			// 2. Resolve definition and verify match if requested
+			BuildableDef builtDef = GenConstruct.BuiltDefOf(thing.def);
 			if (matchDef != null && builtDef != matchDef)
 				return false;
 
+			// 3. Logic: Determine if this thing is replaceable based on type
 			if (thing is Blueprint bp)
 			{
-				if (bp.EntityToBuildStuff() == stuff)
-					return false;
+				if (bp.EntityToBuildStuff() == stuff) return false;
 			}
 			else if (thing is Frame frame)
 			{
-				if (frame.EntityToBuildStuff() == stuff)
-					return false;
+				if (frame.EntityToBuildStuff() == stuff) return false;
 			}
 			else if (thing.def.HasReplaceFrame())
 			{
-				if (thing.Stuff == stuff)
-					return false;
+				if (thing.Stuff == stuff) return false;
 			}
-			else return false;
+			else
+			{
+				// If it's not a Blueprint, Frame, or ReplaceFrame-compatible, it cannot be replaced.
+				return false;
+			}
 
+			// 4. Terrain validation: Can this building actually exist here with this material?
 			if (!GenConstruct.CanBuildOnTerrain(builtDef, thing.Position, thing.Map, thing.Rotation, thing, stuff))
-				return false;//TODO: place bridges under && 
+				return false;
 
-			if (thing.BeingReplacedByNewThing() != null)
-				return false;//being upgraded.
+			// 5. Material check: Is this specific stuff allowed? 
+			// Using the cache for O(1) performance instead of O(N) list scanning.
+			if (!_allowedStuffCache.TryGetValue(builtDef, out var allowedSet))
+			{
+				allowedSet = new HashSet<ThingDef>(GenStuff.AllowedStuffsFor(builtDef));
+				_allowedStuffCache[builtDef] = allowedSet;
+			}
 
-			return GenStuff.AllowedStuffsFor(builtDef).Contains(stuff);
+			return allowedSet.Contains(stuff);
 		}
 
 		public override void DesignateSingleCell(IntVec3 cell)
