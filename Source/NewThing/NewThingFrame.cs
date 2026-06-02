@@ -254,13 +254,28 @@ namespace Replace_Stuff.NewThing
 			//---------------------------------------------
 		}
 
+		private static readonly Dictionary<int, Thing> thingReplacementCache = new Dictionary<int, Thing>();
+
 		public static bool IsNewThingReplacement(this Thing newThing, out Thing oldThing)
 		{
-			if (newThing.Spawned)
-				return newThing.def.IsNewThingReplacement(newThing.Position, newThing.Rotation, newThing.Map, out oldThing);
-
 			oldThing = null;
-			return false;
+
+			if (!newThing.Spawned)
+				return false;
+
+			int thingID = newThing.thingIDNumber;
+
+			if (thingReplacementCache.TryGetValue(thingID, out oldThing))
+				return oldThing != null && !oldThing.Destroyed;
+
+			// Periodic cache clear to ensure it doesn't build up needlessly.
+			if (thingReplacementCache.Count > 500)
+				thingReplacementCache.Clear(); 
+
+			bool result = newThing.def.IsNewThingReplacement(newThing.Position, newThing.Rotation, newThing.Map, out oldThing);
+			thingReplacementCache[thingID] = result ? oldThing : null;
+
+			return result;
 		}
 
 		public static bool IsNewThingReplacement(this ThingDef newDef, IntVec3 pos, Rot4 rotation, Map map, out Thing oldThing)
@@ -286,7 +301,7 @@ namespace Replace_Stuff.NewThing
 			oldThing = null;
 			return false;
 		}
-		
+
 		public static bool CanReplace(this Thing newThing, Thing oldThing)
 		{
 			return newThing.def.CanReplace(oldThing.def);
