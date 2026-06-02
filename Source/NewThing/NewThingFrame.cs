@@ -268,11 +268,9 @@ namespace Replace_Stuff.NewThing
 			if (thingReplacementCache.TryGetValue(thingID, out oldThing))
 				return oldThing != null && !oldThing.Destroyed;
 
+			// Periodic cache clear to ensure it doesn't build up needlessly.
 			if (thingReplacementCache.Count > 500)
-			{
-				// Periodic cache clear to ensure it doesn't build up needlessly.
-				thingReplacementCache.Clear();
-			}
+				thingReplacementCache.Clear(); 
 
 			bool result = newThing.def.IsNewThingReplacement(newThing.Position, newThing.Rotation, newThing.Map, out oldThing);
 			thingReplacementCache[thingID] = result ? oldThing : null;
