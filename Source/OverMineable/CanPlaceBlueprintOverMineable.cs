@@ -73,16 +73,13 @@ namespace Replace_Stuff.OverMineable
 			{
 				foreach (Thing mineThing in map.thingGrid.ThingsAt(cell).Where(t => t.def.IsBlockingRock(sourceDef)))
 				{
-					if (!DontMineSmoothingRock.ToBeSmoothed(mineThing, thingDef))
-					{
-						if (map.designationManager.DesignationAt(mineThing.Position, DesignationDefOf.Mine) != null)
-							continue;
+					if (!DontMineSmoothingRock.ToBeSmoothed(mineThing, thingDef)) continue;
+					if (map.designationManager.DesignationAt(mineThing.Position, DesignationDefOf.Mine) != null) continue;
 
-						map.designationManager.AddDesignation(new Designation(mineThing, DesignationDefOf.Mine));
+					map.designationManager.AddDesignation(new Designation(mineThing, DesignationDefOf.Mine));
 
-						if (mineThing.def.building?.mineableYieldWasteable ?? false)
-							TutorUtility.DoModalDialogIfNotKnown(ConceptDefOf.BuildersTryMine);
-					}
+					if (mineThing.def.building?.mineableYieldWasteable ?? false)
+						TutorUtility.DoModalDialogIfNotKnown(ConceptDefOf.BuildersTryMine);
 				}
 			}
 		}
