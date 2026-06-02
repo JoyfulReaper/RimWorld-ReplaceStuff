@@ -11,16 +11,21 @@ namespace TD.Utilities
 	static class PatchCompilerGenerated
 	{
 		public static void PatchGeneratedMethod(this Harmony harmony, Type masterType, Predicate<MethodInfo> check,
-			HarmonyMethod prefix = null, HarmonyMethod postfix = null, HarmonyMethod transpiler = null)
+		HarmonyMethod prefix = null, HarmonyMethod postfix = null, HarmonyMethod transpiler = null)
 		{
-			//Find the compiler-created method nested in masterType that passes the check, Patch it
-			List<Type> nestedTypes = new List<Type>(masterType.GetNestedTypes(BindingFlags.NonPublic));
-			while (nestedTypes.Any())
+			// Use a proper Stack
+			Stack<Type> nestedTypes = new Stack<Type>(masterType.GetNestedTypes(BindingFlags.NonPublic));
+
+			while (nestedTypes.Count > 0)
 			{
 				Type type = nestedTypes.Pop();
-				nestedTypes.AddRange(type.GetNestedTypes(BindingFlags.NonPublic));
 
-				foreach (MethodInfo method in type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
+				// Add next level of nesting
+				foreach (var nested in type.GetNestedTypes(BindingFlags.NonPublic))
+					nestedTypes.Push(nested);
+
+				// Search methods
+				foreach (MethodInfo method in type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic))
 				{
 					if (method.DeclaringType != type) continue;
 
