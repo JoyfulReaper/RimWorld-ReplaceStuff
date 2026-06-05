@@ -173,13 +173,18 @@ namespace Replace_Stuff.NewThing
 			}
 		}
 
+		/// <summary>
+		/// Transfer Storage Settings between Things
+		/// </summary>
+		/// <param name="n">new store</param>
+		/// <param name="o">old store</param>
 		private static void TransferStorageSettings(Thing n, Thing o)
 		{
 			if (n is not Building_Storage newStore || o is not Building_Storage oldStore)
 				return;
 
-			// There's some mods doing weird stuff with storage settings. Need to delay this for it to apply
-			TickScheduler.NextTick(() => newStore.settings.CopyFrom(oldStore.settings));
+			// Leverages vanilla's built-in event runner to execute after spawning loops finish
+			LongEventHandler.ExecuteWhenFinished(() => newStore.settings.CopyFrom(oldStore.settings));
 		}
 
 		/// <summary>

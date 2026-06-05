@@ -12,10 +12,13 @@ This version maintains the core functionality of replacing building materials in
 
 OPTIMIZATIONS:
 - Replaced many allocation-heavy LINQ operations with zero-allocation, index-based iteration to reduce memory overhead.
-- Don't run GenConstruct.CanReplace() patch unless a blueprint is being placed
+- Don't run GenConstruct.CanReplace() patch unless a blueprint is being placed.
+- Vast improvements to InterceptDesignator_Build.
+-- Removed heap allocations, faster early exits
 - Add some early exits where possible to reduce running un-needed instructions
 - Introduced a thingReplacementCache dictionary in NewThingReplacement.
-- Removed old Assemblies as I don't wish to compile the new mod against them at this time
+- Remove TickScheduler which was only used one place, but fired every tick
+- Removed old Assemblies as I don't wish to compile the new mod against them at this time.
 - Some other optimizatons
 
 Original mod by Uuugggg. 
@@ -26,6 +29,7 @@ FEATURES:
 - Does not break room temperature or workbench bills.
 - Blueprints are allowed over rock and fog.
 - Architect/Structure menu integration for easy material swapping.
+
 
 SOURCE CODE:
 - Source Code: https://github.com/JoyfulReaper/RimWorld-ReplaceStuff
