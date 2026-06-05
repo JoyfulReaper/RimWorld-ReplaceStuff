@@ -2,17 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Reflection;
-using System.Reflection.Emit;
 using Verse;
-using Verse.AI;
 using RimWorld;
 using UnityEngine;
 using HarmonyLib;
 using Replace_Stuff.Utilities;
-using Replace_Stuff.NewThing;
 
 using CostListPair = RimWorld.CostListCalculator.CostListPair;
 using FastCostListPairComparer = RimWorld.CostListCalculator.FastCostListPairComparer;
@@ -33,6 +28,7 @@ namespace Replace_Stuff
 		}
 
 		private const float MaxDeconstructWork = 3000f;
+
 		public static float WorkToDeconstructDef(ThingDef def, ThingDef oldStuff = null)
 		{
 			float deWork = (def.entityDefToBuild as ThingDef ?? def)
@@ -55,6 +51,7 @@ namespace Replace_Stuff
 				return def.entityDefToBuild.GetStatValueAbstract(StatDefOf.WorkToBuild, Stuff);
 			}
 		}
+
 		public new float WorkToBuild
 		{
 			get
@@ -80,16 +77,19 @@ namespace Replace_Stuff
 		{
 			return TotalStuffNeeded(def.entityDefToBuild, Stuff);
 		}
+
 		public static int TotalStuffNeeded(BuildableDef toBuild, ThingDef stuff)
 		{
 			int count = Mathf.RoundToInt((float)toBuild.costStuffCount / stuff.VolumePerUnit);
 			if (count < 1) count = 1;
 			return count;
 		}
+
 		public int CountStuffHas()
 		{
 			return resourceContainer.TotalStackCountOfDef(Stuff);
 		}
+
 		public int CountStuffNeeded()
 		{
 			return TotalStuffNeeded() - CountStuffHas();

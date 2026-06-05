@@ -12,27 +12,25 @@ namespace Replace_Stuff.Replace
 	{
 		public static bool Prefix(Designator_Build __instance, IntVec3 c, BuildableDef ___entDef, Rot4 ___placingRot)
 		{
-			// 1. Guard against nulls to prevent crashes
 			if (__instance == null || ___entDef == null) return true;
 
 			ThingDef thingDef = ___entDef as ThingDef;
 			if (thingDef == null) return true;
 
-			// 2. Safe check for stuff requirements
 			if (thingDef.MadeFromStuff && __instance.StuffDef == null)
 			{
 				return true;
 			}
 
-			// 3. Skip if GodMode or no work needed
+			// Skip if GodMode or no work needed
 			if (DebugSettings.godMode || ___entDef.GetStatValueAbstract(StatDefOf.WorkToBuild, __instance.StuffDef) == 0f)
 				return true;
 
-			// 4. Handle door rotation
+			// Handle door rotation
 			if (typeof(Building_Door).IsAssignableFrom(thingDef.thingClass))
 				___placingRot = DoorUtility.DoorRotationAt(c, __instance.Map, thingDef.building.preferConnectingToFences);
 
-			// 5. Optimized search for replaceable items
+			// Optimized search for replaceable items
 			List<Thing> replaceables = c.GetThingList(__instance.Map);
 			if (replaceables.Count == 0) return true;
 

@@ -11,8 +11,9 @@
 This version maintains the core functionality of replacing building materials in-place without deconstructing, but has been modified for higher performance.
 
 OPTIMIZATIONS:
-- Replaced many allocation-heavy LINQ operations with zero-allocation, index-based iteration.
-- Don't run GenConstruct.CanReplace() patch UNLESS a blueprint is being placed
+- Replaced many allocation-heavy LINQ operations with zero-allocation, index-based iteration to reduce memory overhead.
+- Don't run GenConstruct.CanReplace() patch unless a blueprint is being placed
+- Add some early exits where possible to reduce running un-needed instructions
 - Introduced a thingReplacementCache dictionary in NewThingReplacement.
 - Removed old Assemblies as I don't wish to compile the new mod against them at this time
 - Some other optimizatons

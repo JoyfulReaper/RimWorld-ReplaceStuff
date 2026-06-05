@@ -1,22 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using HarmonyLib;
+﻿using HarmonyLib;
 using RimWorld;
 using Verse;
-using Verse.AI;
 
 namespace Replace_Stuff.OverMineable
 {
 	static class RockCheck
 	{
-		public static bool IsMineableRock(this Thing t) => IsMineableRock(t.def);
+		public static bool IsMineableRock(this Thing t) => 
+			IsMineableRock(t.def);
+
 		public static bool IsMineableRock(this ThingDef td)
 		{
 			return td.mineable && !td.IsSmoothed;
 		}
-		public static bool IsBlockingRock(this Thing t, Thing placedThing) => IsBlockingRock(t.def, placedThing.def);
+
+		public static bool IsBlockingRock(this Thing t, Thing placedThing) 
+			=> IsBlockingRock(t.def, placedThing.def);
+
 		public static bool IsBlockingRock(this ThingDef td, BuildableDef placingDef)
 		{
 			//This checks ForceAllow, but not AllowsPlacing, since AllowsPlacing defaults to true, and PlaceWorks like ShowFacilites would be true.

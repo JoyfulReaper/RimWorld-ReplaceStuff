@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Verse;
-using Verse.AI;
 using RimWorld;
 using Replace_Stuff.NewThing;
 
@@ -70,14 +67,12 @@ namespace Replace_Stuff
 					IntVec3 cell = dragCells[c];
 					List<Thing> thingsInCell = cell.GetThingList(Map);
 
-					// Loop through the things inside the cell directly without using FindAll() or LINQ Sum()
 					for (int t = 0; t < thingsInCell.Count; t++)
 					{
 						Thing thing = thingsInCell[t];
 
 						if (thing is not ReplaceFrame && CanReplaceStuffFor(stuffDef, thing))
 						{
-							// Safely check if the built def is a ThingDef and cast it inline!
 							if (GenConstruct.BuiltDefOf(thing.def) is ThingDef builtDef)
 							{
 								cost += Mathf.RoundToInt((float)builtDef.costStuffCount / stuffDef.VolumePerUnit);
@@ -110,34 +105,33 @@ namespace Replace_Stuff
 
 		public override void ProcessInput(Event ev)
 		{
-			if (!CheckCanInteract())
+			if (!CheckCanInteract()) return;
+
+			var amounts = Map.resourceCounter.AllCountedAmounts;
+			List<FloatMenuOption> list = new List<FloatMenuOption>(amounts.Count);
+
+			bool godMode = DebugSettings.godMode;
+
+			foreach (var kvp in amounts)
 			{
-				return;
+				ThingDef def = kvp.Key;
+				if (!def.IsStuff || (!godMode && kvp.Value <= 0)) continue;
+
+				list.Add(new FloatMenuOption(def.LabelCap, () =>
+				{
+					base.ProcessInput(ev);
+					Find.DesignatorManager.Select(this);
+					stuffDef = def;
+				}, def));
 			}
 
-			List<FloatMenuOption> list = new List<FloatMenuOption>();
-			foreach (ThingDef current in Map.resourceCounter.AllCountedAmounts.Keys)
-			{
-				if (current.IsStuff && (DebugSettings.godMode || Map.listerThings.ThingsOfDef(current).Count > 0))
-				{
-					list.Add(new FloatMenuOption(current.LabelCap, delegate
-					{
-						base.ProcessInput(ev);
-						Find.DesignatorManager.Select(this);
-						stuffDef = current;
-					},
-					current));
-				}
-			}
 			if (list.Count == 0)
 			{
 				Messages.Message("NoStuffsToBuildWith".Translate(), MessageTypeDefOf.RejectInput);
 			}
 			else
 			{
-				FloatMenu floatMenu = new FloatMenu(list);
-				floatMenu.vanishIfMouseDistant = true;
-				Find.WindowStack.Add(floatMenu);
+				Find.WindowStack.Add(new FloatMenu(list) { vanishIfMouseDistant = true });
 				Find.DesignatorManager.Select(this);
 			}
 		}
@@ -161,22 +155,24 @@ namespace Replace_Stuff
 		public override AcceptanceReport CanDesignateCell(IntVec3 cell)
 		{
 			DesignatorContext.designating = true;
-			bool canReplace = CanReplaceStuffAt(stuffDef, cell, Map);
-
-			// Manual check to avoid .Any() allocation
-			bool hasFrame = false;
-			List<Thing> things = cell.GetThingList(Map);
-			for (int i = 0; i < things.Count; i++)
+			try
 			{
-				if (things[i] is ReplaceFrame rf && rf.EntityToBuildStuff() == stuffDef)
-				{
-					hasFrame = true;
-					break;
-				}
-			}
+				if (!CanReplaceStuffAt(stuffDef, cell, Map))
+					return false;
 
-			DesignatorContext.designating = false;
-			return canReplace && !hasFrame;
+				List<Thing> things = cell.GetThingList(Map);
+				for (int i = 0; i < things.Count; i++)
+				{
+					if (things[i] is ReplaceFrame rf && rf.EntityToBuildStuff() == stuffDef)
+						return false;
+				}
+
+				return true;
+			}
+			finally
+			{
+				DesignatorContext.designating = false;
+			}
 		}
 
 		public static bool CanReplaceStuffAt(ThingDef stuff, IntVec3 cell, Map map)
@@ -184,10 +180,7 @@ namespace Replace_Stuff
 			List<Thing> things = cell.GetThingList(map);
 			for (int i = 0; i < things.Count; i++)
 			{
-				Thing t = things[i];
-				// The Position check is technically redundant because GetThingList 
-				// already returns things specifically in that cell, but it's safe to keep.
-				if (t.Position == cell && CanReplaceStuffFor(stuff, t))
+				if (CanReplaceStuffFor(stuff, things[i]))
 				{
 					return true;
 				}
@@ -195,45 +188,43 @@ namespace Replace_Stuff
 			return false;
 		}
 
+
 		public static bool CanReplaceStuffFor(ThingDef stuff, Thing thing, ThingDef matchDef = null)
 		{
-			// 1. Basic validation: Don't replace enemy items or items already being upgraded
+			// Can't replace enemy items
 			if (thing.Faction != Faction.OfPlayer && thing.Faction != null)
+				return false;
+
+			if (thing is Blueprint bp)
+			{
+				if (bp.EntityToBuildStuff() == stuff)
+					return false;
+			}
+			else if (thing is Frame frame)
+			{
+				if (frame.EntityToBuildStuff() == stuff)
+					return false;
+			}
+			else if (thing.def.HasReplaceFrame())
+			{
+				if (thing.Stuff == stuff) 
+					return false;
+			}
+			else
+			{
+				return false; // Not a replaceable structure type
+			}
+
+			BuildableDef builtDef = GenConstruct.BuiltDefOf(thing.def);
+			if (matchDef != null && builtDef != matchDef)
+				return false;
+
+			if (!GenConstruct.CanBuildOnTerrain(builtDef, thing.Position, thing.Map, thing.Rotation, thing, stuff))
 				return false;
 
 			if (thing.BeingReplacedByNewThing() != null)
 				return false;
 
-			// 2. Resolve definition and verify match if requested
-			BuildableDef builtDef = GenConstruct.BuiltDefOf(thing.def);
-			if (matchDef != null && builtDef != matchDef)
-				return false;
-
-			// 3. Logic: Determine if this thing is replaceable based on type
-			if (thing is Blueprint bp)
-			{
-				if (bp.EntityToBuildStuff() == stuff) return false;
-			}
-			else if (thing is Frame frame)
-			{
-				if (frame.EntityToBuildStuff() == stuff) return false;
-			}
-			else if (thing.def.HasReplaceFrame())
-			{
-				if (thing.Stuff == stuff) return false;
-			}
-			else
-			{
-				// If it's not a Blueprint, Frame, or ReplaceFrame-compatible, it cannot be replaced.
-				return false;
-			}
-
-			// 4. Terrain validation: Can this building actually exist here with this material?
-			if (!GenConstruct.CanBuildOnTerrain(builtDef, thing.Position, thing.Map, thing.Rotation, thing, stuff))
-				return false;
-
-			// 5. Material check: Is this specific stuff allowed? 
-			// Using the cache for O(1) performance instead of O(N) list scanning.
 			if (!_allowedStuffCache.TryGetValue(builtDef, out var allowedSet))
 			{
 				allowedSet = new HashSet<ThingDef>(GenStuff.AllowedStuffsFor(builtDef));
@@ -256,7 +247,6 @@ namespace Replace_Stuff
 
 			List<Thing> replaceables = cell.GetThingList(map);
 
-			// Using simple for loop for better performance.
 			for (int i = 0; i < replaceables.Count; i++)
 			{
 				Thing replaceable = replaceables[i];

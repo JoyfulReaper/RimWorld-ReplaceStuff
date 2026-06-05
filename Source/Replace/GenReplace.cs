@@ -37,28 +37,26 @@ namespace Replace_Stuff
 		{
 			if (stuff == null)
 			{
-				// Log a warning instead of letting it crash/default if appropriate
 				Verse.Log.Warning("ReplaceStuff: PlaceReplaceFrame called with null stuffDef for " + oldThing.def.defName);
 				return null;
 			}
 
 			ThingDef replaceFrameDef = ThingDefGenerator_ReplaceFrame.ReplaceFrameDefFor(oldThing.def);
-
 			if (replaceFrameDef == null) return null;
-
-			//if (oldThing.Position.GetFirstThing(oldThing.Map, replaceFrameDef) != null) return null;
 
 			ReplaceFrame replaceFrame = (ReplaceFrame)ThingMaker.MakeThing(replaceFrameDef, stuff);
 
-			//QualityBuilder
-			if(QBTypes.qbDesDef != null &&
-				replaceFrame.def.HasComp(QBTypes.compQBType))
+			// QualityBuilder integration
+			if (QBTypes.qbDesDef != null && replaceFrame.def.HasComp(QBTypes.compQBType))
+			{
 				oldThing.Map.designationManager.AddDesignation(new Designation(replaceFrame, QBTypes.qbDesDef));
+			}
 
 			replaceFrame.SetFactionDirect(Faction.OfPlayer);
 			oldThing.SetFaction(Faction.OfPlayer);
 			replaceFrame.oldThing = oldThing;
 			replaceFrame.oldStuff = oldThing.Stuff;
+
 			GenSpawn.Spawn(replaceFrame, oldThing.Position, oldThing.Map, oldThing.Rotation);
 			return replaceFrame;
 		}
