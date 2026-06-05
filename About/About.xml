@@ -8,15 +8,14 @@
 	<packageId>KyleGivler.ReplaceStuff.Performance</packageId>
 <description>Performance-optimized fork of the original "Replace Stuff" mod.
 
-This version maintains the core functionality of replacing building materials in-place without deconstructing, but has been rewritten for high-end late-game stability.
+This version maintains the core functionality of replacing building materials in-place without deconstructing, but has been modified for higher performance.
 
 OPTIMIZATIONS:
-- Replaced allocation-heavy LINQ/FindAll operations with zero-allocation, index-based iteration.
-- Optimized blueprint interception to stop CPU overhead when dragging over large areas.
-- Implemented an early exit in Harmony patches to prevent unnecessary processing of unaffected cells.
-- Eliminated mid-frame Garbage Collection spikes during construction.
-- Hardened deconstruction frame logic for better reliability.
-- Removed old Assemblies (I can't update them without decompiling them anyway) and update folder structure
+- Replaced many allocation-heavy LINQ operations with zero-allocation, index-based iteration.
+- Don't run GenConstruct.CanReplace() patch UNLESS a blueprint is being placed
+- Introduced a thingReplacementCache dictionary in NewThingReplacement.
+- Removed old Assemblies as I don't wish to compile the new mod against them at this time
+- Some other optimizatons
 
 Original mod by Uuugggg. 
 This fork is dedicated to maintaining the functionality of the original while removing the performance tax previously associated with complex base management.

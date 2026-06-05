@@ -11,6 +11,12 @@ using Verse;
 
 namespace Replace_Stuff.NewThing
 {
+	/// <summary>
+	/// A compatibility handler that uses reflection to detect "RimFridge" buildings.
+	/// It dynamically retrieves the 'DesiredTemp' field, allowing the mod to 
+	/// synchronize temperature settings between replaced refrigerators without 
+	/// requiring a hard dependency on the external mod.
+	/// </summary>
 	[StaticConstructorOnStartup]
 	public static class FridgeCompat
 	{
@@ -30,6 +36,14 @@ namespace Replace_Stuff.NewThing
 			}
 		}
 	}
+
+	/// <summary>
+	/// The central registry and logic engine for structure replacements. 
+	/// It maintains a list of 'Replacement' rules and caches results to optimize 
+	/// performance. This class manages the lifecycle of a replacement, triggering 
+	/// pre-replacement actions (like saving bed ownership) and post-replacement 
+	/// actions (like transferring bills or settings) to ensure a seamless transition.
+	/// </summary>
 	[StaticConstructorOnStartup]
 	public static class NewThingReplacement
 	{
@@ -37,6 +51,7 @@ namespace Replace_Stuff.NewThing
 		{
 			Predicate<ThingDef> newCheck, oldCheck;
 			Action<Thing, Thing> replaceAction, preReplaceAction;
+
 			public Replacement(Predicate<ThingDef> n, Predicate<ThingDef> o = null, Action<Thing, Thing> preAction = null, Action < Thing, Thing> postAction = null)
 			{
 				newCheck = n;
@@ -121,27 +136,30 @@ namespace Replace_Stuff.NewThing
 
 		public static void FinalizeNewThingReplace(this Thing newThing, Thing oldThing)
 		{
-			if (_replacementCache.TryGetValue((newThing.def, oldThing.def), out var result))
+			if (_replacementCache.TryGetValue((newThing.def, oldThing.def), out var result) && result)
 			{
 				TransferBills(newThing, oldThing);
-
 				TransferStorageSettings(newThing, oldThing);
 			}
 
-			replacements.ForEach(r =>
+			for (int i = 0; i < replacements.Count; i++)
 			{
+				Replacement r = replacements[i];
 				if (r.Matches(newThing.def, oldThing.def))
 					r.Replace(newThing, oldThing);
-			});
+			}
 		}
 
 		public static void PreFinalizeNewThingReplace(this Thing newThing, Thing oldThing)
 		{
-			replacements.ForEach(r =>
+			for (int i = 0; i < replacements.Count; i++)
 			{
+				Replacement r = replacements[i];
 				if (r.Matches(newThing.def, oldThing.def))
+				{
 					r.PreReplace(newThing, oldThing);
-			});
+				}
+			}
 		}
 
 		private static void TransferBills(Thing n, Thing o)
@@ -164,7 +182,14 @@ namespace Replace_Stuff.NewThing
 			TickScheduler.NextTick(() => newStore.settings.CopyFrom(oldStore.settings));
 		}
 
-
+		/// <summary>
+		/// Defines specific replacement behaviors for various building categories:
+		/// - Logic for transferring state, such as bill stacks (workbenches), 
+		///   ownership/medical status (beds), and temperature targets (coolers/fridges).
+		/// - Category-based matching for walls, fences, and power infrastructure.
+		/// - Specialized handling for complex placement requirements like watermills, 
+		///   wind turbines, and geothermal generators.
+		/// </summary>
 		static NewThingReplacement()
 		{
 			replacements = new List<Replacement>();

@@ -59,24 +59,29 @@ namespace Replace_Stuff.OverMineable
 		public static ConceptDef BuildersTryMine;
 	}
 
-	//This should technically go inside Designator_Build.DesignateSingleCell, but this is easier.
+	//TODOO: This should technically go inside Designator_Build.DesignateSingleCell, but this is easier.
 	[HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.PlaceBlueprintForBuild))]
 	class InterceptBlueprintOverMinable
 	{
 		//public static Blueprint_Build PlaceBlueprintForBuild(BuildableDef sourceDef, IntVec3 center, Map map, Rot4 rotation, Faction faction, ThingDef stuff)
 		public static void Prefix(BuildableDef sourceDef, IntVec3 center, Map map, Rot4 rotation, Faction faction)
 		{
-			if (faction != Faction.OfPlayer) return;
-			if (sourceDef is not ThingDef thingDef) return;
+			if (faction != Faction.OfPlayer)
+				return;
+
+			if (sourceDef is not ThingDef thingDef) 
+				return;
 
 			foreach (IntVec3 cell in GenAdj.CellsOccupiedBy(center, rotation, sourceDef.Size))
 			{
-				if (map.designationManager.DesignationAt(cell, DesignationDefOf.Mine) != null) continue;
+				if (map.designationManager.DesignationAt(cell, DesignationDefOf.Mine) != null) 
+					continue;
 
-				foreach (Thing mineThing in map.thingGrid.ThingsAt(cell).Where(t => t.def.IsBlockingRock(sourceDef)))
+				var thingsAtCell = map.thingGrid.ThingsAt(cell);
+				foreach (Thing mineThing in thingsAtCell)
 				{
+					if (!mineThing.def.IsBlockingRock(sourceDef)) continue;
 					if (DontMineSmoothingRock.ToBeSmoothed(mineThing, thingDef)) continue;
-					if (map.designationManager.DesignationAt(mineThing.Position, DesignationDefOf.Mine) != null) continue; // Avoid multi boulder designation.
 
 					map.designationManager.AddDesignation(new Designation(mineThing, DesignationDefOf.Mine));
 

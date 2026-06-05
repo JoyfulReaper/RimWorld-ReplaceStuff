@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Verse;
+﻿using Verse;
 using RimWorld;
 using HarmonyLib;
 
 namespace Replace_Stuff.NewThing
+
+/// <summary>
+/// Adjusts the construction work amount required for replacement frames.
+/// This patch intercepts the WorkToBuild getter for Frames to ensure that 
+/// the total effort includes the labor required to deconstruct the existing 
+/// structure being replaced
+/// </summary>
 {
 	[HarmonyPatch(typeof(Frame), "WorkToBuild", MethodType.Getter)]
 	public static class NewThingDeconstructWork
@@ -21,6 +24,14 @@ namespace Replace_Stuff.NewThing
 				__result += ReplaceFrame.WorkToDeconstructDef(oldThing.def, oldThing.Stuff);
 		}
 	}
+
+	/// <summary>
+	/// Extends the work calculation for build blueprints to include deconstruction effort.
+	/// This patch modifies the WorkTotal getter for Blueprints to account for 
+	/// the deconstruction cost of the target object, ensuring pawns correctly 
+	/// calculate the total labor needed to replace an existing building with 
+	/// the new structure specified in the blueprint.
+	/// </summary>
 	[HarmonyPatch(typeof(Blueprint_Build), "WorkTotal", MethodType.Getter)]
 	public static class NewThingDeconstructWork_Blueprint
 	{
