@@ -42,7 +42,7 @@ namespace Replace_Stuff.Replace.Patches;
 class GenConstructPatches
 {
     //public static bool BlocksConstruction(Thing constructible, Thing t)
-    public static void Postfix_BlocksConstuction(Thing constructible, Thing t, ref bool __result)
+    public static void Postfix(Thing constructible, Thing t, ref bool __result)
     {
         if (!__result || constructible is Blueprint_Install)
             return;
@@ -50,6 +50,16 @@ class GenConstructPatches
         if (constructible is ReplaceFrame)
         {
             __result = false;
+            return;
+        }
+
+        if (constructible is Blueprint_Build blueprint)
+        {
+            BuildableDef entDef = blueprint.def.entityDefToBuild;
+            if (entDef != null && GenConstruct.CanReplace(entDef, t.def, blueprint.stuffToUse, t.Stuff))
+            {
+                __result = false;
+            }
         }
     }
 }

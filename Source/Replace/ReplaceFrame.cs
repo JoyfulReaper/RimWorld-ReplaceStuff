@@ -155,22 +155,24 @@ class ReplaceFrame : Frame
     /// and performing necessary cleanup of map systems.
     /// </summary>
     /// <param name="worker">The pawn performing the construction.</param>
+    /// 
+
     public new void CompleteConstruction(Pawn worker)
     {
         if (oldThing != null && oldThing.Spawned)
         {
             FinalizeReplace(oldThing, Stuff, worker);
 
-            this.resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
-            this.Destroy(DestroyMode.Vanish);
+            resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
+            Destroy(DestroyMode.Vanish);
 
             worker?.records.Increment(RecordDefOf.ThingsConstructed);
             worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
         }
         else
         {
-            this.resourceContainer.TryDropAll(Position, Map, ThingPlaceMode.Near);
-            this.Destroy(DestroyMode.Cancel);
+            resourceContainer.TryDropAll(Position, Map, ThingPlaceMode.Near);
+            Destroy(DestroyMode.Cancel);
         }
     }
 
@@ -221,8 +223,8 @@ class ReplaceFrame : Frame
         //preferably GenLeaving.DoLeavingsFor here, but don't want to drop non-stuff things.
         if (GenLeaving.CanBuildingLeaveResources(oldThing, DestroyMode.Deconstruct))
         {
-            int count = TotalStuffNeeded(oldDef, stuffDef);
-            int leaveCount = GetBuildingResourcesLeaveCalculator(oldThing, DestroyMode.Deconstruct)(count);
+            var count = TotalStuffNeeded(oldDef, stuffDef);
+            var leaveCount = GetBuildingResourcesLeaveCalculator(oldThing, DestroyMode.Deconstruct)(count);
             if (leaveCount > 0)
             {
                 Thing leftThing = ThingMaker.MakeThing(stuffDef);
