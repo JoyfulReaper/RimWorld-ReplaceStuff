@@ -1,27 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Replace Stuff - Performance Edition [BETA]<name>
+	<name>Replace Stuff - Performance Edition [BETA]</name>
 	<author>Kyle Givler</author>
 	<supportedVersions>
 		<li>1.6</li>
 	</supportedVersions>
-	<packageId>KyleGivler.ReplaceStuff.Performance</packageId>
+	<packageId>ReplaceStuff.Performance</packageId>
 <description>Performance-optimized fork of the original "Replace Stuff" mod.
 
 This version maintains the core functionality of replacing building materials in-place without deconstructing, but has been modified for higher performance.
+This mod is currentely under heavy active development. Please report any issues.
 
-I am currently becoming more familiar with the code base and doing some refactoring. I forgot to change the package id, so if that was causing any issues for you it's changed now. Consider this beta pre-realase quality until otherwise noted.
+I am refactoring, cleaning and modernizing the code for Replace Stuff from the ground up with perfromance in mind.
 
 OPTIMIZATIONS:
-- Replaced many allocation-heavy LINQ operations with zero-allocation, index-based iteration to reduce memory overhead.
-- Don't run GenConstruct.CanReplace() patch unless a blueprint is being placed.
-- Vast improvements to InterceptDesignator_Build.
--- Removed heap allocations, faster early exits
-- Add some early exits where possible to reduce running un-needed instructions
-- Introduced a thingReplacementCache dictionary in NewThingReplacement.
-- Remove TickScheduler which was only used one place, but fired every tick
-- Removed old Assemblies as I don't wish to compile the new mod against them at this time.
-- Some other optimizatons
+- Refactored and rebuilt from the ground up with perfromance in mind.
 
 Original mod by Uuugggg. 
 This fork is dedicated to maintaining the functionality of the original while removing the performance tax previously associated with complex base management.
