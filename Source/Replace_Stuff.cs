@@ -43,8 +43,8 @@ namespace Replace_Stuff
 		{
 			settings = GetSettings<Settings>();
 
-			var harmony = new Harmony("ReplaceStuff.Perfomance");
-			harmony.PatchAll();
+			_harmony = new Harmony("ReplaceStuff.Perfomance");
+			_harmony.PatchAll();
 
 			Verse.Log.Message($"[ReplaceStuffPerfomance] Version {settings.Version}");
 		}
