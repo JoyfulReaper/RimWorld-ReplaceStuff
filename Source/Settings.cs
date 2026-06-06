@@ -1,7 +1,7 @@
 ﻿/*
  Copyright (c) [2025] [Alex Tearse-Doyle]
 Contributions for Performance Edtion: Kyle Givler
-Other known Contribotors: MemeGoddess, Hexnet111, 
+Other known Contributors: MemeGoddess, Hexnet111, 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,9 @@ using Verse;
 
 namespace Replace_Stuff
 {
+	/// <summary>
+	/// Welcome to the Setttings :)
+	/// </summary>
 	public class Settings : ModSettings
 	{
 		internal bool hideOverwallCoolers;
@@ -40,6 +43,7 @@ namespace Replace_Stuff
 
 		public string Version => _version;
 
+		// Settings Dialog
 		public void DoWindowContents(Rect inRect)
 		{
 			var listing = new Listing_Standard();
