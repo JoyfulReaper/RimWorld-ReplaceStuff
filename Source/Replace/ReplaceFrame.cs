@@ -157,26 +157,21 @@ class ReplaceFrame : Frame
     /// <param name="worker">The pawn performing the construction.</param>
     public new void CompleteConstruction(Pawn worker)
     {
-        var map = Map;
-        if (map == null || oldThing == null)
-            return;
+        if (oldThing != null && oldThing.Spawned)
+        {
+            FinalizeReplace(oldThing, Stuff, worker);
 
-        // Calculate resources to drop for the old thing BEFORE destroying it
-        DeconstructDropStuff(oldThing);
+            this.resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
+            this.Destroy(DestroyMode.Vanish);
 
-        IntVec3 pos = Position;
-        Rot4 rot = Rotation;
-        ThingDef targetDef = oldThing.def;
-
-        oldThing.DeSpawn(DestroyMode.Vanish);
-
-        Thing newThing = ThingMaker.MakeThing(targetDef, Stuff);
-        GenSpawn.Spawn(newThing, pos, map, rot, WipeMode.Vanish);
-
-        FinalizeReplace(newThing, Stuff, worker);
-
-        Destroy(DestroyMode.KillFinalize);
-        worker?.records?.Increment(RecordDefOf.ThingsConstructed);
+            worker?.records.Increment(RecordDefOf.ThingsConstructed);
+            worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
+        }
+        else
+        {
+            this.resourceContainer.TryDropAll(Position, Map, ThingPlaceMode.Near);
+            this.Destroy(DestroyMode.Cancel);
+        }
     }
 
     /// <summary>
@@ -210,13 +205,15 @@ class ReplaceFrame : Frame
     /// Calculate resources to drop for the old thing before destroying it
     /// </summary>
     /// <param name="oldThing">Thing to drop resource for</param>
+    /// 
+
     public static void DeconstructDropStuff(Thing oldThing)
     {
         if (Current.ProgramState != ProgramState.Playing)
             return;
 
-        ThingDef oldDef = oldThing.def;
-        ThingDef stuffDef = oldThing.Stuff;
+        var oldDef = oldThing.def;
+        var stuffDef = oldThing.Stuff;
 
         if (stuffDef == null)
             return;
@@ -245,8 +242,12 @@ class ReplaceFrame : Frame
     /// <param name="worker">The pawn who finished the construction, if applicable.</param>
     public static void FinalizeReplace(Thing thing, ThingDef stuff, Pawn worker = null)
     {
+        DeconstructDropStuff(thing);
+
+        thing.SetStuffDirect(stuff);
         thing.RemoveFromStatWorkerCaches();
         thing.HitPoints = thing.MaxHitPoints;
+        thing.Notify_ColorChanged();
 
         if (worker != null && thing.TryGetComp<CompQuality>() is CompQuality compQuality)
         {
@@ -254,7 +255,6 @@ class ReplaceFrame : Frame
                 QualityUtility.GenerateQualityCreatedByPawn(worker, SkillDefOf.Construction);
 
             compQuality.SetQuality(qc, ArtGenerationContext.Colony);
-
             QualityUtility.SendCraftNotification(thing, worker);
         }
     }

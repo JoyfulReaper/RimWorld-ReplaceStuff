@@ -44,10 +44,12 @@ class GenConstructPatches
     //public static bool BlocksConstruction(Thing constructible, Thing t)
     public static void Postfix_BlocksConstuction(Thing constructible, Thing t, ref bool __result)
     {
-        if (!__result)
+        if (!__result || constructible is Blueprint_Install)
             return;
 
-        if (constructible is ReplaceFrame frame)
+        if (constructible is ReplaceFrame)
+        {
             __result = false;
+        }
     }
 }
