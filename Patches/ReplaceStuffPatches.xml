@@ -38,7 +38,7 @@
     <Operation Class="PatchOperationAdd">
         <xpath>Defs/DesignationCategoryDef[defName="Structure"]/specialDesignatorClasses</xpath>
         <value>
-            <li>Replace_Stuff.Designator_ReplaceStuff</li>
+            <li>Replace_Stuff.Replace.Designator_ReplaceStuff</li>
         </value>
     </Operation>
 

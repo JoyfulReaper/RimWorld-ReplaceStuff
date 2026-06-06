@@ -59,7 +59,7 @@ namespace Replace_Stuff.DestroyedRestore
 			{
 				handler(from, to);
 			}
-			//else log warning no this shouldn't happen
+			//else log warning no this shouldn't happen TODO
 		}
 	}
 }

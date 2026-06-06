@@ -38,7 +38,7 @@ namespace Replace_Stuff
 		internal bool hideOverwallCoolers;
 		internal bool hideNormalCoolers;
 
-		private string _version = "0.0.1";
+		private string _version = "0.0.2";
 		private List<string> _preferredBridgeOrder = new();
 
 		public string Version => _version;

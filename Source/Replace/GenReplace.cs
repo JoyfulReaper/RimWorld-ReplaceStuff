@@ -1,13 +1,36 @@
-﻿using System;
+﻿/*
+ Copyright (c) [2025] [Alex Tearse-Doyle]
+Contributions for Performance Edtion: Kyle Givler
+Other known Contributors: MemeGoddess, Hexnet111, 
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using HarmonyLib;
 using Verse;
 using RimWorld;
 using UnityEngine;
 
-namespace Replace_Stuff
+namespace Replace_Stuff.Replace
 {
 	[StaticConstructorOnStartup]
 	public static class QBTypes
@@ -35,12 +58,6 @@ namespace Replace_Stuff
 	{
 		public static ReplaceFrame PlaceReplaceFrame(Thing oldThing, ThingDef stuff)
 		{
-			if (stuff == null)
-			{
-				Verse.Log.Warning("ReplaceStuff: PlaceReplaceFrame called with null stuffDef for " + oldThing.def.defName);
-				return null;
-			}
-
 			ThingDef replaceFrameDef = ThingDefGenerator_ReplaceFrame.ReplaceFrameDefFor(oldThing.def);
 			if (replaceFrameDef == null) return null;
 
@@ -96,15 +113,26 @@ namespace Replace_Stuff
 		public static Dictionary<ThingDef, ThingDef> replaceFrameDefs;
 		public static ThingDef ReplaceFrameDefFor(ThingDef def)
 		{
+			if (replaceFrameDefs == null)
+			{
+				return null;
+			}
+
 			if (replaceFrameDefs.TryGetValue(def, out ThingDef replaceFrame))
 				return replaceFrame;
-			Verse.Log.Warning($"Couldn't find replace frame for {def} : probably a mod's building that isn't added to the database soon enough");
 
 			return null;
 		}
-
 		public static bool HasReplaceFrame(this ThingDef def)
 		{
+			if (def == null)
+				return false;
+
+			if (replaceFrameDefs == null)
+			{
+				return false;
+			}
+
 			return replaceFrameDefs.ContainsKey(def);
 		}
 

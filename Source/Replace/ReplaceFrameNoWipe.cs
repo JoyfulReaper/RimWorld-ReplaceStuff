@@ -26,7 +26,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff
+namespace Replace_Stuff.Replace
 {
     /// <summary>
     /// Harmony patch that overrides construction obstruction checks for <see cref="ReplaceFrame"/> instances.
