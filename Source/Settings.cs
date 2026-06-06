@@ -1,38 +1,63 @@
-﻿using System;
+﻿/*
+ Copyright (c) [2025] [Alex Tearse-Doyle]
+Contributions for Performance Edtion: Kyle Givler
+Other known Contribotors: MemeGoddess, Hexnet111, 
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
+
+using Replace_Stuff.PlaceBridges;
+using RimWorld;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
-using RimWorld;
-using HarmonyLib;
-using Replace_Stuff.PlaceBridges;
 
 namespace Replace_Stuff
 {
 	public class Settings : ModSettings
 	{
-		public bool hideOverwallCoolers = false;
-		public bool hideNormalCoolers = false;
+		internal bool hideOverwallCoolers;
+		internal bool hideNormalCoolers;
 
-		public void DoWindowContents(Rect wrect)
+		private string _version = "0.0.1";
+		private List<string> _preferredBridgeOrder = new();
+
+		public string Version => _version;
+
+		public void DoWindowContents(Rect inRect)
 		{
-			var options = new Listing_Standard();
-			options.Begin(wrect);
+			var listing = new Listing_Standard();
+			listing.Begin(inRect);
 			
-			options.CheckboxLabeled("TD.SettingsNoOverwallCoolers".Translate(), ref hideOverwallCoolers);
-			options.CheckboxLabeled("TD.SettingsNoNormalCoolers".Translate(), ref hideNormalCoolers);
+			listing.CheckboxLabeled("TD.SettingsNoOverwallCoolers".Translate(), ref hideOverwallCoolers);
+			listing.CheckboxLabeled("TD.SettingsNoNormalCoolers".Translate(), ref hideNormalCoolers);
 
+			// Can't re-order a list if there is only one item
 			if (BridgelikeTerrain.allBridgeTerrains.Count > 1)
-				DoBridgeList(options);
+				DoBridgeList(listing);
 
-
-			options.End();
+			listing.End();
 		}
 
-		private int reorderID = -1;
-		public void DoBridgeList(Listing_Standard options)
+		// TODO: Replace with a cleaner reorder UI.
+		// Current implementation favors simplicity and stability.
+		private void DoBridgeList(Listing_Standard options)
 		{
 			options.GapLine();
 
@@ -40,131 +65,85 @@ namespace Replace_Stuff
 			options.Label("TD.SettingsPreferredBridge".Translate());
 			Text.Font = GameFont.Small;
 
-			float itemHeight = Text.LineHeight;
-			Rect reorderRect = options.GetRect(BridgelikeTerrain.allBridgeTerrains.Count * itemHeight + 2);
-			Widgets.DrawBox(reorderRect);
+			const float rowHeight = 28f;
 
-			Rect labelRect = reorderRect.ContractedBy(1).TopPartPixels(itemHeight);
-			Rect globalDragRect = labelRect;
-			globalDragRect.position = GUIUtility.GUIToScreenPoint(globalDragRect.position);
-
-			if (Event.current.type == EventType.Repaint)
+			for (int i = 0; i < BridgelikeTerrain.allBridgeTerrains.Count; i++)
 			{
-				reorderID = ReorderableWidget.NewGroup(
-					BridgelikeTerrain.Reorder,
-					ReorderableDirection.Vertical,
-					reorderRect,
-					extraDraggedItemOnGUI: delegate (int index, Vector2 dragStartPos)
-					{
-						Rect dragRect = globalDragRect;//copy it in so multiple frames don't edit the same thing
-						dragRect.y += index * itemHeight;//i-th item
-						dragRect.position += Event.current.mousePosition - dragStartPos;//adjust for mouse vs starting point
+				TerrainDef bridge = BridgelikeTerrain.allBridgeTerrains[i];
 
-						//Same id 34003428 as GenUI.DrawMouseAttachment
-						Find.WindowStack.ImmediateWindow(34003428, dragRect, WindowLayer.Super, () =>
-							DefLabelWithIconButNoTooltipCmonReally(dragRect.AtZero(), BridgelikeTerrain.allBridgeTerrains[index], 0)
-						);
+				Rect row = options.GetRect(rowHeight);
 
-					});
+				Rect labelRect = new Rect(row.x, row.y, row.width - 60f, row.height);
+				Rect upRect = new Rect(row.xMax - 56f, row.y, 28f, row.height);
+				Rect downRect = new Rect(row.xMax - 28f, row.y, 28f, row.height);
+
+				Widgets.DefLabelWithIcon(labelRect, bridge);
+
+				// Up button always occupies the left slot.
+				GUI.enabled = i > 0;
+				if (Widgets.ButtonText(upRect, "▲"))
+				{
+					var temp = BridgelikeTerrain.allBridgeTerrains[i - 1];
+					BridgelikeTerrain.allBridgeTerrains[i - 1] = bridge;
+					BridgelikeTerrain.allBridgeTerrains[i] = temp;
+					break;
+				}
+
+				// Down button always occupies the right slot.
+				GUI.enabled = i < BridgelikeTerrain.allBridgeTerrains.Count - 1;
+				if (Widgets.ButtonText(downRect, "▼"))
+				{
+					var temp = BridgelikeTerrain.allBridgeTerrains[i + 1];
+					BridgelikeTerrain.allBridgeTerrains[i + 1] = bridge;
+					BridgelikeTerrain.allBridgeTerrains[i] = temp;
+					break;
+				}
+
+				GUI.enabled = true;
 			}
-
-			foreach (TerrainDef terDef in BridgelikeTerrain.allBridgeTerrains)
-			{
-				Widgets.DefLabelWithIcon(labelRect, terDef, 0);
-				ReorderableWidget.Reorderable(reorderID, labelRect);
-
-				labelRect.y += itemHeight;
-			}
-			options.Label("TD.SettingsBridgeResources".Translate());
-		}
-
-
-
-		//public static void DefLabelWithIcon(Rect rect, Def def, float iconMargin = 2f, float textOffsetX = 6f)
-		//copypaste
-		public static void DefLabelWithIconButNoTooltipCmonReally(Rect rect, Def def, float iconMargin = 2f, float textOffsetX = 6f)
-		{
-			//DrawHighlightIfMouseover(rect);
-			//TooltipHandler.TipRegion(rect, def.description);
-			Widgets.BeginGroup(rect);
-			Rect rect2 = new Rect(0f, 0f, rect.height, rect.height);
-			if (iconMargin != 0f)
-			{
-				rect2 = rect2.ContractedBy(iconMargin);
-			}
-			Widgets.DefIcon(rect2, def, null, 1f, null, drawPlaceholder: true);
-			Rect rect3 = new Rect(rect2.xMax + textOffsetX, 0f, rect.width, rect.height);
-			Text.Anchor = TextAnchor.MiddleLeft;
-			Text.WordWrap = false;
-			Widgets.Label(rect3, def.LabelCap);
-			Text.Anchor = TextAnchor.UpperLeft;
-			Text.WordWrap = true;
-			Widgets.EndGroup();
 		}
 
 		public override void ExposeData()
 		{
-			Scribe_Values.Look(ref hideOverwallCoolers, "hideOverwallCoolers", false);
-			Scribe_Values.Look(ref hideNormalCoolers, "hideNormalCoolers", false);
+			Scribe_Values.Look(ref _version, "Version", Version);
+
+			Scribe_Values.Look(ref hideOverwallCoolers, "hideOverwallCoolers");
+			Scribe_Values.Look(ref hideNormalCoolers, "hideNormalCoolers");
 
 			if (Scribe.mode == LoadSaveMode.Saving)
 			{
-				Scribe_Collections.Look(ref BridgelikeTerrain.allBridgeTerrains, "bridgePrefNames");
+				_preferredBridgeOrder =
+					BridgelikeTerrain.allBridgeTerrains
+					.ConvertAll(x => x.defName);
 			}
-			else if (Scribe.mode == LoadSaveMode.LoadingVars)
+
+			Scribe_Collections.Look(ref _preferredBridgeOrder, "bridgePrefNames");
+
+			if (Scribe.mode == LoadSaveMode.LoadingVars)
 			{
-				List<string> defNames = null;
-				Scribe_Collections.Look(ref defNames, "bridgePrefNames");
-
-				//Gotta wait for DefOfs to load to use DefDatabase
-				if(defNames != null)
-				LongEventHandler.ExecuteWhenFinished(() =>
-					{
-						List<TerrainDef> loadedBridgeOrder = defNames.Select(n => DefDatabase<TerrainDef>.GetNamed(n, false)).ToList();
-						loadedBridgeOrder.RemoveAll(d => d == null);//Any removed mods, forget about em.
-
-						//To merge with maybe new modded bridges:
-						//Take all from known loadedBridgeOrder and push to front:
-						//Any new modded terrains will be in back - which is normal for modded terrain anyway.
-						//TODO: order default list by cost or something. Meh.
-						loadedBridgeOrder.Reverse();
-						foreach (TerrainDef terDef in loadedBridgeOrder)
-						{
-							//Sanity check if terDef is still counted as a bridge in case we eliminated it in a patch and settings still saved it
-							if (BridgelikeTerrain.allBridgeTerrains.Contains(terDef))
-							{
-								BridgelikeTerrain.allBridgeTerrains.Remove(terDef);
-								BridgelikeTerrain.allBridgeTerrains.Insert(0, terDef);
-							}
-						}
-					});
+				LongEventHandler.ExecuteWhenFinished(ApplyBridgeOrder);
 			}
 		}
-	}
 
-
-	[HarmonyPatch(typeof(Designator_Build), "Visible", MethodType.Getter)]
-	public static class HideCoolerBuild
-	{
-		public static void Postfix(Designator_Build __instance, ref bool __result)
+		private void ApplyBridgeOrder()
 		{
-			if (!__result) return;
+			if (_preferredBridgeOrder == null || _preferredBridgeOrder.Count == 0)
+				return;
 
-			if (Mod.settings.hideOverwallCoolers &&
-				(__instance.PlacingDef == OverWallDef.Cooler_Over ||
-				__instance.PlacingDef == OverWallDef.Cooler_Over2W ||
-				__instance.PlacingDef == OverWallDef.Vent_Over ||
-				__instance.PlacingDef == OverWallDef.Vent_Over2W))
+			for (int i = _preferredBridgeOrder.Count - 1; i >= 0; i--)
 			{
-				__result = false;
-				return;
-			}
-			if (Mod.settings.hideNormalCoolers &&
-				(__instance.PlacingDef == ThingDefOf.Cooler ||
-				__instance.PlacingDef == OverWallDef.Vent))
-			{
-				__result = false;
-				return;
+				TerrainDef def =
+					DefDatabase<TerrainDef>.GetNamed(
+						_preferredBridgeOrder[i],
+						false);
+
+				if (def == null)
+					continue;
+
+				if (!BridgelikeTerrain.allBridgeTerrains.Remove(def))
+					continue;
+
+				BridgelikeTerrain.allBridgeTerrains.Insert(0, def);
 			}
 		}
 	}
