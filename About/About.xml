@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Replace Stuff - Performance Edition</name>
+	<name>Replace Stuff - Performance Edition [BETA]<name>
 	<author>Kyle Givler</author>
 	<supportedVersions>
 		<li>1.6</li>
@@ -9,6 +9,8 @@
 <description>Performance-optimized fork of the original "Replace Stuff" mod.
 
 This version maintains the core functionality of replacing building materials in-place without deconstructing, but has been modified for higher performance.
+
+I am currently becoming more familiar with the code base and doing some refactoring. I forgot to change the package id, so if that was causing any issues for you it's changed now. Consider this beta pre-realase quality until otherwise noted.
 
 OPTIMIZATIONS:
 - Replaced many allocation-heavy LINQ operations with zero-allocation, index-based iteration to reduce memory overhead.
