@@ -20,7 +20,7 @@ using System.Reflection;
 using Verse;
 using Verse.AI;
 
-namespace Replace_Stuff.Replace;
+namespace Replace_Stuff.Replace.Patches;
 
 /// <summary>
 /// Provides a global reservation bypass to synchronize AI interactions between 
@@ -46,6 +46,7 @@ namespace Replace_Stuff.Replace;
 /// construction <see cref="Frame"/>.
 /// </para>
 /// </remarks>
+
 public static class ReserveSharing
 {
     /// <summary>
@@ -55,7 +56,7 @@ public static class ReserveSharing
     /// <param name="harmony">The active <see cref="Harmony"/> instance for this mod.</param>
     public static void Initialize(Harmony harmony)
     {
-        HarmonyMethod prefix = new HarmonyMethod(typeof(ReserveSharing), nameof(ReserveSharing.Prefix));
+        HarmonyMethod prefix = new HarmonyMethod(typeof(ReserveSharing), nameof(ReserveSharing.Prefix_CanReserve));
 
         foreach (MethodInfo method in AccessTools.GetDeclaredMethods(typeof(ReservationManager)))
         {
@@ -75,7 +76,7 @@ public static class ReserveSharing
     /// source building.
     /// </summary>
     /// <param name="target">The <see cref="LocalTargetInfo"/> being requested for reservation.</param>
-    public static void Prefix(ref LocalTargetInfo target)//Luckily each parameter is named 'target' or this wouldn't work
+    public static void Prefix_CanReserve(ref LocalTargetInfo target)//Luckily each parameter is named 'target' or this wouldn't work
     {
         if (!target.IsValid || !target.HasThing)
             return;

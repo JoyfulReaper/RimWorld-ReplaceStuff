@@ -1,25 +1,14 @@
 ﻿/*
- Copyright (c) [2025] [Alex Tearse-Doyle]
-Contributions for Performance Edtion: Kyle Givler
-Other known Contributors: MemeGoddess, Hexnet111, 
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+ * REPLACE STUFF: Perfomance Edition
+ * 
+ * 
+ * Part of this code is based on Replace Stuff
+ * Copyright (c) 2024 Alex Tearse-Doyle
+ * Licensed under the MIT License.
+ *
+ * Modified by Kyle Givler
+ * Copyright (c) 2026 Kyle Givler
+ * Licensed under the MIT License.
  */
 
 using HarmonyLib;
@@ -28,52 +17,50 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Verse;
 
-namespace Replace_Stuff.Utilities
+namespace Replace_Stuff.Utilities;
+
+/// <summary>
+/// Utility class providing high-performance cache purging for <see cref="Thing"/> statistics.
+/// </summary>
+/// <remarks>
+/// <para>
+/// In vanilla RimWorld, <see cref="StatWorker"/> instances cache calculated object statistics 
+/// within internal, private dictionaries (<c>temporaryStatCache</c> and <c>immutableStatCache</c>) 
+/// to reduce per-frame CPU overhead. 
+/// </para>
+/// <para>
+/// When Replace Stuff performs an in-place building replacement, the old object is destroyed. 
+/// However, stale references to the destroyed object can linger inside these stat dictionaries, 
+/// resulting in memory leaks (stale data rot) and unnecessary performance overhead.
+/// </para>
+/// <para>
+/// This class bypasses access visibility restrictions using highly optimized Harmony 
+/// <see cref="AccessTools.FieldRef{T, F}"/> delegates to directly prune the destroyed 
+/// <see cref="Thing"/> from all active stat caches at native-like execution speeds.
+/// </para>
+/// </remarks>
+public static class RemoveThingFromStatWorkerCache
 {
+    //class StatDef {
+    //private StatWorker workerInt;
+    public static AccessTools.FieldRef<StatDef, StatWorker> workerInt = AccessTools.FieldRefAccess<StatDef, StatWorker>("workerInt");
 
-    /// <summary>
-	/// Utility class providing high-performance cache purging for <see cref="Thing"/> statistics.
-	/// </summary>
-	/// <remarks>
-	/// <para>
-	/// In vanilla RimWorld, <see cref="StatWorker"/> instances cache calculated object statistics 
-	/// within internal, private dictionaries (<c>temporaryStatCache</c> and <c>immutableStatCache</c>) 
-	/// to reduce per-frame CPU overhead. 
-	/// </para>
-	/// <para>
-	/// When Replace Stuff performs an in-place building replacement, the old object is destroyed. 
-	/// However, stale references to the destroyed object can linger inside these stat dictionaries, 
-	/// resulting in memory leaks (stale data rot) and unnecessary performance overhead.
-	/// </para>
-	/// <para>
-	/// This class bypasses access visibility restrictions using highly optimized Harmony 
-	/// <see cref="AccessTools.FieldRef{T, F}"/> delegates to directly prune the destroyed 
-	/// <see cref="Thing"/> from all active stat caches at native-like execution speeds.
-	/// </para>
-	/// </remarks>
-	public static class RemoveThingFromStatWorkerCache
-	{
-		//class StatDef {
-		//private StatWorker workerInt;
-		public static AccessTools.FieldRef<StatDef, StatWorker> workerInt = AccessTools.FieldRefAccess<StatDef, StatWorker>("workerInt");
+    //class StatWorker {
+    //private Dictionary<Thing, StatCacheEntry> temporaryStatCache;
+    //private Dictionary<Thing, float> immutableStatCache;
+    public static AccessTools.FieldRef<StatWorker, Dictionary<Thing, StatCacheEntry>> temporaryStatCache = AccessTools.FieldRefAccess<StatWorker, Dictionary<Thing, StatCacheEntry>>("temporaryStatCache");
+    public static AccessTools.FieldRef<StatWorker, ConcurrentDictionary<Thing, float>> immutableStatCache = AccessTools.FieldRefAccess<StatWorker, ConcurrentDictionary<Thing, float>>("immutableStatCache");
 
-		//class StatWorker {
-		//private Dictionary<Thing, StatCacheEntry> temporaryStatCache;
-		//private Dictionary<Thing, float> immutableStatCache;
-		public static AccessTools.FieldRef<StatWorker, Dictionary<Thing, StatCacheEntry>> temporaryStatCache = AccessTools.FieldRefAccess<StatWorker, Dictionary<Thing, StatCacheEntry>>("temporaryStatCache");
-		public static AccessTools.FieldRef<StatWorker, ConcurrentDictionary<Thing, float>> immutableStatCache = AccessTools.FieldRefAccess<StatWorker, ConcurrentDictionary<Thing, float>>("immutableStatCache");
-
-		public static void RemoveFromStatWorkerCaches(this Thing thing)
-		{
-			foreach (StatDef statDef in DefDatabase<StatDef>.AllDefsListForReading)
-			{
-				var worker = statDef.workerInt;
-				if (worker != null)
-				{
-					worker.temporaryStatCache?.Remove(thing);
-					worker.immutableStatCache?.TryRemove(thing, out _);
-				}
-			}
-		}
-	}
+    public static void RemoveFromStatWorkerCaches(this Thing thing)
+    {
+        foreach (StatDef statDef in DefDatabase<StatDef>.AllDefsListForReading)
+        {
+            var worker = statDef.workerInt;
+            if (worker != null)
+            {
+                worker.temporaryStatCache?.Remove(thing);
+                worker.immutableStatCache?.TryRemove(thing, out _);
+            }
+        }
+    }
 }

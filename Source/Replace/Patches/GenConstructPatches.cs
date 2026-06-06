@@ -15,7 +15,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.Replace;
+namespace Replace_Stuff.Replace.Patches;
 
 /// <summary>
 /// Harmony patch that overrides construction obstruction checks for <see cref="ReplaceFrame"/> instances.
@@ -39,10 +39,10 @@ namespace Replace_Stuff.Replace;
 /// </para>
 /// </remarks>
 [HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
-class ReplaceFrameNoBlock
+class GenConstructPatches
 {
     //public static bool BlocksConstruction(Thing constructible, Thing t)
-    public static void Postfix(Thing constructible, Thing t, ref bool __result)
+    public static void Postfix_BlocksConstuction(Thing constructible, Thing t, ref bool __result)
     {
         if (!__result)
             return;
