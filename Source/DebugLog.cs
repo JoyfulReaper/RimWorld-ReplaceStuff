@@ -22,18 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-namespace Replace_Stuff
+namespace Replace_Stuff;
+
+static class Log
 {
-	static class Log
-	{
-		/// <summary>
-		/// Log a message to Verse.Log.Messages if built in debug mode
-		/// </summary>
-		/// <param name="x"></param>
-		[System.Diagnostics.Conditional("DEBUG")]
-		public static void Message(string x)
-		{
-			Verse.Log.Message(x);
-		}
-	}
+    /// <summary>
+    /// Log a message to Verse.Log.Messages if built in debug mode
+    /// </summary>
+    /// <param name="x"></param>
+    [System.Diagnostics.Conditional("DEBUG")]
+    public static void Message(string x)
+    {
+        Verse.Log.Message(x);
+    }
 }
