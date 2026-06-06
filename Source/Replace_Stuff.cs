@@ -27,6 +27,7 @@ using UnityEngine;
 using HarmonyLib;
 using RimWorld;
 using Replace_Stuff.Comps;
+using Replace_Stuff.Replace;
 
 namespace Replace_Stuff
 {
@@ -36,6 +37,7 @@ namespace Replace_Stuff
 	public class Mod : Verse.Mod
 	{
 		public static Settings settings;
+        private static Harmony _harmony;
 
 		public Mod(ModContentPack content) : base(content)
 		{
@@ -58,7 +60,8 @@ namespace Replace_Stuff
 				LongEventHandler.QueueLongEvent(() => ThingDefGenerator_ReplaceFrame.AddReplaceFrames(), null, true, null);
 				LongEventHandler.QueueLongEvent(CoolersOverWalls.DesignatorBuildDropdownStuffFix.SanityCheck, null, true, null);
 				LongEventHandler.QueueLongEvent(Compatibility.AddRulesFromXML, null, true, null);
-			}
+                LongEventHandler.QueueLongEvent(() => ReserveSharing.Initialize(_harmony), null, true, null);
+            }
 		}
 
 		public override void DoSettingsWindowContents(Rect inRect)
