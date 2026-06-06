@@ -1,7 +1,7 @@
 ﻿/*
  Copyright (c) [2025] [Alex Tearse-Doyle]
 Contributions for Performance Edtion: Kyle Givler
-Other known Contribotors: MemeGoddess, Hexnet111, 
+Other known Contributors: MemeGoddess, Hexnet111, 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,9 @@ using Replace_Stuff.Comps;
 
 namespace Replace_Stuff
 {
+	/// <summary>
+	/// I'm a Mod!
+	/// </summary>
 	public class Mod : Verse.Mod
 	{
 		public static Settings settings;
@@ -38,10 +41,10 @@ namespace Replace_Stuff
 		{
 			settings = GetSettings<Settings>();
 
-			var harmony = new Harmony("Uuugggg.rimworld.Replace_StuffPerfomance.main");
+			var harmony = new Harmony("ReplaceStuff.Perfomance");
 			harmony.PatchAll();
 
-			Verse.Log.Message("[ReplaceStuffPerfomance] Version {settings.Version}");
+			Verse.Log.Message($"[ReplaceStuffPerfomance] Version {settings.Version}");
 		}
 
 
