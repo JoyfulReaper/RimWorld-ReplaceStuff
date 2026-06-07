@@ -16,6 +16,8 @@ public class ReplaceData : IExposable
 
     public List<Bill> bills;
 
+    public Rot4 rotation;
+
     // Storage
     public ThingFilter storageFilter;
 
