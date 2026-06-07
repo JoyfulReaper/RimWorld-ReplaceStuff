@@ -95,7 +95,7 @@ namespace Replace_Stuff.DestroyedRestore
 
             if (comp.destroyedBuildings.Remove(pos))
             {
-                Log.Message($"Forgetting destroyed building state at {pos}");
+                Log.Debug($"Forgetting destroyed building state at {pos}");
             }
         }
     }

@@ -81,7 +81,7 @@ namespace Replace_Stuff.PlaceBridges
 			}
 
 			//Log.Message($"All affordances: {DefDatabase<TerrainAffordanceDef>.AllDefs.ToStringSafeEnumerable()}");
-			Log.Message($"Affordances worth bridging: {actuallyRequiredAffordances.ToStringSafeEnumerable()}");
+			Log.Debug($"Affordances worth bridging: {actuallyRequiredAffordances.ToStringSafeEnumerable()}");
 
 			foreach (TerrainAffordanceDef needDef in actuallyRequiredAffordances)
 			{
@@ -116,7 +116,7 @@ namespace Replace_Stuff.PlaceBridges
 				}
 			}
 			allBridgeTerrains.RemoveDuplicates();
-			Log.Message($"Bridges: {allBridgeTerrains.ToStringSafeEnumerable()}");
+			Log.Debug($"Bridges: {allBridgeTerrains.ToStringSafeEnumerable()}");
 		}
 
 		public static bool IsBridgelike(this BuildableDef tdef) => allBridgeTerrains.Contains(tdef);
