@@ -159,33 +159,286 @@ class ReplaceFrame : Frame
     /// </summary>
     /// <param name="worker">The pawn performing the construction.</param>
 
+
     public new void CompleteConstruction(Pawn worker)
     {
+        RSLog.Warning(
+            $"CompleteConstruction old={oldThing} " +
+            $"spawned={oldThing?.Spawned} " +
+            $"destroyed={oldThing?.Destroyed}");
+
         if (oldThing != null && oldThing.Spawned)
         {
-            // 1. Instantiate and Spawn the new building first
-            var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
-            GenSpawn.Spawn(newThing, Position, Map, WipeMode.Vanish);
+            RSLog.Warning(
+                $"OLD BEFORE SPAWN " +
+                $"thing={oldThing} " +
+                $"mapNull={oldThing.Map == null}");
 
-            // 2. Transfer state/settings from the old to the new before destruction
-            FinalizeReplace(oldThing, newThing, worker);
-            BuildingStateTransfer.Apply(replaceData, newThing);
+            var newThing =
+                ThingMaker.MakeThing(
+                    (ThingDef)def.entityDefToBuild,
+                    Stuff);
 
-            // 3. Cleanup: Clear container resources and destroy this frame
-            resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
+            RSLog.Warning(
+                $"Creating replacement {newThing.def.defName}");
+
+            var attached =
+                GenConstruct.GetAttachedBuildings(oldThing);
+
+            RSLog.Warning(
+                $"Attached before spawn: {attached.Count}");
+
+            foreach (var t in attached)
+            {
+                Thing wallParent = null;
+
+                try
+                {
+                    wallParent = GenConstruct.GetWallAttachedTo(t);
+                }
+                catch (Exception ex)
+                {
+                    RSLog.Warning($"GetWallAttachedTo threw: {ex}");
+                }
+
+                RSLog.Warning(
+                    "[ATTACHED BEFORE SPAWN] " +
+                    $"thing={t} " +
+                    $"def={t.def.defName} " +
+                    $"type={t.GetType().FullName} " +
+                    $"thingID={t.ThingID} " +
+                    $"spawned={t.Spawned} " +
+                    $"destroyed={t.Destroyed} " +
+                    $"mapNull={t.Map == null} " +
+                    $"pos={t.Position} " +
+                    $"rot={t.Rotation} " +
+                    $"parentWall={wallParent} " +
+                    $"parentWallDestroyed={wallParent?.Destroyed} " +
+                    $"parentWallPos={wallParent?.Position}"
+                );
+
+                if (t.Spawned)
+                {
+                    foreach (var thing in t.Map.thingGrid.ThingsListAtFast(t.Position))
+                    {
+                        RSLog.Warning(
+                            $"  CELL THING -> {thing} " +
+                            $"def={thing.def.defName} " +
+                            $"type={thing.GetType().Name}");
+                    }
+                }
+            }
+
+            RSLog.Warning(
+                $"REPLACING wall={oldThing} " +
+                $"pos={oldThing.Position} " +
+                $"thingID={oldThing.ThingID}");
+            RSLog.Warning("=== CALLING GENSPAWN ===");
+            GenSpawn.Spawn(
+                newThing,
+                Position,
+                Map,
+                WipeMode.Vanish);
+            RSLog.Warning("=== RETURNED FROM GENSPAWN ===");
+            RSLog.Warning(
+                $"NEW WALL spawned={newThing} " +
+                $"pos={newThing.Position} " +
+                $"thingID={newThing.ThingID}");
+
+            RSLog.Warning("=== WALL LAMP SCAN ===");
+            foreach (var thing in newThing.Map.listerThings.AllThings)
+            {
+                if (thing.def.defName.Contains("WallLamp"))
+                {
+                    Thing parent = null;
+
+                    try
+                    {
+                        parent = GenConstruct.GetWallAttachedTo(thing);
+                    }
+                    catch
+                    {
+                    }
+
+                    RSLog.Warning(
+                        $"LAMP " +
+                        $"id={thing.ThingID} " +
+                        $"spawned={thing.Spawned} " +
+                        $"destroyed={thing.Destroyed} " +
+                        $"type={thing.GetType().FullName} " +
+                        $"pos={thing.Position} " +
+                        $"rot={thing.Rotation} " +
+                        $"parent={parent} " +
+                        $"parentPos={parent?.Position}");
+                }
+            }
+
+            RSLog.Warning($"Frame destroyed={Destroyed}");
+            RSLog.Warning($"Frame map null={Map == null}");
+            RSLog.Warning($"NewThing map null={newThing.Map == null}");
+
+            if (newThing.Map != null)
+            {
+                foreach (var thing in newThing.Map.thingGrid.ThingsListAtFast(newThing.Position))
+                    RSLog.Warning($"CELL CONTENT: {thing}");
+            }
+
+
+            foreach (var thing in newThing.Map.thingGrid.ThingsListAtFast(newThing.Position))
+            {
+                RSLog.Warning($"CELL CONTENT: {thing}");
+            }
+
+            RSLog.Warning(
+                $"OLD AFTER SPAWN " +
+                $"spawned={oldThing.Spawned} " +
+                $"destroyed={oldThing.Destroyed} " +
+                $"mapNull={oldThing.Map == null}");
+
+            RSLog.Warning(
+                $"NEW AFTER SPAWN " +
+                $"spawned={newThing.Spawned} " +
+                $"destroyed={newThing.Destroyed}");
+
+            var attachedAfter =
+                GenConstruct.GetAttachedBuildings(newThing);
+
+            foreach (var t in attachedAfter)
+            {
+                Thing wallParent = null;
+
+                try
+                {
+                    wallParent = GenConstruct.GetWallAttachedTo(t);
+                }
+                catch (Exception ex)
+                {
+                    RSLog.Warning($"GetWallAttachedTo threw: {ex}");
+                }
+
+                RSLog.Warning(
+                    "[ATTACHED AFTER SPAWN] " +
+                    $"thing={t} " +
+                    $"def={t.def.defName} " +
+                    $"type={t.GetType().FullName} " +
+                    $"thingID={t.ThingID} " +
+                    $"spawned={t.Spawned} " +
+                    $"destroyed={t.Destroyed} " +
+                    $"mapNull={t.Map == null} " +
+                    $"pos={t.Position} " +
+                    $"rot={t.Rotation} " +
+                    $"parentWall={wallParent} " +
+                    $"parentWallDestroyed={wallParent?.Destroyed} " +
+                    $"parentWallPos={wallParent?.Position}"
+                );
+
+                if (t.Spawned)
+                {
+                    foreach (var thing in t.Map.thingGrid.ThingsListAtFast(t.Position))
+                    {
+                        RSLog.Warning(
+                            $"  CELL THING -> {thing} " +
+                            $"def={thing.def.defName} " +
+                            $"type={thing.GetType().Name}");
+                    }
+                }
+            }
+
+            RSLog.Warning("=== CALLING FINALIZE ===");
+
+            FinalizeReplace(
+                oldThing,
+                newThing,
+                worker);
+
+            RSLog.Warning("=== RETURNED FROM FINALIZE ===");
+
+            BuildingStateTransfer.Apply(
+                replaceData,
+                newThing);
+
+            resourceContainer.ClearAndDestroyContents(
+                DestroyMode.Vanish);
 
             if (!Destroyed)
                 Destroy(DestroyMode.Vanish);
 
-            worker?.records.Increment(RecordDefOf.ThingsConstructed);
-            worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
+            worker?.records.Increment(
+                RecordDefOf.ThingsConstructed);
+
+            worker?.records.Increment(
+                RecordDefOf.ThingsDeconstructed);
         }
         else
         {
-            resourceContainer.TryDropAll(Position, Map, ThingPlaceMode.Near);
+            RSLog.Warning(
+                "Replacement aborted because oldThing " +
+                "was already despawned.");
+
+            resourceContainer.TryDropAll(
+                Position,
+                Map,
+                ThingPlaceMode.Near);
+
             Destroy(DestroyMode.Cancel);
         }
     }
+
+
+    //public new void CompleteConstruction(Pawn worker)
+    //{
+    //    RSLog.Warning(
+    //        $"CompleteConstruction old={oldThing} spawned={oldThing?.Spawned}");
+
+    //    if (oldThing != null && oldThing.Spawned)
+    //    {
+    //        // 1. Instantiate and Spawn the new building first
+    //        var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
+    //        RSLog.Warning($"Spawning {newThing.def.defName}");
+
+
+    //        ///// TODO: Remove debug code
+    //        var attached = GenConstruct.GetAttachedBuildings(oldThing);
+
+    //        RSLog.Warning($"PRE-SPAWN attached={attached.Count}");
+
+    //        foreach (var t in attached)
+    //        {
+    //            RSLog.Warning(
+    //                $"{t.def.defName} at {t.Position}");
+    //        }
+    //        ///// END DEBUG CODE
+
+    //        GenSpawn.Spawn(newThing, Position, Map, WipeMode.Vanish);
+    //        RSLog.Warning(
+    //            $"Spawned newThing={newThing} " +
+    //            $"spawned={newThing.Spawned}");
+    //        RSLog.Warning(
+    //            $"After spawn oldThing " +
+    //            $"destroyed={oldThing.Destroyed} " +
+    //            $"spawned={oldThing.Spawned}");
+
+    //        // 2. Transfer state/settings from the old to the new before destruction
+    //        RSLog.Warning("Calling FinalizeReplace");
+    //        FinalizeReplace(oldThing, newThing, worker);
+    //        RSLog.Warning("Returned from FinalizeReplace");
+    //        BuildingStateTransfer.Apply(replaceData, newThing);
+
+    //        // 3. Cleanup: Clear container resources and destroy this frame
+    //        resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
+
+    //        if (!Destroyed)
+    //            Destroy(DestroyMode.Vanish);
+
+    //        worker?.records.Increment(RecordDefOf.ThingsConstructed);
+    //        worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
+    //    }
+    //    else
+    //    {
+    //        resourceContainer.TryDropAll(Position, Map, ThingPlaceMode.Near);
+    //        Destroy(DestroyMode.Cancel);
+    //    }
+    //}
 
     /// <summary>
     /// Handles the cleanup and feedback when a replacement task fails (e.g., pawn interrupted or material deficit).
@@ -256,19 +509,10 @@ class ReplaceFrame : Frame
     /// <param name="worker">The pawn who finished the construction, if applicable.</param>
     public static void FinalizeReplace(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
     {
-        DeconstructDropStuff(oldThing);
+        // TODO: Replace the WARNING()
+        RSLog.Warning($"FinalizeReplace old={oldThing} new={newThing}");
+        RSLog.Warning($"oldThing.Destroyed={oldThing.Destroyed} " + $"Spawned={oldThing.Spawned} " + $"MapNull={oldThing.Map == null}");
 
-        newThing.SetFactionDirect(faction ?? oldThing.Faction);
-        newThing.RemoveFromStatWorkerCaches();
-
-        // Current design: New buildings spawn at full health.
-        // Future consideration: Add an option to calculate HitPoints based on the 
-        // old building's percentage of MaxHitPoints. TODO
-        newThing.HitPoints = newThing.MaxHitPoints;
-
-        // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints)); // For keeping hit points if we decide to
-
-        newThing.Notify_ColorChanged();
 
         // Set the quality of the new thing base on construction level of builder TODO MAKE THIS OPTION
         //if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
@@ -282,7 +526,47 @@ class ReplaceFrame : Frame
 
 
         if (!oldThing.Destroyed)
+        {
+            DeconstructDropStuff(oldThing);
+
+            RSLog.Warning(
+                $"OLD STATUS " +
+                $"spawned={oldThing.Spawned} " +
+                $"mapNull={oldThing.Map == null}");
+
+            RSLog.Warning(
+                $"NEW STATUS " +
+                $"spawned={newThing.Spawned} " +
+                $"destroyed={newThing.Destroyed}");
+
+            RSLog.Warning(
+                $"DestroyMode path executing. " +
+                $"Faction={oldThing.Faction} " +
+                $"HP={oldThing.HitPoints}/{oldThing.MaxHitPoints}");
+
+            newThing.SetFactionDirect(faction ?? oldThing.Faction);
+            newThing.RemoveFromStatWorkerCaches();
+
+            // Current design: New buildings spawn at full health.
+            // Future consideration: Add an option to calculate HitPoints based on the 
+            // old building's percentage of MaxHitPoints. TODO
+            // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints)); // For keeping hit points if we decide to
+            newThing.HitPoints = newThing.MaxHitPoints;
+            newThing.Notify_ColorChanged();
+
+            var attached = GenConstruct.GetAttachedBuildings(oldThing);
+            foreach (var t in attached)
+            {
+                RSLog.Warning(
+                    $"{t.def.defName} destroyed={t.Destroyed} spawned={t.Spawned}");
+            }
+
             oldThing.Destroy(DestroyMode.Deconstruct);
+        }
+        else
+        {
+            RSLog.Warning("Old thing already destroyed before FinalizeReplace");
+        }
     }
 
     /// <summary>
