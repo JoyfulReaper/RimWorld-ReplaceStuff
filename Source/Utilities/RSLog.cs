@@ -25,16 +25,33 @@ static class RSLog
     /// </summary>
     /// <param name="x"></param>
     [Conditional("DEBUG")]
-    public static void Debug(string x)
+    public static void Debug(string message)
     {
-        Verse.Log.Message($"{Prefix}: {x}");
+        Verse.Log.Message($"{Prefix}: {message}");
     }
 
+    /// <summary>
+    /// Log a message to Verse.Log.Messages regardless of debug mode
+    /// </summary>
+    /// <param name="x"></param>
+    public static void Info(string message)
+    {
+        Verse.Log.Message($"{Prefix}: {message}");
+    }
+
+    /// <summary>
+    /// Log a message to Verse.Log.Warning
+    /// </summary>
+    /// <param name="x"></param>
     public static void Warning(string message)
     {
         Verse.Log.Warning($"{Prefix}: {message}");
     }
 
+    /// <summary>
+    /// Log a message to Verse.Log.Error
+    /// </summary>
+    /// <param name="x"></param>
     public static void Error(string message)
     {
         Verse.Log.Error($"{Prefix}: {message}");
