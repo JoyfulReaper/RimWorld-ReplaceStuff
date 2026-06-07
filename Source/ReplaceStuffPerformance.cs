@@ -12,6 +12,7 @@
  */
 
 using HarmonyLib;
+using Replace_Stuff.Compatibility;
 using Replace_Stuff.Replace;
 using Replace_Stuff.Replace.Patches;
 using RimWorld;
@@ -48,7 +49,7 @@ public class ReplaceStuffPrefomanceMod : Verse.Mod
             //So queue replace frame generation after that
             LongEventHandler.QueueLongEvent(() => ThingDefGenerator_ReplaceFrame.AddReplaceFrames(), null, true, null);
             LongEventHandler.QueueLongEvent(CoolersOverWalls.DesignatorBuildDropdownStuffFix.SanityCheck, null, true, null);
-            LongEventHandler.QueueLongEvent(Compatibility.AddRulesFromXML, null, true, null);
+            LongEventHandler.QueueLongEvent(ReplacementLoader.AddRulesFromXML, null, true, null);
             LongEventHandler.QueueLongEvent(() => ReserveSharing.Initialize(ReplaceStuffPrefomanceMod._harmony), "ReplaceStuff.Initializing", false, null);
         }
     }
