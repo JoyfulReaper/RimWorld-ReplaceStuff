@@ -6,7 +6,7 @@ namespace Replace_Stuff.DestroyedRestore;
 
 public class ReplaceData : IExposable
 {
-    public StorageSettings storageSettings; // Currently unused
+    public Faction faction;
 
     public QualityCategory? quality;
 
@@ -16,21 +16,18 @@ public class ReplaceData : IExposable
 
     public List<Bill> bills;
 
-    public Faction faction;
+    // Storage
+    public ThingFilter storageFilter;
+
+    public StoragePriority? storagePriority;
+
 
     public void ExposeData()
     {
-        Scribe_Values.Look(ref targetTemperature, "targetTemperature");
-        Scribe_Values.Look(ref quality, "quality");
-
-        Scribe_Defs.Look(ref plantDef, "plantDef");
         Scribe_References.Look(ref faction, "faction");
-
-        Scribe_Collections.Look(ref bills,
-            "bills",
-            LookMode.Deep);
-
-        Scribe_Deep.Look(ref storageSettings,
-            "storageSettings");
+        Scribe_Values.Look(ref quality, "quality");
+        Scribe_Values.Look(ref targetTemperature, "targetTemperature");
+        Scribe_Defs.Look(ref plantDef, "plantDef");
+        Scribe_Collections.Look(ref bills, "bills", LookMode.Deep);
     }
 }

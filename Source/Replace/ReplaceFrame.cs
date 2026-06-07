@@ -164,34 +164,16 @@ class ReplaceFrame : Frame
     {
         if (oldThing != null && oldThing.Spawned)
         {
-            Log.Message("ReplaceFrame: Making thing");
-
             Thing newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
-
-            StorageSettings oldSettings =
-                (oldThing as IStoreSettingsParent)?.GetStoreSettings();
-
-            CompQuality oldQuality =
-                oldThing.TryGetComp<CompQuality>();
-
-            bool canRevive =
-                BuildingStateTransfer.CanDo(oldThing);
-
-            Thing oldThingReference = oldThing;
-
-
-            Log.Message("ReplaceFrame: Before Spawning thing");
             GenSpawn.Spawn(newThing, Position, Map, WipeMode.Vanish);
-            Log.Message("ReplaceFrame: After Spawning thing");
 
             FinalizeReplace(oldThing, newThing, worker);
+            BuildingStateTransfer.Apply(replaceData, newThing);
 
-            Log.Message("ReplaceFrame: Calling FinalizeReplace");
             resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
+
             if (!Destroyed)
                 Destroy(DestroyMode.Vanish);
-
-            BuildingStateTransfer.Apply(replaceData, newThing);
 
             worker?.records.Increment(RecordDefOf.ThingsConstructed);
             worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
@@ -272,14 +254,6 @@ class ReplaceFrame : Frame
     /// <param name="worker">The pawn who finished the construction, if applicable.</param>
     public static void FinalizeReplace(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
     {
-        StorageSettings oldSettings = (oldThing as IStoreSettingsParent)?.GetStoreSettings();
-
-        Log.Message(
-            $"FinalizeReplace: " +
-            $"Destroyed={oldThing.Destroyed} " +
-            $"Spawned={oldThing.Spawned} " +
-            $"Def={oldThing.def.defName}");
-
         DeconstructDropStuff(oldThing);
 
         newThing.SetFactionDirect(faction ?? oldThing.Faction);
@@ -289,17 +263,6 @@ class ReplaceFrame : Frame
         // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints));
 
         newThing.Notify_ColorChanged();
-
-        if (oldSettings != null &&
-            newThing is IStoreSettingsParent newStore)
-        {
-            newStore.GetStoreSettings().CopyFrom(oldSettings);
-        }
-
-        if (BuildingStateTransfer.CanDo(oldThing))
-        {
-            BuildingStateTransfer.Transfer(oldThing, newThing);
-        }
 
         // Set the quality of the new thing base on construction level of builder TODO MAKE THIS OPTION
         //if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
@@ -311,17 +274,6 @@ class ReplaceFrame : Frame
         //    QualityUtility.SendCraftNotification(newThing, worker);
         //}
 
-        if (oldThing.TryGetComp<CompQuality>() is CompQuality oldQuality &&
-            newThing.TryGetComp<CompQuality>() is CompQuality newQuality)
-        {
-            newQuality.SetQuality(oldQuality.Quality, ArtGenerationContext.Colony);
-        }
-
-        Log.Message(
-    $"FinalizeReplace: " +
-    $"Spawned={oldThing.Spawned} " +
-    $"Destroyed={oldThing.Destroyed} " +
-    $"Map={(oldThing.Map != null)}");
 
         if (!oldThing.Destroyed)
             oldThing.Destroy(DestroyMode.Deconstruct);

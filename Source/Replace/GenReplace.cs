@@ -54,8 +54,9 @@ static class GenReplace
         if (replaceFrameDef == null)
             return null;
 
-        ReplaceFrame replaceFrame =
-            (ReplaceFrame)ThingMaker.MakeThing(replaceFrameDef, stuff);
+        ReplaceFrame replaceFrame = (ReplaceFrame)ThingMaker.MakeThing(replaceFrameDef, stuff);
+
+        replaceFrame.replaceData = BuildingStateTransfer.Capture(oldThing);
 
         replaceFrame.SetFactionDirect(Faction.OfPlayer);
         oldThing.SetFactionDirect(Faction.OfPlayer);
@@ -63,8 +64,7 @@ static class GenReplace
         replaceFrame.oldThing = oldThing;
         replaceFrame.oldStuff = oldThing.Stuff;
 
-        replaceFrame.replaceData =
-            BuildingStateTransfer.Capture(oldThing);
+
 
         GenSpawn.Spawn(replaceFrame, oldThing.Position, oldThing.Map, oldThing.Rotation);
         return replaceFrame;
