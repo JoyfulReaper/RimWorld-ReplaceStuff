@@ -25,6 +25,7 @@ SOFTWARE.
 
 using HarmonyLib;
 using Replace_Stuff.Replace;
+using Replace_Stuff.Utilities;
 using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
@@ -146,7 +147,7 @@ namespace Replace_Stuff.PlaceBridges
             if (pos.GetThingList(map).Any(t => t.def.entityDefToBuild == bridgeDef))
                 return;//Already building!
 
-            Log.Debug($"placing {bridgeDef} for {sourceDef}({sourceDef.GetTerrainAffordanceNeed(stuff)}) on {map.terrainGrid.TerrainAt(pos)}");
+            RSLog.Debug($"placing {bridgeDef} for {sourceDef}({sourceDef.GetTerrainAffordanceNeed(stuff)}) on {map.terrainGrid.TerrainAt(pos)}");
             GenConstruct.PlaceBlueprintForBuild(bridgeDef, pos, map, rotation, faction, null);//Are there bridge precepts/styles?...
         }
     }

@@ -11,9 +11,9 @@
  * Licensed under the MIT License.
  */
 
-namespace Replace_Stuff;
+namespace Replace_Stuff.Utilities;
 
-static class Log
+static class RSLog
 {
     public static string Prefix =>
         $"<color=#66CCFF>{ReplaceStuffPrefomanceMod.settings.debugPrefix}</color>";

@@ -191,7 +191,7 @@ class ReplaceFrame : Frame
     /// <param name="worker">The pawn who was attempting the work.</param>
     public new void FailConstruction(Pawn worker)
     {
-        Log.Debug($"Failed replace frame! work was {workDone}, Decon is {WorkToDeconstructDef(def, oldStuff)}, total is {WorkToBuild}");
+        RSLog.Debug($"Failed replace frame! work was {workDone}, Decon is {WorkToDeconstructDef(def, oldStuff)}, total is {WorkToBuild}");
 
         workDone = Mathf.Min(workDone, WorkToDeconstruct);
 

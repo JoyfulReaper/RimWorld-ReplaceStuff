@@ -12,6 +12,7 @@
  */
 
 using HarmonyLib;
+using Replace_Stuff.Utilities;
 using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
@@ -95,7 +96,7 @@ namespace Replace_Stuff.DestroyedRestore
 
             if (comp.destroyedBuildings.Remove(pos))
             {
-                Log.Debug($"Forgetting destroyed building state at {pos}");
+                RSLog.Debug($"Forgetting destroyed building state at {pos}");
             }
         }
     }
