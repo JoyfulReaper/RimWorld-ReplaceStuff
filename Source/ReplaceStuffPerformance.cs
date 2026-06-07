@@ -12,7 +12,6 @@
  */
 
 using HarmonyLib;
-using Replace_Stuff.Comps;
 using Replace_Stuff.Replace;
 using Replace_Stuff.Replace.Patches;
 using RimWorld;
