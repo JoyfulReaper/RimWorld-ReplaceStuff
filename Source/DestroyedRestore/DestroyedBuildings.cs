@@ -83,7 +83,7 @@ namespace Replace_Stuff.DestroyedRestore
 
 		public static void SaveBuilding(Thing thing, Map map)
 		{
-			if (!BuildingReviver.CanDo(thing)) 
+			if (!BuildingStateTransfer.CanDo(thing)) 
 				return;
 
 			thing.ForceSetStateToUnspawned();
@@ -100,7 +100,7 @@ namespace Replace_Stuff.DestroyedRestore
 			{
 				Log.Message($"got {building}");
 
-				BuildingReviver.Transfer(building, newBuilding);
+				BuildingStateTransfer.Transfer(building, newBuilding);
 
 				comp.destroyedBuildings.Remove(pos);
 			}			

@@ -24,12 +24,12 @@ namespace Replace_Stuff;
 /// <summary>
 /// I'm a Mod!
 /// </summary>
-public class Mod : Verse.Mod
+public class ReplaceStuffPrefomanceMod : Verse.Mod
 {
     public static Settings settings;
-    private static Harmony _harmony;
+    public static Harmony _harmony;
 
-    public Mod(ModContentPack content) : base(content)
+    public ReplaceStuffPrefomanceMod(ModContentPack content) : base(content)
     {
         settings = GetSettings<Settings>();
 
@@ -50,7 +50,7 @@ public class Mod : Verse.Mod
             LongEventHandler.QueueLongEvent(() => ThingDefGenerator_ReplaceFrame.AddReplaceFrames(), null, true, null);
             LongEventHandler.QueueLongEvent(CoolersOverWalls.DesignatorBuildDropdownStuffFix.SanityCheck, null, true, null);
             LongEventHandler.QueueLongEvent(Compatibility.AddRulesFromXML, null, true, null);
-            LongEventHandler.QueueLongEvent(() => ReserveSharing.Initialize(_harmony), null, true, null);
+            LongEventHandler.QueueLongEvent(() => ReserveSharing.Initialize(ReplaceStuffPrefomanceMod._harmony), "ReplaceStuff.Initializing", false, null);
         }
     }
 

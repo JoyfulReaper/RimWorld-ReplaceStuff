@@ -12,6 +12,7 @@
  */
 
 using Replace_Stuff.NewThing;
+using Replace_Stuff.Utilities;
 using RimWorld;
 using System.Collections.Generic;
 using UnityEngine;
@@ -306,7 +307,9 @@ public class Designator_ReplaceStuff : Designator
         {
             if (DebugSettings.godMode)
             {
-                ReplaceFrame.FinalizeReplace(thing, stuffDef);
+                InstantReplaceUtility.InstantReplace(oldRF.oldThing, stuffDef);
+                oldRF.Destroy(DestroyMode.Cancel);
+                return;
             }
             if (oldRF.oldStuff != stuffDef)
             {
@@ -330,7 +333,7 @@ public class Designator_ReplaceStuff : Designator
         }
         else if (DebugSettings.godMode)
         {
-            ReplaceFrame.FinalizeReplace(thing, stuffDef);
+            InstantReplaceUtility.InstantReplace(thing, stuffDef);
         }
         else
         {

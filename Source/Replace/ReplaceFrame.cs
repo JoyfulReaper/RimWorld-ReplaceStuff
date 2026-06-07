@@ -12,6 +12,7 @@
  */
 
 using HarmonyLib;
+using Replace_Stuff.DestroyedRestore;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
@@ -41,6 +42,7 @@ class ReplaceFrame : Frame
     public Thing oldThing;
     /// <summary>The material definition of the original structure, used for calculating deconstruction costs.</summary>
     public ThingDef oldStuff;
+    public ReplaceData replaceData;
 
     private const float MaxDeconstructWork = 3000f;
 
@@ -80,6 +82,7 @@ class ReplaceFrame : Frame
         base.ExposeData();
         Scribe_References.Look(ref oldThing, "oldThing");
         Scribe_Defs.Look(ref oldStuff, "oldStuff");
+        Scribe_Deep.Look(ref replaceData, "replaceData");
     }
 
     /// <summary>
@@ -161,10 +164,34 @@ class ReplaceFrame : Frame
     {
         if (oldThing != null && oldThing.Spawned)
         {
-            FinalizeReplace(oldThing, Stuff, worker);
+            Log.Message("ReplaceFrame: Making thing");
 
+            Thing newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
+
+            StorageSettings oldSettings =
+                (oldThing as IStoreSettingsParent)?.GetStoreSettings();
+
+            CompQuality oldQuality =
+                oldThing.TryGetComp<CompQuality>();
+
+            bool canRevive =
+                BuildingStateTransfer.CanDo(oldThing);
+
+            Thing oldThingReference = oldThing;
+
+
+            Log.Message("ReplaceFrame: Before Spawning thing");
+            GenSpawn.Spawn(newThing, Position, Map, WipeMode.Vanish);
+            Log.Message("ReplaceFrame: After Spawning thing");
+
+            FinalizeReplace(oldThing, newThing, worker);
+
+            Log.Message("ReplaceFrame: Calling FinalizeReplace");
             resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
-            Destroy(DestroyMode.Vanish);
+            if (!Destroyed)
+                Destroy(DestroyMode.Vanish);
+
+            BuildingStateTransfer.Apply(replaceData, newThing);
 
             worker?.records.Increment(RecordDefOf.ThingsConstructed);
             worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
@@ -211,6 +238,9 @@ class ReplaceFrame : Frame
 
     public static void DeconstructDropStuff(Thing oldThing)
     {
+        if (oldThing is null || !oldThing.Spawned || oldThing.Map is null)
+            return;
+
         if (Current.ProgramState != ProgramState.Playing)
             return;
 
@@ -229,36 +259,72 @@ class ReplaceFrame : Frame
             {
                 Thing leftThing = ThingMaker.MakeThing(stuffDef);
                 leftThing.stackCount = leaveCount;
-                GenDrop.TryDropSpawn(leftThing, oldThing.Position, oldThing.Map, ThingPlaceMode.Near, out Thing dummyThing);
+                GenDrop.TryDropSpawn(leftThing, oldThing.Position, oldThing.Map, ThingPlaceMode.Near, out _);
             }
         }
     }
 
-    // TODO: Maybe remove the paramater 'stuff'
     /// <summary>
     /// Synchronizes a newly spawned object's state to match its finalized form, 
     /// handling stat cache invalidation, health recovery, and quality assignment.
     /// </summary>
     /// <param name="thing">The newly spawned building.</param>
-    /// <param name="stuff">The material used for this construction. (Currently not used)</param>
     /// <param name="worker">The pawn who finished the construction, if applicable.</param>
-    public static void FinalizeReplace(Thing thing, ThingDef stuff, Pawn worker = null)
+    public static void FinalizeReplace(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
     {
-        DeconstructDropStuff(thing);
+        StorageSettings oldSettings = (oldThing as IStoreSettingsParent)?.GetStoreSettings();
 
-        thing.SetStuffDirect(stuff);
-        thing.RemoveFromStatWorkerCaches();
-        thing.HitPoints = thing.MaxHitPoints;
-        thing.Notify_ColorChanged();
+        Log.Message(
+            $"FinalizeReplace: " +
+            $"Destroyed={oldThing.Destroyed} " +
+            $"Spawned={oldThing.Spawned} " +
+            $"Def={oldThing.def.defName}");
 
-        if (worker != null && thing.TryGetComp<CompQuality>() is CompQuality compQuality)
+        DeconstructDropStuff(oldThing);
+
+        newThing.SetFactionDirect(faction ?? oldThing.Faction);
+        newThing.RemoveFromStatWorkerCaches();
+        newThing.HitPoints = newThing.MaxHitPoints; // TODO: Setting for keep health
+
+        // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints));
+
+        newThing.Notify_ColorChanged();
+
+        if (oldSettings != null &&
+            newThing is IStoreSettingsParent newStore)
         {
-            QualityCategory qc =
-                QualityUtility.GenerateQualityCreatedByPawn(worker, SkillDefOf.Construction);
-
-            compQuality.SetQuality(qc, ArtGenerationContext.Colony);
-            QualityUtility.SendCraftNotification(thing, worker);
+            newStore.GetStoreSettings().CopyFrom(oldSettings);
         }
+
+        if (BuildingStateTransfer.CanDo(oldThing))
+        {
+            BuildingStateTransfer.Transfer(oldThing, newThing);
+        }
+
+        // Set the quality of the new thing base on construction level of builder TODO MAKE THIS OPTION
+        //if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
+        //{
+        //    QualityCategory qualityCreatedByPawn =
+        //        QualityUtility.GenerateQualityCreatedByPawn(worker, SkillDefOf.Construction);
+
+        //    compQuality.SetQuality(qualityCreatedByPawn, ArtGenerationContext.Colony);
+        //    QualityUtility.SendCraftNotification(newThing, worker);
+        //}
+
+        if (oldThing.TryGetComp<CompQuality>() is CompQuality oldQuality &&
+            newThing.TryGetComp<CompQuality>() is CompQuality newQuality)
+        {
+            newQuality.SetQuality(oldQuality.Quality, ArtGenerationContext.Colony);
+        }
+
+        Log.Message(
+    $"FinalizeReplace: " +
+    $"Spawned={oldThing.Spawned} " +
+    $"Destroyed={oldThing.Destroyed} " +
+    $"Map={(oldThing.Map != null)}");
+
+        if (!oldThing.Destroyed)
+            oldThing.Destroy(DestroyMode.Deconstruct);
     }
 
     /// <summary>

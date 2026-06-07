@@ -12,6 +12,7 @@
  */
 
 using HarmonyLib;
+using Replace_Stuff.DestroyedRestore;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -47,21 +48,23 @@ static class GenReplace
 {
     public static ReplaceFrame PlaceReplaceFrame(Thing oldThing, ThingDef stuff)
     {
-        ThingDef replaceFrameDef = ThingDefGenerator_ReplaceFrame.ReplaceFrameDefFor(oldThing.def);
-        if (replaceFrameDef == null) return null;
+        ThingDef replaceFrameDef =
+            ThingDefGenerator_ReplaceFrame.ReplaceFrameDefFor(oldThing.def);
 
-        ReplaceFrame replaceFrame = (ReplaceFrame)ThingMaker.MakeThing(replaceFrameDef, stuff);
+        if (replaceFrameDef == null)
+            return null;
 
-        // QualityBuilder integration
-        if (QBTypes.qbDesDef != null && replaceFrame.def.HasComp(QBTypes.compQBType))
-        {
-            oldThing.Map.designationManager.AddDesignation(new Designation(replaceFrame, QBTypes.qbDesDef));
-        }
+        ReplaceFrame replaceFrame =
+            (ReplaceFrame)ThingMaker.MakeThing(replaceFrameDef, stuff);
 
         replaceFrame.SetFactionDirect(Faction.OfPlayer);
-        oldThing.SetFaction(Faction.OfPlayer);
+        oldThing.SetFactionDirect(Faction.OfPlayer);
+
         replaceFrame.oldThing = oldThing;
         replaceFrame.oldStuff = oldThing.Stuff;
+
+        replaceFrame.replaceData =
+            BuildingStateTransfer.Capture(oldThing);
 
         GenSpawn.Spawn(replaceFrame, oldThing.Position, oldThing.Map, oldThing.Rotation);
         return replaceFrame;
@@ -197,7 +200,7 @@ public static class ThingDefGenerator_ReplaceFrame
         thingDef.entityDefToBuild = def;
         //def.replaceFrameDef = thingDef;	//Dictionary instead
 
-        thingDef.modContentPack = LoadedModManager.GetMod<Mod>().Content;
+        thingDef.modContentPack = LoadedModManager.GetMod<ReplaceStuffPrefomanceMod>().Content;
         return thingDef;
     }
 
