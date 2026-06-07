@@ -11,6 +11,8 @@
  * Licensed under the MIT License.
  */
 
+using System.Diagnostics;
+
 namespace Replace_Stuff.Utilities;
 
 static class RSLog
@@ -22,7 +24,7 @@ static class RSLog
     /// Log a message to Verse.Log.Messages if built in debug mode
     /// </summary>
     /// <param name="x"></param>
-    [System.Diagnostics.Conditional("DEBUG")]
+    [Conditional("DEBUG")]
     public static void Debug(string x)
     {
         Verse.Log.Message($"{Prefix}: {x}");
@@ -30,11 +32,11 @@ static class RSLog
 
     public static void Warning(string message)
     {
-        Verse.Log.Warning($"{Prefix}: <color=yellow>{message}</color>");
+        Verse.Log.Warning($"{Prefix}: {message}");
     }
 
     public static void Error(string message)
     {
-        Verse.Log.Error($"{Prefix}: <color=red>{message}</color>");
+        Verse.Log.Error($"{Prefix}: {message}");
     }
 }

@@ -12,6 +12,7 @@
  */
 
 using HarmonyLib;
+using Replace_Stuff.Replace;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System.Collections.Generic;

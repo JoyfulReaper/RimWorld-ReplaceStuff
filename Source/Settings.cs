@@ -126,10 +126,7 @@ public class Settings : ModSettings
 
         for (int i = _preferredBridgeOrder.Count - 1; i >= 0; i--)
         {
-            TerrainDef def =
-                DefDatabase<TerrainDef>.GetNamed(
-                    _preferredBridgeOrder[i],
-                    false);
+            var def = DefDatabase<TerrainDef>.GetNamed(_preferredBridgeOrder[i], false);
 
             if (def == null)
                 continue;

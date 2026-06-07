@@ -40,21 +40,25 @@ class ReplaceFrame : Frame
 {
     /// <summary>The building currently being replaced.</summary>
     public Thing oldThing;
+
     /// <summary>The material definition of the original structure, used for calculating deconstruction costs.</summary>
     public ThingDef oldStuff;
+
     public ReplaceData replaceData;
+
+    public delegate Func<int, int> GetBuildingResourcesLeaveCalculatorDel(Thing oldThing, DestroyMode mode);
 
     private const float MaxDeconstructWork = 3000f;
 
     private static readonly Dictionary<CostListPair, List<ThingDefCountClass>> _cachedReplaceCosts = new(FastCostListPairComparer.Instance);
     private const float LargeConstructionThreshold = 1400f;
 
+
     /// <summary>
     /// Dynamically generates the UI label for the frame, appending a "Replacing" tag 
     /// to clarify the building's current construction state.
     /// </summary>
     /// 
-
     public override string Label
     {
         get
@@ -65,25 +69,19 @@ class ReplaceFrame : Frame
     }
 
     public float WorkToReplace =>
-        def.entityDefToBuild.GetStatValueAbstract(
-        StatDefOf.WorkToBuild,
-        Stuff);
+        def.entityDefToBuild.GetStatValueAbstract(StatDefOf.WorkToBuild, Stuff);
 
     public float WorkToDeconstruct =>
         WorkToDeconstructDef(def, oldStuff);
 
     /// <summary>Returns the total labor required to complete the replacement (Deconstruction + Construction).</summary>
     public new float WorkToBuild =>
-    WorkToDeconstruct + WorkToReplace;
+        WorkToDeconstruct + WorkToReplace;
 
-    /// <summary>Saves and loads the state of the replacement process during game save/load cycles.</summary>
-    public override void ExposeData()
-    {
-        base.ExposeData();
-        Scribe_References.Look(ref oldThing, "oldThing");
-        Scribe_Defs.Look(ref oldStuff, "oldStuff");
-        Scribe_Deep.Look(ref replaceData, "replaceData");
-    }
+    // Using AccessTools because GetBuildingResourcesLeaveCalculator is an internal RimWorld method.
+    // This allows us to accurately calculate return resources without duplicating game logic.
+    public static readonly GetBuildingResourcesLeaveCalculatorDel GetBuildingResourcesLeaveCalculator =
+        AccessTools.MethodDelegate<GetBuildingResourcesLeaveCalculatorDel>(AccessTools.Method(typeof(GenLeaving), "GetBuildingResourcesLeaveCalculator"));
 
     /// <summary>
     /// Calculates the labor required to deconstruct a specific building definition, 
@@ -91,8 +89,9 @@ class ReplaceFrame : Frame
     /// </summary>
     public static float WorkToDeconstructDef(ThingDef def, ThingDef oldStuff = null)
     {
-        float deWork = (def.entityDefToBuild as ThingDef ?? def)
+        var deWork = (def.entityDefToBuild as ThingDef ?? def)
             .GetStatValueAbstract(StatDefOf.WorkToBuild, oldStuff);
+
         return Mathf.Min(deWork, MaxDeconstructWork);
     }
 
@@ -109,7 +108,7 @@ class ReplaceFrame : Frame
         if (stuff == null || stuff.VolumePerUnit == 0)
             return 0;
 
-        int count = Mathf.RoundToInt((float)toBuild.costStuffCount / stuff.VolumePerUnit);
+        var count = Mathf.RoundToInt((float)toBuild.costStuffCount / stuff.VolumePerUnit);
         if (count < 1)
             count = 1;
 
@@ -130,7 +129,8 @@ class ReplaceFrame : Frame
     // Note that "new" might not normally be called but base TotalMaterialCost is patched below to act as virtual for this method
     public new List<ThingDefCountClass> TotalMaterialCost()
     {
-        // Sync cache clears with the storyteller difficulty changes
+        // Difficulty changes affect resource return percentages. 
+        // We force a cache clear if the storyteller settings have changed to avoid stale data.
         if (CostListCalculator.cachedDifficulty != Find.Storyteller.difficulty)
         {
             CostListCalculator.Reset();
@@ -144,7 +144,7 @@ class ReplaceFrame : Frame
         {
             value = new()
             {
-            new(Stuff, TotalStuffNeeded())
+                new(Stuff, TotalStuffNeeded())
             };
 
             _cachedReplaceCosts[key] = value;
@@ -158,18 +158,20 @@ class ReplaceFrame : Frame
     /// and performing necessary cleanup of map systems.
     /// </summary>
     /// <param name="worker">The pawn performing the construction.</param>
-    /// 
 
     public new void CompleteConstruction(Pawn worker)
     {
         if (oldThing != null && oldThing.Spawned)
         {
-            Thing newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
+            // 1. Instantiate and Spawn the new building first
+            var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
             GenSpawn.Spawn(newThing, Position, Map, WipeMode.Vanish);
 
+            // 2. Transfer state/settings from the old to the new before destruction
             FinalizeReplace(oldThing, newThing, worker);
             BuildingStateTransfer.Apply(replaceData, newThing);
 
+            // 3. Cleanup: Clear container resources and destroy this frame
             resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
 
             if (!Destroyed)
@@ -193,14 +195,17 @@ class ReplaceFrame : Frame
     {
         RSLog.Debug($"Failed replace frame! work was {workDone}, Decon is {WorkToDeconstructDef(def, oldStuff)}, total is {WorkToBuild}");
 
+        // Cap workDone at the cost of deconstruction. 
+        // If they hadn't even finished deconstruction, they shouldn't get progress credit 
+        // for the new building construction.
         workDone = Mathf.Min(workDone, WorkToDeconstruct);
 
         if (workDone < WorkToDeconstruct)
             return;
 
         GenLeaving.DoLeavingsFor(this, Map, DestroyMode.FailConstruction);
-
         MoteMaker.ThrowText(DrawPos, Map, "TextMote_ConstructionFail".Translate());
+
         if (Faction == Faction.OfPlayer && WorkToReplace > LargeConstructionThreshold)
         {
             Messages.Message("MessageConstructionFailed".Translate(LabelEntityToBuild, worker.LabelShort, worker.Named("WORKER")),
@@ -208,16 +213,11 @@ class ReplaceFrame : Frame
         }
     }
 
-    public delegate Func<int, int> GetBuildingResourcesLeaveCalculatorDel(Thing oldThing, DestroyMode mode);
-    public static readonly GetBuildingResourcesLeaveCalculatorDel GetBuildingResourcesLeaveCalculator =
-        AccessTools.MethodDelegate<GetBuildingResourcesLeaveCalculatorDel>(AccessTools.Method(typeof(GenLeaving), "GetBuildingResourcesLeaveCalculator"));
-
     /// <summary>
     /// Calculate resources to drop for the old thing before destroying it
     /// </summary>
     /// <param name="oldThing">Thing to drop resource for</param>
     /// 
-
     public static void DeconstructDropStuff(Thing oldThing)
     {
         if (oldThing is null || !oldThing.Spawned || oldThing.Map is null)
@@ -232,14 +232,16 @@ class ReplaceFrame : Frame
         if (stuffDef == null)
             return;
 
-        //preferably GenLeaving.DoLeavingsFor here, but don't want to drop non-stuff things.
+        // We use our own calculator here instead of standard GenLeaving.DoLeavingsFor 
+        // because we only want to drop the 'stuff' (material) used in construction,
+        // rather than all items (like components/steel) usually dropped by deconstruction.
         if (GenLeaving.CanBuildingLeaveResources(oldThing, DestroyMode.Deconstruct))
         {
             var count = TotalStuffNeeded(oldDef, stuffDef);
             var leaveCount = GetBuildingResourcesLeaveCalculator(oldThing, DestroyMode.Deconstruct)(count);
             if (leaveCount > 0)
             {
-                Thing leftThing = ThingMaker.MakeThing(stuffDef);
+                var leftThing = ThingMaker.MakeThing(stuffDef);
                 leftThing.stackCount = leaveCount;
                 GenDrop.TryDropSpawn(leftThing, oldThing.Position, oldThing.Map, ThingPlaceMode.Near, out _);
             }
@@ -258,9 +260,13 @@ class ReplaceFrame : Frame
 
         newThing.SetFactionDirect(faction ?? oldThing.Faction);
         newThing.RemoveFromStatWorkerCaches();
-        newThing.HitPoints = newThing.MaxHitPoints; // TODO: Setting for keep health
 
-        // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints));
+        // Current design: New buildings spawn at full health.
+        // Future consideration: Add an option to calculate HitPoints based on the 
+        // old building's percentage of MaxHitPoints. TODO
+        newThing.HitPoints = newThing.MaxHitPoints;
+
+        // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints)); // For keeping hit points if we decide to
 
         newThing.Notify_ColorChanged();
 
@@ -291,15 +297,26 @@ class ReplaceFrame : Frame
 
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.AppendLine("ContainedResources".Translate() + ":");
-        stringBuilder.AppendLine(string.Concat(new object[]
-        {
-            Stuff.LabelCap,
-            ": ",
-            CountStuffHas(),
-            " / ",
-            TotalStuffNeeded()
-        }));
+        stringBuilder.AppendLine(string.Concat(
+            [
+                Stuff.LabelCap,
+                ": ",
+                CountStuffHas(),
+                " / ",
+                TotalStuffNeeded()
+            ]));
         stringBuilder.Append("WorkLeft".Translate() + ": " + this.WorkLeft.ToStringWorkAmount());
+
         return stringBuilder.ToString();
+    }
+
+    /// <summary>Saves and loads the state of the replacement process during game save/load cycles.</summary>
+    public override void ExposeData()
+    {
+        base.ExposeData();
+
+        Scribe_References.Look(ref oldThing, "oldThing");
+        Scribe_Defs.Look(ref oldStuff, "oldStuff");
+        Scribe_Deep.Look(ref replaceData, "replaceData");
     }
 }

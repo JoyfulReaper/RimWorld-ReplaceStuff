@@ -14,7 +14,7 @@
 using Replace_Stuff.Interfaces;
 using System;
 
-// Do not change this namespace needed for compatibility
+// Do not change this namespace needed for compatibility: namespace Replace_Stuff;
 namespace Replace_Stuff;
 
 /// <summary>
