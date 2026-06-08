@@ -48,6 +48,8 @@ public static class BuildingStateTransfer
             RSLog.Debug("CAPTURE STORAGE");
 
             var settings = storage.GetStoreSettings();
+            RSLog.Debug($"DEBUG: Before copy - Priority: {settings?.Priority.ToString() ?? "NULL"}, Allowed: {settings?.filter?.AllowedDefCount.ToString() ?? "NULL"}");
+
             data.storagePriority = settings.Priority;
             data.storageFilter = new ThingFilter();
             data.storageFilter.CopyAllowancesFrom(settings.filter);
@@ -57,6 +59,14 @@ public static class BuildingStateTransfer
             RSLog.Debug($"Captured defs={data.storageFilter.AllowedDefCount}");
             if (thing is Building_Storage bs)
             {
+                RSLog.Debug($"storageGroup={(bs.storageGroup != null)}");
+                RSLog.Debug($"settings hash={bs.settings.GetHashCode()}");
+                RSLog.Debug($"getsettings hash={bs.GetStoreSettings().GetHashCode()}");
+                RSLog.Debug($"ThingStore hash = {bs.settings.GetHashCode()}");
+                RSLog.Debug($"GetStore hash = {bs.GetStoreSettings().GetHashCode()}");
+                RSLog.Debug($"storageGroup null = {bs.storageGroup == null}");
+                RSLog.Debug($"ThingStore priority = {bs.settings.Priority}");
+                RSLog.Debug($"GetStore priority = {bs.GetStoreSettings().Priority}");
                 var slotGroup = bs.GetSlotGroup();
 
                 RSLog.Debug(
@@ -110,6 +120,13 @@ public static class BuildingStateTransfer
     public static void Apply(ReplaceData data, Thing thing)
     {
         RSLog.Debug(
+            $"APPLY CALLED " +
+            $"Thing={thing} " +
+            $"Rot={thing.Rotation} " +
+            $"Priority={data.storagePriority} " +
+            $"Defs={data.storageFilter?.AllowedDefCount}");
+
+        RSLog.Debug(
             $"=== APPLY ROTATION ===\n" +
             $"Thing: {thing}\n" +
             $"Captured rotation: {data?.rotation}\n" +
@@ -119,13 +136,10 @@ public static class BuildingStateTransfer
             return;
 
         thing.SetFactionDirect(data.faction);
-        //thing.Rotation = data.rotation;
 
         if (data.quality.HasValue && thing.TryGetComp<CompQuality>() is CompQuality cq)
         {
-            cq.SetQuality(
-                data.quality.Value,
-                ArtGenerationContext.Colony);
+            cq.SetQuality(data.quality.Value, ArtGenerationContext.Colony);
         }
 
         if (data.targetTemperature.HasValue)
@@ -160,6 +174,8 @@ public static class BuildingStateTransfer
         {
             RSLog.Debug($"Applying storage to {thing.def.defName}");
             var settings = storage.GetStoreSettings();
+            //storage.Notify_SettingsChanged();
+
             RSLog.Debug($"=== STORAGE AFTER APPLY ===\n" +
                 $"Thing: {thing}\n" +
                 $"Rotation: {thing.Rotation}\n" +
@@ -168,6 +184,14 @@ public static class BuildingStateTransfer
 
             if (thing is Building_Storage bs)
             {
+                RSLog.Debug(
+                    $"storageGroup={(bs.storageGroup != null)}");
+
+                RSLog.Debug(
+                    $"settings hash={bs.settings.GetHashCode()}");
+
+                RSLog.Debug(
+                    $"getsettings hash={bs.GetStoreSettings().GetHashCode()}");
                 var slotGroup = bs.GetSlotGroup();
 
                 RSLog.Debug(
@@ -175,21 +199,42 @@ public static class BuildingStateTransfer
                     $"Thing: {thing}\n" +
                     $"Rotation: {thing.Rotation}\n" +
                     $"Cells: {string.Join(", ", slotGroup.CellsList)}");
+
+                foreach (var c in bs.AllSlotCellsList())
+                {
+                    RSLog.Debug($"CELL {c}");
+                }
             }
 
             RSLog.Debug($"Before: {settings.Priority}");
             RSLog.Debug($"Capturing storage for {thing.def.defName}");
             RSLog.Debug($"Priority: {settings.Priority}");
-
-            if (data.storagePriority.HasValue)
-                settings.Priority = data.storagePriority.Value;
-
             RSLog.Debug($"APPLY: allowed defs = {data.storageFilter.AllowedDefCount}");
 
             if (data.storageFilter != null)
                 settings.filter.CopyAllowancesFrom(data.storageFilter);
 
-            storage.Notify_SettingsChanged();
+            if (data.storagePriority.HasValue)
+                settings.Priority = data.storagePriority.Value;
+
+            if (thing is Building_Storage bsss)
+            {
+                RSLog.Debug($"ThingStore hash = {bsss.settings.GetHashCode()}");
+                RSLog.Debug($"GetStore hash = {bsss.GetStoreSettings().GetHashCode()}");
+                RSLog.Debug($"storageGroup null = {bsss.storageGroup == null}");
+                RSLog.Debug($"ThingStore priority = {bsss.settings.Priority}");
+                RSLog.Debug($"GetStore priority = {bsss.GetStoreSettings().Priority}");
+            }
+
+            //storage.Notify_SettingsChanged(); Probably not needed RW does it in StorageSettings.CopyFrom()
+            RSLog.Debug($"Final check: {settings.Priority}, {settings.filter.AllowedDefCount}");
+
+            if (data.storagePriority.HasValue && settings.Priority != data.storagePriority.Value)
+            {
+                settings.Priority = data.storagePriority.Value;
+                RSLog.Debug($"Re-asserted Priority to {settings.Priority} after Notify.");
+            }
+
             if (thing is Building_Storage bus)
             {
                 var slotGroup = bus.GetSlotGroup();
@@ -203,7 +248,7 @@ public static class BuildingStateTransfer
                     $"AllowedDefs: {settings.filter.AllowedDefCount}");
             }
             RSLog.Debug($"AFTER APPLY: building defs = {settings.filter.AllowedDefCount}");
-            RSLog.Debug($"After: {settings.Priority}");
+            RSLog.Debug($"Pritory After: {settings.Priority}");
         }
 
         foreach (var attachment in data.attachedBuildings)
@@ -231,11 +276,8 @@ public static class BuildingStateTransfer
             }
 
             if (attachment.state != null)
-            {
-                Apply(
-                    attachment.state,
-                    newAttachment);
-            }
+                Apply(attachment.state, newAttachment);
+
         }
 
     }
