@@ -1,24 +1,66 @@
-# Replace Stuff Perfomance Edition for RimWorld
-RimWorld mod - Replace the stuff a thing is made from.
+# Replace Stuff: Performance Edition
 
-#The Problem with Vanilla:
-In standard RimWorld, upgrading your base is a destructive, dangerous hassle. Want to change a wooden wall to stone? Your pawns tear down the wood, leaving a gaping hole in your defenses for raiders to walk through, venting all the cold air out of your freezer, and dropping the roof on your colonist's head. On top of that, if you rebuild a storage shelf or a cooler, you have to manually set up all your storage filters and target temperatures all over again.
+A performance-focused continuation and modernization of Replace Stuff for RimWorld.
 
-How "Replace Stuff: Performance Edition" Fixes It:
-This mod lets you upgrade buildings in-place.
+Upgrade buildings in-place without tearing apart your colony.
 
-No Base Breaches: Your pawns build a "frame" over the existing structure. The old wall isn't destroyed until the exact moment the new wall is finished. No holes, no temperature leaks, no collapsed roofs.
+---
 
-It Remembers Your Settings: The mod captures the "soul" of the building. When you swap a tailored wooden shelf for a steel one, your custom storage filters and priorities are instantly transferred to the new shelf. Coolers remember their target temperatures.
+# The Vanilla Problem
 
-Automatic Mod Compatibility: Because of how the code dynamically generates replacement frames behind the scenes, you can upgrade almost any artificial building from almost any other mod without waiting for compatibility patches.
+Upgrading your base in vanilla RimWorld can be frustrating.
 
-I am in the process of completly reviewing, re-writing from performance and refactoring the source code for this mod.
+Want to replace a wooden wall with granite? Your colonists first tear down the old wall, leaving holes in your defenses, exposing rooms to the outside, and potentially causing temperature problems or roof collapses.
 
+Replacing utility buildings can be just as annoying. Storage shelves lose their settings, coolers need to be reconfigured, and many buildings require manual setup after construction.
 
+---
 
-# Planned Vision:
-Ultimate, Future-Proof Mod Compatibility:
-Normally, if you download a massive new mod that adds complex nuclear reactors or custom alien incubators, replacement mods won't know how to copy their custom settings over when you upgrade them.
+# What Replace Stuff: Performance Edition Does
 
-With our new Dynamic State Transfer engine, the mod physically looks inside the components of the old building, finds the exact matching components in the new building, and directly injects the settings across. It doesn't matter if the mod came out today or three years from now—if it has settings, "Replace Stuff" will seamlessly copy them to the upgraded version without a single compatibility patch required.
+## In-Place Upgrades
+
+Buildings are replaced using a dedicated replacement frame. The original structure remains until the replacement is ready, reducing many of the problems caused by traditional deconstruction and rebuilding.
+
+## Preserves Building State
+
+Whenever possible, important building settings are carried over to the replacement.
+
+Current and planned state preservation includes:
+
+* Storage priorities and filters.
+* Cooler temperature settings.
+* Building orientation and ownership.
+* Other compatible building data as development continues.
+
+## Broad Mod Compatibility
+
+Replacement frames are generated dynamically, allowing many buildings from other mods to participate without requiring individual compatibility patches.
+
+The goal is to support as many artificial buildings as possible while remaining lightweight and maintainable.
+
+---
+
+# Performance Edition
+
+This project is an ongoing effort to modernize and refactor the original Replace Stuff codebase.
+
+Current areas of focus include:
+
+* Cleaner architecture.
+* Better performance.
+* Improved maintainability.
+* More reliable state preservation.
+* Easier compatibility with other mods.
+
+---
+
+# Long-Term Vision
+
+One of the long-term goals of Replace Stuff: Performance Edition is a more generic building state transfer system.
+
+Rather than requiring custom support for every building type, the mod will attempt to identify and preserve compatible component data automatically. This should reduce the amount of special-case code needed for both vanilla and modded buildings.
+
+While complete automation is not always possible, the objective is to make replacing complex buildings as seamless as possible while minimizing the need for dedicated compatibility patches.
+
+Development is ongoing, and new supported building behaviors will continue to be added over time.
