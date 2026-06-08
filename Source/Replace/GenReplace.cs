@@ -140,8 +140,8 @@ static class GenReplace
 
         foreach (Thing thing in storage.GetSlotGroup().HeldThings.ToList())
         {
-            thing.DeSpawn();
             result.Add(thing);
+            thing.DeSpawn();
         }
 
         return result;
@@ -149,8 +149,6 @@ static class GenReplace
 
     public static void RestoreStoredThings(Building_Storage storage, List<Thing> things)
     {
-        var x = storage.GetSlotGroup().HeldThings; // INSEPCT IS THERE ALREADY STEEL HERE?
-
         foreach (Thing thing in things)
         {
             bool success = GenPlace.TryPlaceThing(
