@@ -220,7 +220,7 @@ class ReplaceFrame : Frame
                 $"pos={oldThing.Position} " +
                 $"thingID={oldThing.ThingID}");
 
-            GenSpawn.Spawn(newThing, Position, Map, WipeMode.Vanish);
+            GenSpawn.Spawn(newThing, Position, Map, Rotation, WipeMode.Vanish);
 
             RSLog.Debug(
                 $"NEW WALL spawned={newThing} " +
