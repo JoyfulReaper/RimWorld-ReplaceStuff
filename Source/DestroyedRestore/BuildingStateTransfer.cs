@@ -28,6 +28,7 @@ public static class BuildingStateTransfer
 
     public static ReplaceData Capture(Thing thing, HashSet<int> visited)
     {
+        RSLog.Debug($"CAPTURE START {thing}");
         RSLog.Debug($"CAPTURE {thing.def.defName} implements IStoreSettingsParent = {thing is IStoreSettingsParent}");
 
         if (!visited.Add(thing.thingIDNumber))
@@ -47,11 +48,13 @@ public static class BuildingStateTransfer
             RSLog.Debug("CAPTURE STORAGE");
 
             var settings = storage.GetStoreSettings();
-            RSLog.Debug($"DEBUG: Before copy - Priority: {settings?.Priority.ToString() ?? "NULL"}, Allowed: {settings?.filter?.AllowedDefCount.ToString() ?? "NULL"}");
-
             data.storagePriority = settings.Priority;
             data.storageFilter = new ThingFilter();
             data.storageFilter.CopyAllowancesFrom(settings.filter);
+
+            RSLog.Debug($"CAPTURE: allowed defs = {data.storageFilter.AllowedDefCount}");
+            RSLog.Debug($"CAPTURE: priority = {data.storagePriority}");
+            RSLog.Debug($"Captured defs={data.storageFilter.AllowedDefCount}");
         }
 
         if (thing is Building_Cooler cooler)
@@ -96,21 +99,19 @@ public static class BuildingStateTransfer
 
     public static void Apply(ReplaceData data, Thing thing)
     {
-        RSLog.Debug(
-            $"APPLY CALLED " +
-            $"Thing={thing} " +
-            $"Rot={thing.Rotation} " +
-            $"Priority={data.storagePriority} " +
-            $"Defs={data.storageFilter?.AllowedDefCount}");
+        RSLog.Debug($"APPLY {thing}");
 
         if (data is null)
             return;
 
         thing.SetFactionDirect(data.faction);
+        thing.Rotation = data.rotation;
 
         if (data.quality.HasValue && thing.TryGetComp<CompQuality>() is CompQuality cq)
         {
-            cq.SetQuality(data.quality.Value, ArtGenerationContext.Colony);
+            cq.SetQuality(
+                data.quality.Value,
+                ArtGenerationContext.Colony);
         }
 
         if (data.targetTemperature.HasValue)
@@ -145,24 +146,23 @@ public static class BuildingStateTransfer
         {
             RSLog.Debug($"Applying storage to {thing.def.defName}");
             var settings = storage.GetStoreSettings();
-            //storage.Notify_SettingsChanged();
-
-            RSLog.Debug($"=== STORAGE AFTER APPLY ===\n" +
-                $"Thing: {thing}\n" +
-                $"Rotation: {thing.Rotation}\n" +
-                $"Priority: {settings.Priority}\n" +
-                $"Allowed defs: {settings.filter.AllowedDefCount}");
 
             RSLog.Debug($"Before: {settings.Priority}");
             RSLog.Debug($"Capturing storage for {thing.def.defName}");
             RSLog.Debug($"Priority: {settings.Priority}");
+
+            if (data.storagePriority.HasValue)
+                settings.Priority = data.storagePriority.Value;
+
             RSLog.Debug($"APPLY: allowed defs = {data.storageFilter.AllowedDefCount}");
 
             if (data.storageFilter != null)
                 settings.filter.CopyAllowancesFrom(data.storageFilter);
 
-            if (data.storagePriority.HasValue)
-                settings.Priority = data.storagePriority.Value;
+            storage.Notify_SettingsChanged();
+
+            RSLog.Debug($"AFTER APPLY: building defs = {settings.filter.AllowedDefCount}");
+            RSLog.Debug($"After: {settings.Priority}");
         }
 
         foreach (var attachment in data.attachedBuildings)
@@ -190,8 +190,12 @@ public static class BuildingStateTransfer
             }
 
             if (attachment.state != null)
-                Apply(attachment.state, newAttachment);
-
+            {
+                Apply(
+                    attachment.state,
+                    newAttachment);
+            }
         }
+
     }
 }

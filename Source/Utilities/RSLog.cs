@@ -23,7 +23,7 @@ static class RSLog
         $"<color=#66CCFF>{Prefix}</color>";
 
     public static string Prefix =>
-        ReplaceStuffPrefomance.settings.debugPrefix;
+        ReplaceStuffPrefomanceMod.settings.debugPrefix;
 
     /// <summary>
     /// Log a message to Verse.Log.Messages if built in debug mode

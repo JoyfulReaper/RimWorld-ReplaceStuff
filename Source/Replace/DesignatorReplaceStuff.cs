@@ -258,11 +258,62 @@ public class Designator_ReplaceStuff : Designator
             }
         }
 
-        var thingToReplace = firstBlueprintOrFrame ?? firstReplaceable;
+        Thing thingToReplace = firstBlueprintOrFrame ?? firstReplaceable;
+
+        if (thingToReplace != null)
+        {
+            DoReplace(thingToReplace, stuffDef);
+        }
+    }
+
+    public static void DoReplace(Thing thing, ThingDef stuffDef)
+    {
+        var pos = thing.Position;
+        var rot = thing.Rotation;
+        var map = thing.Map;
+
+        //In case you're replacing with a stuff that needs a higher affordance that bridges can handle.
+        PlaceBridges.EnsureBridge.PlaceBridgeIfNeeded(thing.def, pos, map, rot, Faction.OfPlayer, stuffDef);
+
+        //CanReplaceStuffFor has verified this is different stuff
+        //so the task here is: place new replacements, kill old replacement
+        //Too finicky to change stuff of current replacement - canceling jobs and such.
+        if (thing is Blueprint_Build oldBP)
+        {
+            oldBP.Destroy(DestroyMode.Cancel);
+            //Destroy before Place beacause GenSpawn.Spawn will wipe it
+
+            GenConstruct.PlaceBlueprintForBuild(oldBP.def.entityDefToBuild, pos, map, rot, Faction.OfPlayer, stuffDef);
+        }
+        else if (thing is ReplaceFrame oldRF)
+        {
+            if (DebugSettings.godMode)
+            {
+                ReplaceUtility.InstantReplace(oldRF.oldThing, stuffDef);
+                oldRF.Destroy(DestroyMode.Cancel);
+                return;
+            }
+            if (oldRF.oldStuff != stuffDef)
+            {
+                //replacement frame should keep deconstruction work mount
+                ReplaceFrame newFrame = GenReplace.PlaceReplaceFrame(oldRF.oldThing, stuffDef);
+                if (newFrame != null)
+                {
+                    newFrame.workDone = Mathf.Min(oldRF.workDone, oldRF.WorkToDeconstruct);
+                }
+            }
+            //else, if same stuff as old stuff, we just chose replace with original stuff, so we're already done - just destroy the frame.
+            //upgrade frames/blueprints
+
+            oldRF.Destroy(DestroyMode.Cancel);
+        }
+        else if (thing is Frame oldFrame)
+        {
+            oldFrame.Destroy(DestroyMode.Cancel);
 
         if (thingToReplace is not null)
         {
-            ReplaceHandler.ExecuteReplacement(thingToReplace, stuffDef);
+            ReplaceUtility.InstantReplace(thing, stuffDef);
         }
     }
 

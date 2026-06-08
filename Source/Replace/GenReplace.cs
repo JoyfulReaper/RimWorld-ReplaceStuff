@@ -49,12 +49,18 @@ static class GenReplace
 {
     public static ReplaceFrame PlaceReplaceFrame(Thing oldThing, ThingDef stuff)
     {
+        RSLog.Warning($"PlaceReplaceFrame called for {oldThing}");
+
         ThingDef replaceFrameDef =
             ThingDefGenerator_ReplaceFrame.ReplaceFrameDefFor(oldThing.def);
 
         if (replaceFrameDef == null)
         {
-            RSLog.Debug($"No replace frame def found for {oldThing.def.defName}");
+            RSLog.Warning($"No replace frame def found for {oldThing.def.defName}");
+            return null;
+        }
+
+        if (replaceFrameDef == null)
             return null;
         }
 
@@ -77,7 +83,6 @@ static class GenReplace
     public static Thing CompleteReplacement(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
     {
         ReplaceFrame.FinalizeReplace(oldThing, newThing, worker, faction);
-        //GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
         BuildingStateTransfer.Apply(replaceData, newThing);
 
         return newThing;
