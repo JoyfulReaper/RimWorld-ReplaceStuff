@@ -29,6 +29,9 @@ public class ReplaceData : IExposable
 
     public Rot4 rotation;
 
+    public List<AttachedBuildingData> attachedBuildings = new();
+
+
     // Storage
     public ThingFilter storageFilter;
 

@@ -17,8 +17,13 @@ namespace Replace_Stuff.Utilities;
 
 static class RSLog
 {
+    // TODO: Option for if the prefix should be colored or not
+    // the color tags can make the log harder to read
+    public static string PrefixColored =>
+        $"<color=#66CCFF>{Prefix}</color>";
+
     public static string Prefix =>
-        $"<color=#66CCFF>{ReplaceStuffPrefomanceMod.settings.debugPrefix}</color>";
+        ReplaceStuffPrefomanceMod.settings.debugPrefix;
 
     /// <summary>
     /// Log a message to Verse.Log.Messages if built in debug mode

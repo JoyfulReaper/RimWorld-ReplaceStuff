@@ -229,6 +229,11 @@ class ReplaceFrame : Frame
                 }
             }
 
+            foreach (var thing in GenConstruct.GetAttachedBuildings(oldThing))
+            {
+                thing.Destroy(DestroyMode.Vanish);
+            }
+
             RSLog.Warning(
                 $"REPLACING wall={oldThing} " +
                 $"pos={oldThing.Position} " +
@@ -251,14 +256,7 @@ class ReplaceFrame : Frame
                 if (thing.def.defName.Contains("WallLamp"))
                 {
                     Thing parent = null;
-
-                    try
-                    {
-                        parent = GenConstruct.GetWallAttachedTo(thing);
-                    }
-                    catch
-                    {
-                    }
+                    parent = GenConstruct.GetWallAttachedTo(thing);
 
                     RSLog.Warning(
                         $"LAMP " +
@@ -353,9 +351,7 @@ class ReplaceFrame : Frame
 
             RSLog.Warning("=== RETURNED FROM FINALIZE ===");
 
-            BuildingStateTransfer.Apply(
-                replaceData,
-                newThing);
+            BuildingStateTransfer.Apply(replaceData, newThing);
 
             resourceContainer.ClearAndDestroyContents(
                 DestroyMode.Vanish);
@@ -384,61 +380,6 @@ class ReplaceFrame : Frame
         }
     }
 
-
-    //public new void CompleteConstruction(Pawn worker)
-    //{
-    //    RSLog.Warning(
-    //        $"CompleteConstruction old={oldThing} spawned={oldThing?.Spawned}");
-
-    //    if (oldThing != null && oldThing.Spawned)
-    //    {
-    //        // 1. Instantiate and Spawn the new building first
-    //        var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
-    //        RSLog.Warning($"Spawning {newThing.def.defName}");
-
-
-    //        ///// TODO: Remove debug code
-    //        var attached = GenConstruct.GetAttachedBuildings(oldThing);
-
-    //        RSLog.Warning($"PRE-SPAWN attached={attached.Count}");
-
-    //        foreach (var t in attached)
-    //        {
-    //            RSLog.Warning(
-    //                $"{t.def.defName} at {t.Position}");
-    //        }
-    //        ///// END DEBUG CODE
-
-    //        GenSpawn.Spawn(newThing, Position, Map, WipeMode.Vanish);
-    //        RSLog.Warning(
-    //            $"Spawned newThing={newThing} " +
-    //            $"spawned={newThing.Spawned}");
-    //        RSLog.Warning(
-    //            $"After spawn oldThing " +
-    //            $"destroyed={oldThing.Destroyed} " +
-    //            $"spawned={oldThing.Spawned}");
-
-    //        // 2. Transfer state/settings from the old to the new before destruction
-    //        RSLog.Warning("Calling FinalizeReplace");
-    //        FinalizeReplace(oldThing, newThing, worker);
-    //        RSLog.Warning("Returned from FinalizeReplace");
-    //        BuildingStateTransfer.Apply(replaceData, newThing);
-
-    //        // 3. Cleanup: Clear container resources and destroy this frame
-    //        resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
-
-    //        if (!Destroyed)
-    //            Destroy(DestroyMode.Vanish);
-
-    //        worker?.records.Increment(RecordDefOf.ThingsConstructed);
-    //        worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
-    //    }
-    //    else
-    //    {
-    //        resourceContainer.TryDropAll(Position, Map, ThingPlaceMode.Near);
-    //        Destroy(DestroyMode.Cancel);
-    //    }
-    //}
 
     /// <summary>
     /// Handles the cleanup and feedback when a replacement task fails (e.g., pawn interrupted or material deficit).
