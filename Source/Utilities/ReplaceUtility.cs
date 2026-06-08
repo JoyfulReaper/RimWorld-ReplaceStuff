@@ -30,7 +30,7 @@ public static class ReplaceUtility
         var newThing = ThingMaker.MakeThing(oldThing.def, newStuff);
 
         GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
-        GenReplace.CompleteReplacement(oldThing, newThing, data, worker, faction);
+        GenReplace.ApplyReplacementState(oldThing, newThing, data, worker, faction);
 
         return newThing;
     }

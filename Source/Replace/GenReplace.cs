@@ -74,9 +74,27 @@ static class GenReplace
         return replaceFrame;
     }
 
-    public static Thing CompleteReplacement(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
+    /// <summary>
+    /// Prepares a replacement building by transferring essential runtime
+    /// state from the original structure, generating deconstruction
+    /// resources, assigning faction and quality data, and retiring the
+    /// original building.
+    /// </summary>
+    /// <param name="oldThing">
+    /// The building being replaced.
+    /// </param>
+    /// <param name="newThing">
+    /// The replacement building instance.
+    /// </param>
+    /// <param name="worker">
+    /// The pawn performing the replacement, if applicable.
+    /// </param>
+    /// <param name="faction">
+    /// Optional faction override for the replacement building.
+    /// </param>
+    public static Thing ApplyReplacementState(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
     {
-        ReplaceFrame.FinalizeReplace(oldThing, newThing, worker, faction);
+        ReplaceFrame.PrepareReplacementBuilding(oldThing, newThing, worker, faction);
 
         //GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
         BuildingStateTransfer.Apply(replaceData, newThing);
@@ -131,13 +149,15 @@ static class GenReplace
 
     public static void RestoreStoredThings(Building_Storage storage, List<Thing> things)
     {
+        var x = storage.GetSlotGroup().HeldThings; // INSEPCT IS THERE ALREADY STEEL HERE?
+
         foreach (Thing thing in things)
         {
             bool success = GenPlace.TryPlaceThing(
                 thing,
                 storage.Position,
                 storage.Map,
-                ThingPlaceMode.Near);
+                ThingPlaceMode.Direct); // Changed from Near for testing TODO
 
             RSLog.Debug(
                 $"Restore {thing.def.defName} "
@@ -153,30 +173,6 @@ static class GenReplace
         }
 
         DebugStorage(storage, "After Restore");
-        //    foreach (Thing thing in things)
-        //    {
-        //        if (!GenPlace.TryPlaceThing(
-        //            thing,
-        //            storage.Position,
-        //            storage.Map,
-        //            ThingPlaceMode.Near))
-        //        {
-        //            Thing placedThing;
-
-        //            bool success = GenPlace.TryPlaceThing(
-        //                thing,
-        //                storage.Position,
-        //                storage.Map,
-        //                ThingPlaceMode.Near,
-        //                out placedThing);
-
-        //            RSLog.Debug(
-        //                $"Restore {thing.thingIDNumber} "
-        //                + $"success={success} "
-        //                + $"placed={placedThing?.Position}");
-        //        }
-        //    }
-        //    DebugStorage(storage, "After Restore");
     }
 }
 

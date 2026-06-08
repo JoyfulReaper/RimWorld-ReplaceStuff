@@ -153,12 +153,13 @@ class ReplaceFrame : Frame
     }
 
     /// <summary>
-    /// Finalizes the replacement project by safely swapping the old structure for the new one 
-    /// and performing necessary cleanup of map systems.
+    /// Completes a replacement frame by creating the replacement building,
+    /// transferring captured state, restoring stored contents, and removing
+    /// the original structure and construction frame.
     /// </summary>
-    /// <param name="worker">The pawn performing the construction.</param>
-
-
+    /// <param name="worker">
+    /// The pawn responsible for finishing the replacement.
+    /// </param>
     public new void CompleteConstruction(Pawn worker)
     {
         if (oldThing != null && oldThing.Spawned)
@@ -171,12 +172,15 @@ class ReplaceFrame : Frame
                 storedThings = GenReplace.ExtractStoredThings(oldStorage);
             }
 
-            GenReplace.CompleteReplacement(oldThing, newThing, replaceData, worker);
+            GenReplace.ApplyReplacementState(oldThing, newThing, replaceData, worker);
             GenSpawn.Spawn(newThing, Position, Map, Rotation, WipeMode.Vanish);
+
+
 
             if (storedThings != null && newThing is Building_Storage newStorage)
             {
                 GenReplace.RestoreStoredThings(newStorage, storedThings);
+                var inspect = newStorage.GetSlotGroup().HeldThings; // INSEPCT IS THERE ALREADY STEEL HERE?
             }
 
             resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
@@ -217,7 +221,7 @@ class ReplaceFrame : Frame
     /// </summary>
     /// <param name="thing">The newly spawned building.</param>
     /// <param name="worker">The pawn who finished the construction, if applicable.</param>
-    public static void FinalizeReplace(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
+    public static void PrepareReplacementBuilding(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
     {
         // Set the quality of the new thing base on construction level of builder TODO MAKE THIS OPTION
         //if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
@@ -243,14 +247,15 @@ class ReplaceFrame : Frame
             newThing.HitPoints = newThing.MaxHitPoints;
             newThing.Notify_ColorChanged();
 
-            if (worker != null && oldThing.TryGetComp<CompQuality>() is CompQuality compQuality)
+            if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
             {
                 QualityCategory qualityCreatedByPawn = QualityUtility.GenerateQualityCreatedByPawn(worker, SkillDefOf.Construction);
                 compQuality.SetQuality(qualityCreatedByPawn, ArtGenerationContext.Colony);
-                QualityUtility.SendCraftNotification(newThing, worker); // TODO is this a bug?
+                QualityUtility.SendCraftNotification(newThing, worker);
             }
 
             oldThing.Destroy(DestroyMode.Deconstruct);
+            var inspect = newStorage.GetSlotGroup().HeldThings.Count(); // INSEPECT
         }
         else
         {
