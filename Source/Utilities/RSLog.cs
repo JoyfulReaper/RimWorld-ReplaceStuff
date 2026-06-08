@@ -32,7 +32,7 @@ static class RSLog
     [Conditional("DEBUG")]
     public static void Debug(string message)
     {
-        Verse.Log.Message($"{Prefix}: {message}");
+        Verse.Log.Message($"{PrefixColored}: {message}");
     }
 
     /// <summary>
@@ -41,7 +41,7 @@ static class RSLog
     /// <param name="x"></param>
     public static void Info(string message)
     {
-        Verse.Log.Message($"{Prefix}: {message}");
+        Verse.Log.Message($"{PrefixColored}: {message}");
     }
 
     /// <summary>

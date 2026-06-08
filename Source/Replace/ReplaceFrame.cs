@@ -12,7 +12,6 @@
  */
 
 using HarmonyLib;
-using Replace_Stuff.DestroyedRestore;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
@@ -158,50 +157,32 @@ class ReplaceFrame : Frame
     /// and performing necessary cleanup of map systems.
     /// </summary>
     /// <param name="worker">The pawn performing the construction.</param>
-
-
     public new void CompleteConstruction(Pawn worker)
     {
-        RSLog.Warning(
+        RSLog.Debug(
             $"CompleteConstruction old={oldThing} " +
             $"spawned={oldThing?.Spawned} " +
             $"destroyed={oldThing?.Destroyed}");
 
         if (oldThing != null && oldThing.Spawned)
         {
-            RSLog.Warning(
+            RSLog.Debug(
                 $"OLD BEFORE SPAWN " +
                 $"thing={oldThing} " +
                 $"mapNull={oldThing.Map == null}");
 
-            var newThing =
-                ThingMaker.MakeThing(
-                    (ThingDef)def.entityDefToBuild,
-                    Stuff);
+            var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
 
-            RSLog.Warning(
-                $"Creating replacement {newThing.def.defName}");
+            RSLog.Debug($"Creating replacement {newThing.def.defName}");
+            var attached = GenConstruct.GetAttachedBuildings(oldThing);
 
-            var attached =
-                GenConstruct.GetAttachedBuildings(oldThing);
-
-            RSLog.Warning(
-                $"Attached before spawn: {attached.Count}");
-
+            RSLog.Debug($"Attached before spawn: {attached.Count}");
             foreach (var t in attached)
             {
                 Thing wallParent = null;
+                wallParent = GenConstruct.GetWallAttachedTo(t);
 
-                try
-                {
-                    wallParent = GenConstruct.GetWallAttachedTo(t);
-                }
-                catch (Exception ex)
-                {
-                    RSLog.Warning($"GetWallAttachedTo threw: {ex}");
-                }
-
-                RSLog.Warning(
+                RSLog.Debug(
                     "[ATTACHED BEFORE SPAWN] " +
                     $"thing={t} " +
                     $"def={t.def.defName} " +
@@ -221,7 +202,7 @@ class ReplaceFrame : Frame
                 {
                     foreach (var thing in t.Map.thingGrid.ThingsListAtFast(t.Position))
                     {
-                        RSLog.Warning(
+                        RSLog.Debug(
                             $"  CELL THING -> {thing} " +
                             $"def={thing.def.defName} " +
                             $"type={thing.GetType().Name}");
@@ -234,23 +215,20 @@ class ReplaceFrame : Frame
                 thing.Destroy(DestroyMode.Vanish);
             }
 
-            RSLog.Warning(
+            RSLog.Debug(
                 $"REPLACING wall={oldThing} " +
                 $"pos={oldThing.Position} " +
                 $"thingID={oldThing.ThingID}");
-            RSLog.Warning("=== CALLING GENSPAWN ===");
-            GenSpawn.Spawn(
-                newThing,
-                Position,
-                Map,
-                WipeMode.Vanish);
-            RSLog.Warning("=== RETURNED FROM GENSPAWN ===");
-            RSLog.Warning(
+
+            GenSpawn.Spawn(newThing, Position, Map, WipeMode.Vanish);
+
+            RSLog.Debug(
                 $"NEW WALL spawned={newThing} " +
                 $"pos={newThing.Position} " +
                 $"thingID={newThing.ThingID}");
 
-            RSLog.Warning("=== WALL LAMP SCAN ===");
+#if DEBUG
+            RSLog.Debug("=== WALL LAMP SCAN ===");
             foreach (var thing in newThing.Map.listerThings.AllThings)
             {
                 if (thing.def.defName.Contains("WallLamp"))
@@ -258,7 +236,7 @@ class ReplaceFrame : Frame
                     Thing parent = null;
                     parent = GenConstruct.GetWallAttachedTo(thing);
 
-                    RSLog.Warning(
+                    RSLog.Debug(
                         $"LAMP " +
                         $"id={thing.ThingID} " +
                         $"spawned={thing.Spawned} " +
@@ -270,51 +248,35 @@ class ReplaceFrame : Frame
                         $"parentPos={parent?.Position}");
                 }
             }
+#endif
 
-            RSLog.Warning($"Frame destroyed={Destroyed}");
-            RSLog.Warning($"Frame map null={Map == null}");
-            RSLog.Warning($"NewThing map null={newThing.Map == null}");
+            RSLog.Debug($"Frame destroyed={Destroyed}");
+            RSLog.Debug($"Frame map null={Map == null}");
+            RSLog.Debug($"NewThing map null={newThing.Map == null}");
 
+#if DEBUG
             if (newThing.Map != null)
             {
                 foreach (var thing in newThing.Map.thingGrid.ThingsListAtFast(newThing.Position))
-                    RSLog.Warning($"CELL CONTENT: {thing}");
+                    RSLog.Debug($"CELL CONTENT: {thing}");
             }
-
-
-            foreach (var thing in newThing.Map.thingGrid.ThingsListAtFast(newThing.Position))
-            {
-                RSLog.Warning($"CELL CONTENT: {thing}");
-            }
-
-            RSLog.Warning(
+            RSLog.Debug(
                 $"OLD AFTER SPAWN " +
                 $"spawned={oldThing.Spawned} " +
                 $"destroyed={oldThing.Destroyed} " +
                 $"mapNull={oldThing.Map == null}");
-
-            RSLog.Warning(
+            RSLog.Debug(
                 $"NEW AFTER SPAWN " +
                 $"spawned={newThing.Spawned} " +
                 $"destroyed={newThing.Destroyed}");
 
-            var attachedAfter =
-                GenConstruct.GetAttachedBuildings(newThing);
-
+            var attachedAfter = GenConstruct.GetAttachedBuildings(newThing);
             foreach (var t in attachedAfter)
             {
                 Thing wallParent = null;
+                wallParent = GenConstruct.GetWallAttachedTo(t);
 
-                try
-                {
-                    wallParent = GenConstruct.GetWallAttachedTo(t);
-                }
-                catch (Exception ex)
-                {
-                    RSLog.Warning($"GetWallAttachedTo threw: {ex}");
-                }
-
-                RSLog.Warning(
+                RSLog.Debug(
                     "[ATTACHED AFTER SPAWN] " +
                     $"thing={t} " +
                     $"def={t.def.defName} " +
@@ -341,41 +303,21 @@ class ReplaceFrame : Frame
                     }
                 }
             }
+#endif
+            GenReplace.CompleteReplacement(oldThing, newThing, replaceData, worker);
 
-            RSLog.Warning("=== CALLING FINALIZE ===");
-
-            FinalizeReplace(
-                oldThing,
-                newThing,
-                worker);
-
-            RSLog.Warning("=== RETURNED FROM FINALIZE ===");
-
-            BuildingStateTransfer.Apply(replaceData, newThing);
-
-            resourceContainer.ClearAndDestroyContents(
-                DestroyMode.Vanish);
-
+            resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
             if (!Destroyed)
                 Destroy(DestroyMode.Vanish);
 
-            worker?.records.Increment(
-                RecordDefOf.ThingsConstructed);
-
-            worker?.records.Increment(
-                RecordDefOf.ThingsDeconstructed);
+            worker?.records.Increment(RecordDefOf.ThingsConstructed);
+            worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
         }
         else
         {
-            RSLog.Warning(
-                "Replacement aborted because oldThing " +
-                "was already despawned.");
+            RSLog.Info("Replacement aborted because oldThing was already despawned.");
 
-            resourceContainer.TryDropAll(
-                Position,
-                Map,
-                ThingPlaceMode.Near);
-
+            resourceContainer.TryDropAll(Position, Map, ThingPlaceMode.Near);
             Destroy(DestroyMode.Cancel);
         }
     }

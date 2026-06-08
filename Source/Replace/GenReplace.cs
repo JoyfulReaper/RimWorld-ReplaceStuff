@@ -78,6 +78,15 @@ static class GenReplace
         GenSpawn.Spawn(replaceFrame, oldThing.Position, oldThing.Map, oldThing.Rotation);
         return replaceFrame;
     }
+
+    public static Thing CompleteReplacement(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
+    {
+        ReplaceFrame.FinalizeReplace(oldThing, newThing, worker, faction);
+        BuildingStateTransfer.Apply(replaceData, newThing);
+
+        return newThing;
+    }
+
 }
 
 //[HarmonyPatch(typeof(DefGenerator), "GenerateImpliedDefs_PreResolve")]
