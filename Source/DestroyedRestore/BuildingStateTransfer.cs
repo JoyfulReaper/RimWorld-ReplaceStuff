@@ -279,6 +279,5 @@ public static class BuildingStateTransfer
                 Apply(attachment.state, newAttachment);
 
         }
-
     }
 }

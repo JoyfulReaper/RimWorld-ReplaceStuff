@@ -284,6 +284,7 @@ public class Designator_ReplaceStuff : Designator
         }
     }
 
+    // TODO Start refactoring from here -
     public static void DoReplace(Thing thing, ThingDef stuffDef)
     {
         var pos = thing.Position;

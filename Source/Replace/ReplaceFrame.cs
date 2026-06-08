@@ -164,6 +164,7 @@ class ReplaceFrame : Frame
         if (oldThing != null && oldThing.Spawned)
         {
             var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
+            GenSpawn.Spawn(newThing, Position, Map, Rotation, WipeMode.Vanish);
             GenReplace.CompleteReplacement(oldThing, newThing, replaceData, worker);
 
             resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
@@ -173,7 +174,6 @@ class ReplaceFrame : Frame
                 thing.Destroy(DestroyMode.Vanish);
             }
 
-            GenSpawn.Spawn(newThing, Position, Map, Rotation, WipeMode.Vanish);
             //Destroy(DestroyMode.Vanish);
 
             worker?.records.Increment(RecordDefOf.ThingsConstructed);
@@ -222,9 +222,12 @@ class ReplaceFrame : Frame
         if (oldThing is null || !oldThing.Spawned || oldThing.Map is null)
             return;
 
+#if DEBUG
+        // nothing
+#else
         if (Current.ProgramState != ProgramState.Playing)
             return;
-
+#endif
         var oldDef = oldThing.def;
         var stuffDef = oldThing.Stuff;
 
@@ -285,7 +288,7 @@ class ReplaceFrame : Frame
             {
                 QualityCategory qualityCreatedByPawn = QualityUtility.GenerateQualityCreatedByPawn(worker, SkillDefOf.Construction);
                 compQuality.SetQuality(qualityCreatedByPawn, ArtGenerationContext.Colony);
-                QualityUtility.SendCraftNotification(oldThing, worker); // TODO is this a bug?
+                QualityUtility.SendCraftNotification(newThing, worker); // TODO is this a bug?
             }
 
             oldThing.Destroy(DestroyMode.Deconstruct);

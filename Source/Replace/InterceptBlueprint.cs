@@ -21,6 +21,7 @@ namespace Replace_Stuff.Replace;
 [HarmonyPatch(typeof(Designator_Build), nameof(Designator_Build.DesignateSingleCell))]
 class InterceptDesignator_Build
 {
+    // TODO Start refactoring from here -
     public static bool Prefix(Designator_Build __instance, IntVec3 c, BuildableDef ___entDef, Rot4 ___placingRot)
     {
         if (__instance == null || ___entDef == null) return true;
