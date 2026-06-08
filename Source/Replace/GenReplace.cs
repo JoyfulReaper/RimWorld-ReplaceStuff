@@ -49,14 +49,14 @@ static class GenReplace
 {
     public static ReplaceFrame PlaceReplaceFrame(Thing oldThing, ThingDef stuff)
     {
-        RSLog.Warning($"PlaceReplaceFrame called for {oldThing}");
+        RSLog.Debug($"PlaceReplaceFrame called for {oldThing}");
 
         ThingDef replaceFrameDef =
             ThingDefGenerator_ReplaceFrame.ReplaceFrameDefFor(oldThing.def);
 
         if (replaceFrameDef == null)
         {
-            RSLog.Warning($"No replace frame def found for {oldThing.def.defName}");
+            RSLog.Debug($"No replace frame def found for {oldThing.def.defName}");
             return null;
         }
 

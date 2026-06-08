@@ -393,8 +393,8 @@ class ReplaceFrame : Frame
     public static void FinalizeReplace(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
     {
         // TODO: Replace the WARNING()
-        RSLog.Warning($"FinalizeReplace old={oldThing} new={newThing}");
-        RSLog.Warning($"oldThing.Destroyed={oldThing.Destroyed} " + $"Spawned={oldThing.Spawned} " + $"MapNull={oldThing.Map == null}");
+        RSLog.Debug($"FinalizeReplace old={oldThing} new={newThing}");
+        RSLog.Debug($"oldThing.Destroyed={oldThing.Destroyed} " + $"Spawned={oldThing.Spawned} " + $"MapNull={oldThing.Map == null}");
 
 
         // Set the quality of the new thing base on construction level of builder TODO MAKE THIS OPTION
@@ -412,17 +412,17 @@ class ReplaceFrame : Frame
         {
             DeconstructDropStuff(oldThing);
 
-            RSLog.Warning(
+            RSLog.Debug(
                 $"OLD STATUS " +
                 $"spawned={oldThing.Spawned} " +
                 $"mapNull={oldThing.Map == null}");
 
-            RSLog.Warning(
+            RSLog.Debug(
                 $"NEW STATUS " +
                 $"spawned={newThing.Spawned} " +
                 $"destroyed={newThing.Destroyed}");
 
-            RSLog.Warning(
+            RSLog.Debug(
                 $"DestroyMode path executing. " +
                 $"Faction={oldThing.Faction} " +
                 $"HP={oldThing.HitPoints}/{oldThing.MaxHitPoints}");
@@ -440,7 +440,7 @@ class ReplaceFrame : Frame
             var attached = GenConstruct.GetAttachedBuildings(oldThing);
             foreach (var t in attached)
             {
-                RSLog.Warning(
+                RSLog.Debug(
                     $"{t.def.defName} destroyed={t.Destroyed} spawned={t.Spawned}");
             }
 
