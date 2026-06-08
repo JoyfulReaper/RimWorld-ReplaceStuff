@@ -218,7 +218,7 @@ public static class ThingDefGenerator_ReplaceFrame
         thingDef.entityDefToBuild = def;
         //def.replaceFrameDef = thingDef;	//Dictionary instead
 
-        thingDef.modContentPack = LoadedModManager.GetMod<ReplaceStuffPrefomanceMod>().Content;
+        thingDef.modContentPack = LoadedModManager.GetMod<ReplaceStuffPrefomance>().Content;
         return thingDef;
     }
 
