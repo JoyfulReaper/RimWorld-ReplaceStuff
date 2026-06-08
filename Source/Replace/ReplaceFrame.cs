@@ -266,7 +266,7 @@ class ReplaceFrame : Frame
     /// 
     public static void DeconstructDropStuff(Thing oldThing)
     {
-        if (oldThing is null || !oldThing.Spawned || oldThing.Map is null)   // ITS FAILING BECAUSE OLD THING IS NULL HERE  HOW TO FIX?
+        if (oldThing is null || !oldThing.Spawned || oldThing.Map is null)
             return;
 
 #if DEBUG

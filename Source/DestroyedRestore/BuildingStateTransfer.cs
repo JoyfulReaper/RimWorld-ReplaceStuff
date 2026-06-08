@@ -163,13 +163,6 @@ public static class BuildingStateTransfer
 
             if (data.storagePriority.HasValue)
                 settings.Priority = data.storagePriority.Value;
-
-
-            if (data.storagePriority.HasValue && settings.Priority != data.storagePriority.Value)
-            {
-                settings.Priority = data.storagePriority.Value;
-                RSLog.Debug($"Re-asserted Priority to {settings.Priority} after Notify.");
-            }
         }
 
         foreach (var attachment in data.attachedBuildings)

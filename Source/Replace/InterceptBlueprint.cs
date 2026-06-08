@@ -89,7 +89,7 @@ class InterceptDesignator_Build
         }
 
         if (thingToReplace == null)
-            return true; // HERE???
+            return true;
 
         ReplaceHandler.ExecuteReplacement(thingToReplace, __instance.StuffDef);
         return false;
