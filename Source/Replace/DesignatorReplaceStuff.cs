@@ -12,7 +12,6 @@
  */
 
 using Replace_Stuff.NewThing;
-using Replace_Stuff.Utilities;
 using RimWorld;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,35 +19,30 @@ using Verse;
 
 namespace Replace_Stuff.Replace;
 
-[StaticConstructorOnStartup]
-public static class TexDefOf
-{
-    public static Texture2D replaceIcon = ContentFinder<Texture2D>.Get("ReplaceStuff", true);
-}
-
 public class Designator_ReplaceStuff : Designator
 {
-    private ThingDef stuffDef;
+    public override DrawStyleCategoryDef DrawStyleCategory =>
+        DrawStyleCategoryDefOf.Orders;
 
-    public override DrawStyleCategoryDef DrawStyleCategory => DrawStyleCategoryDefOf.Orders;
+    private ThingDef stuffDef;
 
     private static readonly Vector2 DragPriceDrawOffset = new Vector2(19f, 17f);
     private static readonly Dictionary<BuildableDef, HashSet<ThingDef>> _allowedStuffCache = new();
 
     public Designator_ReplaceStuff()
     {
-        this.soundDragSustain = SoundDefOf.Designate_DragBuilding;
-        this.soundDragChanged = SoundDefOf.Designate_DragStandard_Changed;
-        this.soundSucceeded = SoundDefOf.Designate_PlaceBuilding;
+        soundDragSustain = SoundDefOf.Designate_DragBuilding;
+        soundDragChanged = SoundDefOf.Designate_DragStandard_Changed;
+        soundSucceeded = SoundDefOf.Designate_PlaceBuilding;
 
-        this.defaultLabel = "TD.Replace".Translate();
-        this.defaultDesc = "TD.ReplaceDesc".Translate();
-        this.icon = TexDefOf.replaceIcon;
-        this.iconProportions = new Vector2(1f, 1f);
-        this.iconDrawScale = 1f;
+        defaultLabel = "TD.Replace".Translate();
+        defaultDesc = "TD.ReplaceDesc".Translate();
+        icon = TexDefOf.replaceIcon;
+        iconProportions = new Vector2(1f, 1f);
+        iconDrawScale = 1f;
         this.ResetStuffToDefault();
 
-        this.hotKey = KeyBindingDefOf.Command_ColonistDraft;
+        hotKey = KeyBindingDefOf.Command_ColonistDraft;
     }
 
     public void ResetStuffToDefault()
@@ -58,10 +52,10 @@ public class Designator_ReplaceStuff : Designator
 
     public override GizmoResult GizmoOnGUI(Vector2 topLeft, float maxWidth, GizmoRenderParms parms)
     {
-        GizmoResult result = base.GizmoOnGUI(topLeft, maxWidth, parms);
+        var result = base.GizmoOnGUI(topLeft, maxWidth, parms);
 
-        float w = GetWidth(maxWidth);
-        Rect rect = new Rect(topLeft.x + w / 2, topLeft.y, w / 2, Height / 2);
+        var w = GetWidth(maxWidth);
+        var rect = new Rect(topLeft.x + w / 2, topLeft.y, w / 2, Height / 2);
         Widgets.ThingIcon(rect, stuffDef);
 
         return result;
@@ -72,18 +66,18 @@ public class Designator_ReplaceStuff : Designator
         base.DrawMouseAttachments();
         if (!ArchitectCategoryTab.InfoRect.Contains(UI.MousePositionOnUIInverted))
         {
-            int cost = 0;
-            List<IntVec3> dragCells = Find.DesignatorManager.Dragger.DragCells;
+            var cost = 0;
+            var dragCells = Find.DesignatorManager.Dragger.DragCells;
 
             // Loop over the cells being dragged
             for (int c = 0; c < dragCells.Count; c++)
             {
-                IntVec3 cell = dragCells[c];
-                List<Thing> thingsInCell = cell.GetThingList(Map);
+                var cell = dragCells[c];
+                var thingsInCell = cell.GetThingList(Map);
 
                 for (int t = 0; t < thingsInCell.Count; t++)
                 {
-                    Thing thing = thingsInCell[t];
+                    var thing = thingsInCell[t];
 
                     if (thing is not ReplaceFrame && CanReplaceStuffFor(stuffDef, thing))
                     {
@@ -95,20 +89,21 @@ public class Designator_ReplaceStuff : Designator
                 }
             }
 
-            Vector2 drawPoint = Event.current.mousePosition + DragPriceDrawOffset;
-            Rect iconRect = new Rect(drawPoint.x, drawPoint.y, 27f, 27f);
+            var drawPoint = Event.current.mousePosition + DragPriceDrawOffset;
+            var iconRect = new Rect(drawPoint.x, drawPoint.y, 27f, 27f);
             GUI.color = stuffDef.uiIconColor;
             GUI.DrawTexture(iconRect, stuffDef.uiIcon);
 
-            Rect textRect = new Rect(drawPoint.x + 29f, drawPoint.y, 999f, 29f);
-            string text = cost.ToString();
-            if (base.Map.resourceCounter.GetCount(stuffDef) < cost)
+            var textRect = new Rect(drawPoint.x + 29f, drawPoint.y, 999f, 29f);
+            var text = cost.ToString();
+            if (Map.resourceCounter.GetCount(stuffDef) < cost)
             {
                 GUI.color = Color.red;
                 text = text + " (" + "NotEnoughStoredLower".Translate() + ")";
             }
             else
                 GUI.color = Color.white;
+
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.MiddleLeft;
             Widgets.Label(textRect, text);
@@ -119,17 +114,18 @@ public class Designator_ReplaceStuff : Designator
 
     public override void ProcessInput(Event ev)
     {
-        if (!CheckCanInteract()) return;
+        if (!CheckCanInteract())
+            return;
 
         var amounts = Map.resourceCounter.AllCountedAmounts;
-        List<FloatMenuOption> list = new List<FloatMenuOption>(amounts.Count);
-
-        bool godMode = DebugSettings.godMode;
+        var list = new List<FloatMenuOption>(amounts.Count);
+        var godMode = DebugSettings.godMode;
 
         foreach (var kvp in amounts)
         {
-            ThingDef def = kvp.Key;
-            if (!def.IsStuff || (!godMode && kvp.Value <= 0)) continue;
+            var def = kvp.Key;
+            if (!def.IsStuff || (!godMode && kvp.Value <= 0))
+                continue;
 
             list.Add(new FloatMenuOption(def.LabelCap, () =>
             {
@@ -155,7 +151,7 @@ public class Designator_ReplaceStuff : Designator
         GenDraw.DrawNoBuildEdgeLines();
         if (!ArchitectCategoryTab.InfoRect.Contains(UI.MousePositionOnUIInverted))
         {
-            IntVec3 mousePos = UI.MouseCell();
+            var mousePos = UI.MouseCell();
             if (mousePos.InBounds(Map))
                 DrawGhost(CanDesignateCell(mousePos).Accepted ? new Color(0.5f, 1f, 0.6f, 0.4f) : new Color(1f, 0f, 0f, 0.4f));
         }
@@ -171,10 +167,10 @@ public class Designator_ReplaceStuff : Designator
         DesignatorContext.designating = true;
         try
         {
-            if (!CanReplaceStuffAt(stuffDef, cell, Map))
+            if (!ReplacementValidator.CanReplaceStuffAt(stuffDef, cell, Map))
                 return false;
 
-            List<Thing> things = cell.GetThingList(Map);
+            var things = cell.GetThingList(Map);
             for (int i = 0; i < things.Count; i++)
             {
                 if (things[i] is ReplaceFrame rf && rf.EntityToBuildStuff() == stuffDef)
@@ -188,20 +184,6 @@ public class Designator_ReplaceStuff : Designator
             DesignatorContext.designating = false;
         }
     }
-
-    public static bool CanReplaceStuffAt(ThingDef stuff, IntVec3 cell, Map map)
-    {
-        List<Thing> things = cell.GetThingList(map);
-        for (int i = 0; i < things.Count; i++)
-        {
-            if (CanReplaceStuffFor(stuff, things[i]))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
 
     public static bool CanReplaceStuffFor(ThingDef stuff, Thing thing, ThingDef matchDef = null)
     {
@@ -259,13 +241,13 @@ public class Designator_ReplaceStuff : Designator
         Thing firstReplaceable = null;
         Thing firstBlueprintOrFrame = null;
 
-        List<Thing> replaceables = cell.GetThingList(map);
+        var replaceables = cell.GetThingList(map);
 
         for (int i = 0; i < replaceables.Count; i++)
         {
-            Thing replaceable = replaceables[i];
-
-            if (!CanReplaceStuffFor(stuffDef, replaceable)) continue;
+            var replaceable = replaceables[i];
+            if (!CanReplaceStuffFor(stuffDef, replaceable))
+                continue;
 
             firstReplaceable ??= replaceable;
 
@@ -276,73 +258,12 @@ public class Designator_ReplaceStuff : Designator
             }
         }
 
-        Thing thingToReplace = firstBlueprintOrFrame ?? firstReplaceable;
+        var thingToReplace = firstBlueprintOrFrame ?? firstReplaceable;
 
-        if (thingToReplace != null)
+        if (thingToReplace is not null)
         {
-            DoReplace(thingToReplace, stuffDef);
+            ReplaceHandler.ExecuteReplacement(thingToReplace, stuffDef);
         }
-    }
-
-    // TODO Start refactoring from here -
-    public static void DoReplace(Thing thing, ThingDef stuffDef)
-    {
-        var pos = thing.Position;
-        var rot = thing.Rotation;
-        var map = thing.Map;
-
-        //In case you're replacing with a stuff that needs a higher affordance that bridges can handle.
-        PlaceBridges.EnsureBridge.PlaceBridgeIfNeeded(thing.def, pos, map, rot, Faction.OfPlayer, stuffDef);
-
-        //CanReplaceStuffFor has verified this is different stuff
-        //so the task here is: place new replacements, kill old replacement
-        //Too finicky to change stuff of current replacement - canceling jobs and such.
-        if (thing is Blueprint_Build oldBP)
-        {
-            oldBP.Destroy(DestroyMode.Cancel);
-            //Destroy before Place beacause GenSpawn.Spawn will wipe it
-
-            GenConstruct.PlaceBlueprintForBuild(oldBP.def.entityDefToBuild, pos, map, rot, Faction.OfPlayer, stuffDef);
-        }
-        else if (thing is ReplaceFrame oldRF)
-        {
-            if (DebugSettings.godMode)
-            {
-                ReplaceUtility.InstantReplace(oldRF.oldThing, stuffDef);
-                oldRF.Destroy(DestroyMode.Cancel);
-                return;
-            }
-            if (oldRF.oldStuff != stuffDef)
-            {
-                //replacement frame should keep deconstruction work mount
-                ReplaceFrame newFrame = GenReplace.PlaceReplaceFrame(oldRF.oldThing, stuffDef);
-                if (newFrame != null)
-                {
-                    newFrame.workDone = Mathf.Min(oldRF.workDone, oldRF.WorkToDeconstruct);
-                }
-            }
-            //else, if same stuff as old stuff, we just chose replace with original stuff, so we're already done - just destroy the frame.
-            //upgrade frames/blueprints
-
-            oldRF.Destroy(DestroyMode.Cancel);
-        }
-        else if (thing is Frame oldFrame)
-        {
-            oldFrame.Destroy(DestroyMode.Cancel);
-
-            GenConstruct.PlaceBlueprintForBuild(oldFrame.def.entityDefToBuild, pos, map, rot, Faction.OfPlayer, stuffDef);
-        }
-        else if (DebugSettings.godMode)
-        {
-            ReplaceUtility.InstantReplace(thing, stuffDef);
-        }
-        else
-        {
-            //Oh of course the standard case is, just place a replace frame! I almost forgot about that.
-            GenReplace.PlaceReplaceFrame(thing, stuffDef);
-        }
-
-        FleckMaker.ThrowMetaPuffs(GenAdj.OccupiedRect(pos, rot, thing.def.size), map);
     }
 
     public override void DrawPanelReadout(ref float curY, float width)
