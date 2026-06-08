@@ -164,8 +164,8 @@ class ReplaceFrame : Frame
         if (oldThing != null && oldThing.Spawned)
         {
             var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
-            GenSpawn.Spawn(newThing, Position, Map, Rotation, WipeMode.Vanish);
             GenReplace.CompleteReplacement(oldThing, newThing, replaceData, worker);
+            GenSpawn.Spawn(newThing, Position, Map, Rotation, WipeMode.Vanish);
 
             resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
 
@@ -174,8 +174,6 @@ class ReplaceFrame : Frame
                 thing.Destroy(DestroyMode.Vanish);
             }
 
-            //Destroy(DestroyMode.Vanish);
-
             worker?.records.Increment(RecordDefOf.ThingsConstructed);
             worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
         }
@@ -183,70 +181,6 @@ class ReplaceFrame : Frame
         {
             resourceContainer.TryDropAll(Position, Map, ThingPlaceMode.Near);
             Destroy(DestroyMode.Cancel);
-        }
-    }
-
-    /// <summary>
-    /// Handles the cleanup and feedback when a replacement task fails (e.g., pawn interrupted or material deficit).
-    /// </summary>
-    /// <param name="worker">The pawn who was attempting the work.</param>
-    public new void FailConstruction(Pawn worker)
-    {
-        RSLog.Debug($"Failed replace frame! work was {workDone}, Decon is {WorkToDeconstructDef(def, oldStuff)}, total is {WorkToBuild}");
-
-        // Cap workDone at the cost of deconstruction. 
-        // If they hadn't even finished deconstruction, they shouldn't get progress credit 
-        // for the new building construction.
-        workDone = Mathf.Min(workDone, WorkToDeconstruct);
-
-        if (workDone < WorkToDeconstruct)
-            return;
-
-        GenLeaving.DoLeavingsFor(this, Map, DestroyMode.FailConstruction);
-        MoteMaker.ThrowText(DrawPos, Map, "TextMote_ConstructionFail".Translate());
-
-        if (Faction == Faction.OfPlayer && WorkToReplace > LargeConstructionThreshold)
-        {
-            Messages.Message("MessageConstructionFailed".Translate(LabelEntityToBuild, worker.LabelShort, worker.Named("WORKER")),
-                new TargetInfo(Position, Map), MessageTypeDefOf.NegativeEvent);
-        }
-    }
-
-    /// <summary>
-    /// Calculate resources to drop for the old thing before destroying it
-    /// </summary>
-    /// <param name="oldThing">Thing to drop resource for</param>
-    /// 
-    public static void DeconstructDropStuff(Thing oldThing)
-    {
-        if (oldThing is null || !oldThing.Spawned || oldThing.Map is null)
-            return;
-
-#if DEBUG
-        // nothing
-#else
-        if (Current.ProgramState != ProgramState.Playing)
-            return;
-#endif
-        var oldDef = oldThing.def;
-        var stuffDef = oldThing.Stuff;
-
-        if (stuffDef == null)
-            return;
-
-        // We use our own calculator here instead of standard GenLeaving.DoLeavingsFor 
-        // because we only want to drop the 'stuff' (material) used in construction,
-        // rather than all items (like components/steel) usually dropped by deconstruction.
-        if (GenLeaving.CanBuildingLeaveResources(oldThing, DestroyMode.Deconstruct))
-        {
-            var count = TotalStuffNeeded(oldDef, stuffDef);
-            var leaveCount = GetBuildingResourcesLeaveCalculator(oldThing, DestroyMode.Deconstruct)(count);
-            if (leaveCount > 0)
-            {
-                var leftThing = ThingMaker.MakeThing(stuffDef);
-                leftThing.stackCount = leaveCount;
-                GenDrop.TryDropSpawn(leftThing, oldThing.Position, oldThing.Map, ThingPlaceMode.Near, out _);
-            }
         }
     }
 
@@ -295,7 +229,71 @@ class ReplaceFrame : Frame
         }
         else
         {
-            RSLog.Error("Old thing already destroyed before FinalizeReplace()");
+            RSLog.Error("FinalizeReplace(): oldThing was already destroyed.");
+        }
+    }
+
+    /// <summary>
+    /// Handles the cleanup and feedback when a replacement task fails (e.g., pawn interrupted or material deficit).
+    /// </summary>
+    /// <param name="worker">The pawn who was attempting the work.</param>
+    public new void FailConstruction(Pawn worker)
+    {
+        RSLog.Debug($"Failed replace frame! work was {workDone}, Decon is {WorkToDeconstructDef(def, oldStuff)}, total is {WorkToBuild}");
+
+        // Cap workDone at the cost of deconstruction. 
+        // If they hadn't even finished deconstruction, they shouldn't get progress credit 
+        // for the new building construction.
+        workDone = Mathf.Min(workDone, WorkToDeconstruct);
+
+        if (workDone < WorkToDeconstruct)
+            return;
+
+        GenLeaving.DoLeavingsFor(this, Map, DestroyMode.FailConstruction);
+        MoteMaker.ThrowText(DrawPos, Map, "TextMote_ConstructionFail".Translate());
+
+        if (Faction == Faction.OfPlayer && WorkToReplace > LargeConstructionThreshold)
+        {
+            Messages.Message("MessageConstructionFailed".Translate(LabelEntityToBuild, worker.LabelShort, worker.Named("WORKER")),
+                new TargetInfo(Position, Map), MessageTypeDefOf.NegativeEvent);
+        }
+    }
+
+    /// <summary>
+    /// Calculate resources to drop for the old thing before destroying it
+    /// </summary>
+    /// <param name="oldThing">Thing to drop resource for</param>
+    /// 
+    public static void DeconstructDropStuff(Thing oldThing)
+    {
+        if (oldThing is null || !oldThing.Spawned || oldThing.Map is null)   // ITS FAILING BECAUSE OLD THING IS NULL HERE  HOW TO FIX?
+            return;
+
+#if DEBUG
+        // nothing
+#else
+        if (Current.ProgramState != ProgramState.Playing)
+            return;
+#endif
+        var oldDef = oldThing.def;
+        var stuffDef = oldThing.Stuff;
+
+        if (stuffDef == null)
+            return;
+
+        // We use our own calculator here instead of standard GenLeaving.DoLeavingsFor 
+        // because we only want to drop the 'stuff' (material) used in construction,
+        // rather than all items (like components/steel) usually dropped by deconstruction.
+        if (GenLeaving.CanBuildingLeaveResources(oldThing, DestroyMode.Deconstruct))
+        {
+            var count = TotalStuffNeeded(oldDef, stuffDef);
+            var leaveCount = GetBuildingResourcesLeaveCalculator(oldThing, DestroyMode.Deconstruct)(count);
+            if (leaveCount > 0)
+            {
+                var leftThing = ThingMaker.MakeThing(stuffDef);
+                leftThing.stackCount = leaveCount;
+                GenDrop.TryDropSpawn(leftThing, oldThing.Position, oldThing.Map, ThingPlaceMode.Near, out _);
+            }
         }
     }
 

@@ -13,7 +13,6 @@
 
 using HarmonyLib;
 using RimWorld;
-using System.Collections.Generic;
 using Verse;
 
 namespace Replace_Stuff.Replace;
@@ -38,10 +37,15 @@ class InterceptDesignator_Build
     /// </returns>
     public static bool Prefix(Designator_Build __instance, IntVec3 c, BuildableDef ___entDef, Rot4 ___placingRot)
     {
+#if DEBUG
+        System.Diagnostics.Debugger.Break();
+#endif
+
         if (__instance == null || ___entDef == null) return true;
 
-        ThingDef thingDef = ___entDef as ThingDef;
-        if (thingDef == null) return true;
+        var thingDef = ___entDef as ThingDef;
+        if (thingDef == null)
+            return true;
 
         if (thingDef.MadeFromStuff && __instance.StuffDef == null)
         {
@@ -57,14 +61,15 @@ class InterceptDesignator_Build
             ___placingRot = DoorUtility.DoorRotationAt(c, __instance.Map, thingDef.building.preferConnectingToFences);
 
         // Optimized search for replaceable items
-        List<Thing> replaceables = c.GetThingList(__instance.Map);
-        if (replaceables.Count == 0) return true;
+        var replaceables = c.GetThingList(__instance.Map);
+        if (replaceables.Count == 0)
+            return true;
 
         Thing thingToReplace = null;
 
         for (int i = 0; i < replaceables.Count; i++)
         {
-            Thing replaceable = replaceables[i];
+            var replaceable = replaceables[i];
 
             if (replaceable.Rotation != ___placingRot) continue;
             if (!Designator_ReplaceStuff.CanReplaceStuffFor(__instance.StuffDef, replaceable, thingDef)) continue;
@@ -83,7 +88,8 @@ class InterceptDesignator_Build
             }
         }
 
-        if (thingToReplace == null) return true;
+        if (thingToReplace == null)
+            return true; // HERE???
 
         ReplaceHandler.ExecuteReplacement(thingToReplace, __instance.StuffDef);
         return false;

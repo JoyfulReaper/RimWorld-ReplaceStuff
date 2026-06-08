@@ -44,6 +44,10 @@ internal static class Frame_CompleteConstruction_Patch
 {
     public static bool Prefix(Frame __instance, Pawn worker)
     {
+#if DEBUG
+        System.Diagnostics.Debugger.Break();
+#endif
+
         if (__instance is ReplaceFrame rf)
         {
             rf.CompleteConstruction(worker);
