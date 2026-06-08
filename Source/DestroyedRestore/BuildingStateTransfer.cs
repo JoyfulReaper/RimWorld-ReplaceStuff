@@ -28,7 +28,6 @@ public static class BuildingStateTransfer
 
     public static ReplaceData Capture(Thing thing, HashSet<int> visited)
     {
-        RSLog.Debug($"CAPTURE START {thing}");
         RSLog.Debug($"CAPTURE {thing.def.defName} implements IStoreSettingsParent = {thing is IStoreSettingsParent}");
 
         if (!visited.Add(thing.thingIDNumber))
@@ -53,28 +52,6 @@ public static class BuildingStateTransfer
             data.storagePriority = settings.Priority;
             data.storageFilter = new ThingFilter();
             data.storageFilter.CopyAllowancesFrom(settings.filter);
-
-            RSLog.Debug($"CAPTURE: allowed defs = {data.storageFilter.AllowedDefCount}");
-            RSLog.Debug($"CAPTURE: priority = {data.storagePriority}");
-            RSLog.Debug($"Captured defs={data.storageFilter.AllowedDefCount}");
-            if (thing is Building_Storage bs)
-            {
-                RSLog.Debug($"storageGroup={(bs.storageGroup != null)}");
-                RSLog.Debug($"settings hash={bs.settings.GetHashCode()}");
-                RSLog.Debug($"getsettings hash={bs.GetStoreSettings().GetHashCode()}");
-                RSLog.Debug($"ThingStore hash = {bs.settings.GetHashCode()}");
-                RSLog.Debug($"GetStore hash = {bs.GetStoreSettings().GetHashCode()}");
-                RSLog.Debug($"storageGroup null = {bs.storageGroup == null}");
-                RSLog.Debug($"ThingStore priority = {bs.settings.Priority}");
-                RSLog.Debug($"GetStore priority = {bs.GetStoreSettings().Priority}");
-                var slotGroup = bs.GetSlotGroup();
-
-                RSLog.Debug(
-                    $"=== CAPTURE SLOTGROUP ===\n" +
-                    $"Thing: {thing}\n" +
-                    $"Rotation: {thing.Rotation}\n" +
-                    $"Cells: {string.Join(", ", slotGroup.CellsList)}");
-            }
         }
 
         if (thing is Building_Cooler cooler)
@@ -126,12 +103,6 @@ public static class BuildingStateTransfer
             $"Priority={data.storagePriority} " +
             $"Defs={data.storageFilter?.AllowedDefCount}");
 
-        RSLog.Debug(
-            $"=== APPLY ROTATION ===\n" +
-            $"Thing: {thing}\n" +
-            $"Captured rotation: {data?.rotation}\n" +
-            $"Current rotation: {thing.Rotation}");
-
         if (data is null)
             return;
 
@@ -182,30 +153,6 @@ public static class BuildingStateTransfer
                 $"Priority: {settings.Priority}\n" +
                 $"Allowed defs: {settings.filter.AllowedDefCount}");
 
-            if (thing is Building_Storage bs)
-            {
-                RSLog.Debug(
-                    $"storageGroup={(bs.storageGroup != null)}");
-
-                RSLog.Debug(
-                    $"settings hash={bs.settings.GetHashCode()}");
-
-                RSLog.Debug(
-                    $"getsettings hash={bs.GetStoreSettings().GetHashCode()}");
-                var slotGroup = bs.GetSlotGroup();
-
-                RSLog.Debug(
-                    $"=== APPLY SLOTGROUP ===\n" +
-                    $"Thing: {thing}\n" +
-                    $"Rotation: {thing.Rotation}\n" +
-                    $"Cells: {string.Join(", ", slotGroup.CellsList)}");
-
-                foreach (var c in bs.AllSlotCellsList())
-                {
-                    RSLog.Debug($"CELL {c}");
-                }
-            }
-
             RSLog.Debug($"Before: {settings.Priority}");
             RSLog.Debug($"Capturing storage for {thing.def.defName}");
             RSLog.Debug($"Priority: {settings.Priority}");
@@ -217,38 +164,12 @@ public static class BuildingStateTransfer
             if (data.storagePriority.HasValue)
                 settings.Priority = data.storagePriority.Value;
 
-            if (thing is Building_Storage bsss)
-            {
-                RSLog.Debug($"ThingStore hash = {bsss.settings.GetHashCode()}");
-                RSLog.Debug($"GetStore hash = {bsss.GetStoreSettings().GetHashCode()}");
-                RSLog.Debug($"storageGroup null = {bsss.storageGroup == null}");
-                RSLog.Debug($"ThingStore priority = {bsss.settings.Priority}");
-                RSLog.Debug($"GetStore priority = {bsss.GetStoreSettings().Priority}");
-            }
-
-            //storage.Notify_SettingsChanged(); Probably not needed RW does it in StorageSettings.CopyFrom()
-            RSLog.Debug($"Final check: {settings.Priority}, {settings.filter.AllowedDefCount}");
 
             if (data.storagePriority.HasValue && settings.Priority != data.storagePriority.Value)
             {
                 settings.Priority = data.storagePriority.Value;
                 RSLog.Debug($"Re-asserted Priority to {settings.Priority} after Notify.");
             }
-
-            if (thing is Building_Storage bus)
-            {
-                var slotGroup = bus.GetSlotGroup();
-
-                RSLog.Debug(
-                    $"=== POST NOTIFY SLOTGROUP ===\n" +
-                    $"Thing: {thing}\n" +
-                    $"Rotation: {thing.Rotation}\n" +
-                    $"Cells: {string.Join(", ", slotGroup.CellsList)}\n" +
-                    $"Priority: {settings.Priority}\n" +
-                    $"AllowedDefs: {settings.filter.AllowedDefCount}");
-            }
-            RSLog.Debug($"AFTER APPLY: building defs = {settings.filter.AllowedDefCount}");
-            RSLog.Debug($"Pritory After: {settings.Priority}");
         }
 
         foreach (var attachment in data.attachedBuildings)
