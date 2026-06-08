@@ -1,152 +1,201 @@
-﻿using RimWorld;
+﻿/*
+ * REPLACE STUFF: Perfomance Edition
+ * 
+ * 
+ * Part of this code is based on Replace Stuff
+ * Copyright (c) 2024 Alex Tearse-Doyle
+ * Licensed under the MIT License.
+ *
+ * Modified by Kyle Givler
+ * Copyright (c) 2026 Kyle Givler
+ * Licensed under the MIT License.
+ */
+
+using Replace_Stuff.Replace;
+using Replace_Stuff.Utilities;
+using RimWorld;
+using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using Verse;
 
-namespace Replace_Stuff.DestroyedRestore
+namespace Replace_Stuff.DestroyedRestore;
+
+[StaticConstructorOnStartup]
+public static class BuildingStateTransfer
 {
-    [StaticConstructorOnStartup]
-    public static class BuildingStateTransfer
+    static BuildingStateTransfer() { }
+
+    public static ReplaceData Capture(Thing thing, HashSet<int> visited)
     {
-        static BuildingStateTransfer() { }
+        RSLog.Debug($"CAPTURE START {thing}");
+        RSLog.Debug($"CAPTURE {thing.def.defName} implements IStoreSettingsParent = {thing is IStoreSettingsParent}");
 
-        public static ReplaceData Capture(Thing thing)
+        if (!visited.Add(thing.thingIDNumber))
+            return null;
+
+        ReplaceData data = new()
         {
-            Log.Message($"CAPTURE {thing.def.defName} implements IStoreSettingsParent = {thing is IStoreSettingsParent}");
+            faction = thing.Faction,
+            rotation = thing.Rotation
+        };
 
-            ReplaceData data = new();
+        if (thing.TryGetComp<CompQuality>() is CompQuality qc)
+            data.quality = qc.Quality;
 
-            Log.Message($"Filter null={data.storageFilter == null}");
+        if (thing is IStoreSettingsParent storage)
+        {
+            RSLog.Debug("CAPTURE STORAGE");
 
+            var settings = storage.GetStoreSettings();
+            data.storagePriority = settings.Priority;
+            data.storageFilter = new ThingFilter();
+            data.storageFilter.CopyAllowancesFrom(settings.filter);
 
-            data.faction = thing.Faction;
-            data.rotation = thing.Rotation;
-
-            if (thing.TryGetComp<CompQuality>() is CompQuality q)
-                data.quality = q.Quality;
-
-            if (thing is IStoreSettingsParent storage)
-            {
-                Log.Message("CAPTURE STORAGE");
-
-                StorageSettings settings = storage.GetStoreSettings();
-
-                data.storagePriority = settings.Priority;
-                data.storageFilter = new ThingFilter();
-                data.storageFilter.CopyAllowancesFrom(settings.filter);
-
-                Log.Message($"CAPTURE: allowed defs = {data.storageFilter.AllowedDefCount}");
-
-                Log.Message($"CAPTURE: priority = {data.storagePriority}");
-
-                Log.Message(
-                    $"Captured defs={data.storageFilter.AllowedDefCount}"
-                );
-            }
-
-            //if (thing is IStoreSettingsParent storage)
-            //{
-            //    StorageSettings settings = storage.GetStoreSettings();
-
-            //    Log.Message($"{ReplaceStuffPrefomanceMod.settings.debugPrefix} Capturing storage for {thing.def.defName}");
-            //    Log.Message($"{ReplaceStuffPrefomanceMod.settings.debugPrefix} Priority: {settings.Priority}");
-
-            //    data.storagePriority = settings.Priority;
-
-            //    data.storageFilter = new ThingFilter();
-            //    data.storageFilter.CopyAllowancesFrom(settings.filter);
-            //}
-
-            if (thing is Building_Cooler cooler)
-                data.targetTemperature =
-                    cooler.compTempControl.targetTemperature;
-
-            if (thing is Building_Heater heater)
-                data.targetTemperature =
-                    heater.compTempControl.targetTemperature;
-
-            if (thing is Building_PlantGrower grower)
-                data.plantDef =
-                    grower.GetPlantDefToGrow();
-
-            if (thing is Building_WorkTable table)
-                data.bills =
-                    table.BillStack.Bills.ToList();
-
-
-            return data;
+            RSLog.Debug($"CAPTURE: allowed defs = {data.storageFilter.AllowedDefCount}");
+            RSLog.Debug($"CAPTURE: priority = {data.storagePriority}");
+            RSLog.Debug($"Captured defs={data.storageFilter.AllowedDefCount}");
         }
 
-        public static void Apply(ReplaceData data, Thing thing)
+        if (thing is Building_Cooler cooler)
+            data.targetTemperature =
+                cooler.compTempControl.targetTemperature;
+
+        if (thing is Building_Heater heater)
+            data.targetTemperature =
+                heater.compTempControl.targetTemperature;
+
+        if (thing is Building_PlantGrower grower)
+            data.plantDef =
+                grower.GetPlantDefToGrow();
+
+        if (thing is Building_WorkTable table)
+            data.bills =
+                table.BillStack.Bills.ToList();
+
+        var attached = GenConstruct.GetAttachedBuildings(thing);
+        foreach (var at in attached)
         {
-            Log.Message($"APPLY {thing}");
+            data.attachedBuildings.Add(
+                new AttachedBuildingData
+                {
+                    def = at.def,
+                    stuff = at.Stuff,
 
-            if (data is null)
-                return;
+                    position = at.Position,
+                    rotation = at.Rotation,
 
-            Log.Message($"Applying filter null={data.storageFilter == null}");
+                    hitPoints = at.HitPoints,
+                    faction = at.Faction,
 
-            thing.SetFactionDirect(data.faction);
-            thing.Rotation = data.rotation;
+                    quality = at.TryGetComp<CompQuality>()?.Quality,
 
-            if (data.quality.HasValue && thing.TryGetComp<CompQuality>() is CompQuality q)
+                    state = Capture(at, visited)
+                });
+        }
+
+        return data;
+    }
+
+    public static void Apply(ReplaceData data, Thing thing)
+    {
+        RSLog.Debug($"APPLY {thing}");
+
+        if (data is null)
+            return;
+
+        thing.SetFactionDirect(data.faction);
+        thing.Rotation = data.rotation;
+
+        if (data.quality.HasValue && thing.TryGetComp<CompQuality>() is CompQuality cq)
+        {
+            cq.SetQuality(
+                data.quality.Value,
+                ArtGenerationContext.Colony);
+        }
+
+        if (data.targetTemperature.HasValue)
+        {
+            if (thing is Building_Cooler cooler)
+                cooler.compTempControl.targetTemperature =
+                    data.targetTemperature.Value;
+
+            if (thing is Building_Heater heater)
+                heater.compTempControl.targetTemperature =
+                    data.targetTemperature.Value;
+        }
+
+        if (data.plantDef != null && thing is Building_PlantGrower grower)
+        {
+            grower.SetPlantDefToGrow(data.plantDef);
+        }
+
+        //if (data.bills != null && thing is Building_WorkTable table)
+        //{
+        //    foreach (Bill bill in data.bills)
+        //        table.BillStack.AddBill(bill);
+        //}
+
+        if (data.bills != null && thing is Building_WorkTable table && table.BillStack.Count == 0)
+        {
+            foreach (Bill bill in data.bills)
+                table.BillStack.AddBill(bill);
+        }
+
+        if (thing is IStoreSettingsParent storage)
+        {
+            RSLog.Debug($"Applying storage to {thing.def.defName}");
+            var settings = storage.GetStoreSettings();
+
+            RSLog.Debug($"Before: {settings.Priority}");
+            RSLog.Debug($"Capturing storage for {thing.def.defName}");
+            RSLog.Debug($"Priority: {settings.Priority}");
+
+            if (data.storagePriority.HasValue)
+                settings.Priority = data.storagePriority.Value;
+
+            RSLog.Debug($"APPLY: allowed defs = {data.storageFilter.AllowedDefCount}");
+
+            if (data.storageFilter != null)
+                settings.filter.CopyAllowancesFrom(data.storageFilter);
+
+            storage.Notify_SettingsChanged();
+
+            RSLog.Debug($"AFTER APPLY: building defs = {settings.filter.AllowedDefCount}");
+            RSLog.Debug($"After: {settings.Priority}");
+        }
+
+        foreach (var attachment in data.attachedBuildings)
+        {
+            RSLog.Debug($"RESTORING ATTACHMENT {attachment.def.defName} at {attachment.position}");
+            Thing newAttachment = ThingMaker.MakeThing(attachment.def, attachment.stuff);
+
+            GenSpawn.Spawn(
+                newAttachment,
+                attachment.position,
+                thing.Map,
+                attachment.rotation,
+                WipeMode.Vanish);
+
+            newAttachment.SetFactionDirect(attachment.faction);
+            newAttachment.RemoveFromStatWorkerCaches();
+            newAttachment.Notify_ColorChanged();
+            newAttachment.HitPoints = Mathf.Min(attachment.hitPoints, newAttachment.MaxHitPoints);
+
+            if (attachment.quality.HasValue && newAttachment.TryGetComp<CompQuality>() is CompQuality aCq)
             {
-                q.SetQuality(
-                    data.quality.Value,
+                aCq.SetQuality(
+                    attachment.quality.Value,
                     ArtGenerationContext.Colony);
             }
 
-            if (data.targetTemperature.HasValue)
+            if (attachment.state != null)
             {
-                if (thing is Building_Cooler cooler)
-                    cooler.compTempControl.targetTemperature =
-                        data.targetTemperature.Value;
-
-                if (thing is Building_Heater heater)
-                    heater.compTempControl.targetTemperature =
-                        data.targetTemperature.Value;
-            }
-
-            if (data.plantDef != null && thing is Building_PlantGrower grower)
-            {
-                grower.SetPlantDefToGrow(data.plantDef);
-            }
-
-            //if (data.bills != null && thing is Building_WorkTable table)
-            //{
-            //    foreach (Bill bill in data.bills)
-            //        table.BillStack.AddBill(bill);
-            //}
-
-            if (data.bills != null && thing is Building_WorkTable table && table.BillStack.Count == 0)
-            {
-                foreach (Bill bill in data.bills)
-                    table.BillStack.AddBill(bill);
-            }
-
-            if (thing is IStoreSettingsParent storage)
-            {
-                Log.Message($"[ReplaceStuffPerfomance] Applying storage to {thing.def.defName}");
-                StorageSettings settings = storage.GetStoreSettings();
-
-                Log.Message($"[ReplaceStuffPerfomance] Before: {settings.Priority}");
-
-                Log.Message($"[ReplaceStuffPerfomance] Capturing storage for {thing.def.defName}");
-                Log.Message($"[ReplaceStuffPerfomance] Priority: {settings.Priority}");
-
-                if (data.storagePriority.HasValue)
-                    settings.Priority = data.storagePriority.Value;
-
-                Log.Message($"APPLY: allowed defs = {data.storageFilter.AllowedDefCount}");
-
-                if (data.storageFilter != null)
-                    settings.filter.CopyAllowancesFrom(data.storageFilter);
-
-                storage.Notify_SettingsChanged();
-
-                Log.Message($"AFTER APPLY: building defs = {settings.filter.AllowedDefCount}");
-
-                Log.Message($"[ReplaceStuffPerfomance] After: {settings.Priority}");
+                Apply(
+                    attachment.state,
+                    newAttachment);
             }
         }
+
     }
 }

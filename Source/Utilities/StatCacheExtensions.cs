@@ -39,7 +39,7 @@ namespace Replace_Stuff.Utilities;
 /// <see cref="Thing"/> from all active stat caches at native-like execution speeds.
 /// </para>
 /// </remarks>
-public static class RemoveThingFromStatWorkerCache
+public static class StatCacheExtensions
 {
     //class StatDef {
     //private StatWorker workerInt;

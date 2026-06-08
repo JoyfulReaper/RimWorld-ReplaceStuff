@@ -1,8 +1,19 @@
-﻿using RimWorld;
+﻿/*
+ * REPLACE STUFF: Perfomance Edition
+ * * * Part of this code is based on Replace Stuff
+ * Copyright (c) 2024 Alex Tearse-Doyle
+ * Licensed under the MIT License.
+ *
+ * Modified by Kyle Givler
+ * Copyright (c) 2026 Kyle Givler
+ * Licensed under the MIT License.
+ */
+
+using RimWorld;
 using System.Collections.Generic;
 using Verse;
 
-namespace Replace_Stuff.DestroyedRestore;
+namespace Replace_Stuff.Replace;
 
 public class ReplaceData : IExposable
 {
@@ -17,6 +28,9 @@ public class ReplaceData : IExposable
     public List<Bill> bills;
 
     public Rot4 rotation;
+
+    public List<AttachedBuildingData> attachedBuildings = new();
+
 
     // Storage
     public ThingFilter storageFilter;

@@ -32,7 +32,7 @@ using Verse;
 </Defs>
  */
 
-
+// Do not change this namespace needed for compatibility: namespace Replace_Stuff;
 namespace Replace_Stuff;
 
 /// <summary>

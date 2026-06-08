@@ -307,7 +307,7 @@ public class Designator_ReplaceStuff : Designator
         {
             if (DebugSettings.godMode)
             {
-                InstantReplaceUtility.InstantReplace(oldRF.oldThing, stuffDef);
+                ReplaceUtility.InstantReplace(oldRF.oldThing, stuffDef);
                 oldRF.Destroy(DestroyMode.Cancel);
                 return;
             }
@@ -333,7 +333,7 @@ public class Designator_ReplaceStuff : Designator
         }
         else if (DebugSettings.godMode)
         {
-            InstantReplaceUtility.InstantReplace(thing, stuffDef);
+            ReplaceUtility.InstantReplace(thing, stuffDef);
         }
         else
         {

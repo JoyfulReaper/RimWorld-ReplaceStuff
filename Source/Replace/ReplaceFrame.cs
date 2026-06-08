@@ -12,7 +12,6 @@
  */
 
 using HarmonyLib;
-using Replace_Stuff.DestroyedRestore;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
@@ -40,21 +39,25 @@ class ReplaceFrame : Frame
 {
     /// <summary>The building currently being replaced.</summary>
     public Thing oldThing;
+
     /// <summary>The material definition of the original structure, used for calculating deconstruction costs.</summary>
     public ThingDef oldStuff;
+
     public ReplaceData replaceData;
+
+    public delegate Func<int, int> GetBuildingResourcesLeaveCalculatorDel(Thing oldThing, DestroyMode mode);
 
     private const float MaxDeconstructWork = 3000f;
 
     private static readonly Dictionary<CostListPair, List<ThingDefCountClass>> _cachedReplaceCosts = new(FastCostListPairComparer.Instance);
     private const float LargeConstructionThreshold = 1400f;
 
+
     /// <summary>
     /// Dynamically generates the UI label for the frame, appending a "Replacing" tag 
     /// to clarify the building's current construction state.
     /// </summary>
     /// 
-
     public override string Label
     {
         get
@@ -65,25 +68,19 @@ class ReplaceFrame : Frame
     }
 
     public float WorkToReplace =>
-        def.entityDefToBuild.GetStatValueAbstract(
-        StatDefOf.WorkToBuild,
-        Stuff);
+        def.entityDefToBuild.GetStatValueAbstract(StatDefOf.WorkToBuild, Stuff);
 
     public float WorkToDeconstruct =>
         WorkToDeconstructDef(def, oldStuff);
 
     /// <summary>Returns the total labor required to complete the replacement (Deconstruction + Construction).</summary>
     public new float WorkToBuild =>
-    WorkToDeconstruct + WorkToReplace;
+        WorkToDeconstruct + WorkToReplace;
 
-    /// <summary>Saves and loads the state of the replacement process during game save/load cycles.</summary>
-    public override void ExposeData()
-    {
-        base.ExposeData();
-        Scribe_References.Look(ref oldThing, "oldThing");
-        Scribe_Defs.Look(ref oldStuff, "oldStuff");
-        Scribe_Deep.Look(ref replaceData, "replaceData");
-    }
+    // Using AccessTools because GetBuildingResourcesLeaveCalculator is an internal RimWorld method.
+    // This allows us to accurately calculate return resources without duplicating game logic.
+    public static readonly GetBuildingResourcesLeaveCalculatorDel GetBuildingResourcesLeaveCalculator =
+        AccessTools.MethodDelegate<GetBuildingResourcesLeaveCalculatorDel>(AccessTools.Method(typeof(GenLeaving), "GetBuildingResourcesLeaveCalculator"));
 
     /// <summary>
     /// Calculates the labor required to deconstruct a specific building definition, 
@@ -91,8 +88,9 @@ class ReplaceFrame : Frame
     /// </summary>
     public static float WorkToDeconstructDef(ThingDef def, ThingDef oldStuff = null)
     {
-        float deWork = (def.entityDefToBuild as ThingDef ?? def)
+        var deWork = (def.entityDefToBuild as ThingDef ?? def)
             .GetStatValueAbstract(StatDefOf.WorkToBuild, oldStuff);
+
         return Mathf.Min(deWork, MaxDeconstructWork);
     }
 
@@ -109,7 +107,7 @@ class ReplaceFrame : Frame
         if (stuff == null || stuff.VolumePerUnit == 0)
             return 0;
 
-        int count = Mathf.RoundToInt((float)toBuild.costStuffCount / stuff.VolumePerUnit);
+        var count = Mathf.RoundToInt((float)toBuild.costStuffCount / stuff.VolumePerUnit);
         if (count < 1)
             count = 1;
 
@@ -130,7 +128,8 @@ class ReplaceFrame : Frame
     // Note that "new" might not normally be called but base TotalMaterialCost is patched below to act as virtual for this method
     public new List<ThingDefCountClass> TotalMaterialCost()
     {
-        // Sync cache clears with the storyteller difficulty changes
+        // Difficulty changes affect resource return percentages. 
+        // We force a cache clear if the storyteller settings have changed to avoid stale data.
         if (CostListCalculator.cachedDifficulty != Find.Storyteller.difficulty)
         {
             CostListCalculator.Reset();
@@ -144,7 +143,7 @@ class ReplaceFrame : Frame
         {
             value = new()
             {
-            new(Stuff, TotalStuffNeeded())
+                new(Stuff, TotalStuffNeeded())
             };
 
             _cachedReplaceCosts[key] = value;
@@ -158,20 +157,156 @@ class ReplaceFrame : Frame
     /// and performing necessary cleanup of map systems.
     /// </summary>
     /// <param name="worker">The pawn performing the construction.</param>
-    /// 
-
     public new void CompleteConstruction(Pawn worker)
     {
+        RSLog.Debug(
+            $"CompleteConstruction old={oldThing} " +
+            $"spawned={oldThing?.Spawned} " +
+            $"destroyed={oldThing?.Destroyed}");
+
         if (oldThing != null && oldThing.Spawned)
         {
-            Thing newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
+            RSLog.Debug(
+                $"OLD BEFORE SPAWN " +
+                $"thing={oldThing} " +
+                $"mapNull={oldThing.Map == null}");
+
+            var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
+
+            RSLog.Debug($"Creating replacement {newThing.def.defName}");
+            var attached = GenConstruct.GetAttachedBuildings(oldThing);
+
+            RSLog.Debug($"Attached before spawn: {attached.Count}");
+            foreach (var t in attached)
+            {
+                Thing wallParent = null;
+                wallParent = GenConstruct.GetWallAttachedTo(t);
+
+                RSLog.Debug(
+                    "[ATTACHED BEFORE SPAWN] " +
+                    $"thing={t} " +
+                    $"def={t.def.defName} " +
+                    $"type={t.GetType().FullName} " +
+                    $"thingID={t.ThingID} " +
+                    $"spawned={t.Spawned} " +
+                    $"destroyed={t.Destroyed} " +
+                    $"mapNull={t.Map == null} " +
+                    $"pos={t.Position} " +
+                    $"rot={t.Rotation} " +
+                    $"parentWall={wallParent} " +
+                    $"parentWallDestroyed={wallParent?.Destroyed} " +
+                    $"parentWallPos={wallParent?.Position}"
+                );
+
+                if (t.Spawned)
+                {
+                    foreach (var thing in t.Map.thingGrid.ThingsListAtFast(t.Position))
+                    {
+                        RSLog.Debug(
+                            $"  CELL THING -> {thing} " +
+                            $"def={thing.def.defName} " +
+                            $"type={thing.GetType().Name}");
+                    }
+                }
+            }
+
+            foreach (var thing in GenConstruct.GetAttachedBuildings(oldThing))
+            {
+                thing.Destroy(DestroyMode.Vanish);
+            }
+
+            RSLog.Debug(
+                $"REPLACING wall={oldThing} " +
+                $"pos={oldThing.Position} " +
+                $"thingID={oldThing.ThingID}");
+
             GenSpawn.Spawn(newThing, Position, Map, WipeMode.Vanish);
 
-            FinalizeReplace(oldThing, newThing, worker);
-            BuildingStateTransfer.Apply(replaceData, newThing);
+            RSLog.Debug(
+                $"NEW WALL spawned={newThing} " +
+                $"pos={newThing.Position} " +
+                $"thingID={newThing.ThingID}");
+
+#if DEBUG
+            RSLog.Debug("=== WALL LAMP SCAN ===");
+            foreach (var thing in newThing.Map.listerThings.AllThings)
+            {
+                if (thing.def.defName.Contains("WallLamp"))
+                {
+                    Thing parent = null;
+                    parent = GenConstruct.GetWallAttachedTo(thing);
+
+                    RSLog.Debug(
+                        $"LAMP " +
+                        $"id={thing.ThingID} " +
+                        $"spawned={thing.Spawned} " +
+                        $"destroyed={thing.Destroyed} " +
+                        $"type={thing.GetType().FullName} " +
+                        $"pos={thing.Position} " +
+                        $"rot={thing.Rotation} " +
+                        $"parent={parent} " +
+                        $"parentPos={parent?.Position}");
+                }
+            }
+#endif
+
+            RSLog.Debug($"Frame destroyed={Destroyed}");
+            RSLog.Debug($"Frame map null={Map == null}");
+            RSLog.Debug($"NewThing map null={newThing.Map == null}");
+
+#if DEBUG
+            if (newThing.Map != null)
+            {
+                foreach (var thing in newThing.Map.thingGrid.ThingsListAtFast(newThing.Position))
+                    RSLog.Debug($"CELL CONTENT: {thing}");
+            }
+            RSLog.Debug(
+                $"OLD AFTER SPAWN " +
+                $"spawned={oldThing.Spawned} " +
+                $"destroyed={oldThing.Destroyed} " +
+                $"mapNull={oldThing.Map == null}");
+            RSLog.Debug(
+                $"NEW AFTER SPAWN " +
+                $"spawned={newThing.Spawned} " +
+                $"destroyed={newThing.Destroyed}");
+
+            var attachedAfter = GenConstruct.GetAttachedBuildings(newThing);
+            foreach (var t in attachedAfter)
+            {
+                Thing wallParent = null;
+                wallParent = GenConstruct.GetWallAttachedTo(t);
+
+                RSLog.Debug(
+                    "[ATTACHED AFTER SPAWN] " +
+                    $"thing={t} " +
+                    $"def={t.def.defName} " +
+                    $"type={t.GetType().FullName} " +
+                    $"thingID={t.ThingID} " +
+                    $"spawned={t.Spawned} " +
+                    $"destroyed={t.Destroyed} " +
+                    $"mapNull={t.Map == null} " +
+                    $"pos={t.Position} " +
+                    $"rot={t.Rotation} " +
+                    $"parentWall={wallParent} " +
+                    $"parentWallDestroyed={wallParent?.Destroyed} " +
+                    $"parentWallPos={wallParent?.Position}"
+                );
+
+                if (t.Spawned)
+                {
+                    foreach (var thing in t.Map.thingGrid.ThingsListAtFast(t.Position))
+                    {
+                        RSLog.Warning(
+                            $"  CELL THING -> {thing} " +
+                            $"def={thing.def.defName} " +
+                            $"type={thing.GetType().Name}");
+                    }
+                }
+            }
+#endif
+            GenReplace.CompleteReplacement(oldThing, newThing, replaceData, worker);
 
             resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
-
             if (!Destroyed)
                 Destroy(DestroyMode.Vanish);
 
@@ -180,10 +315,13 @@ class ReplaceFrame : Frame
         }
         else
         {
+            RSLog.Info("Replacement aborted because oldThing was already despawned.");
+
             resourceContainer.TryDropAll(Position, Map, ThingPlaceMode.Near);
             Destroy(DestroyMode.Cancel);
         }
     }
+
 
     /// <summary>
     /// Handles the cleanup and feedback when a replacement task fails (e.g., pawn interrupted or material deficit).
@@ -191,16 +329,19 @@ class ReplaceFrame : Frame
     /// <param name="worker">The pawn who was attempting the work.</param>
     public new void FailConstruction(Pawn worker)
     {
-        Log.Message($"Failed replace frame! work was {workDone}, Decon is {WorkToDeconstructDef(def, oldStuff)}, total is {WorkToBuild}");
+        RSLog.Debug($"Failed replace frame! work was {workDone}, Decon is {WorkToDeconstructDef(def, oldStuff)}, total is {WorkToBuild}");
 
+        // Cap workDone at the cost of deconstruction. 
+        // If they hadn't even finished deconstruction, they shouldn't get progress credit 
+        // for the new building construction.
         workDone = Mathf.Min(workDone, WorkToDeconstruct);
 
         if (workDone < WorkToDeconstruct)
             return;
 
         GenLeaving.DoLeavingsFor(this, Map, DestroyMode.FailConstruction);
-
         MoteMaker.ThrowText(DrawPos, Map, "TextMote_ConstructionFail".Translate());
+
         if (Faction == Faction.OfPlayer && WorkToReplace > LargeConstructionThreshold)
         {
             Messages.Message("MessageConstructionFailed".Translate(LabelEntityToBuild, worker.LabelShort, worker.Named("WORKER")),
@@ -208,16 +349,11 @@ class ReplaceFrame : Frame
         }
     }
 
-    public delegate Func<int, int> GetBuildingResourcesLeaveCalculatorDel(Thing oldThing, DestroyMode mode);
-    public static readonly GetBuildingResourcesLeaveCalculatorDel GetBuildingResourcesLeaveCalculator =
-        AccessTools.MethodDelegate<GetBuildingResourcesLeaveCalculatorDel>(AccessTools.Method(typeof(GenLeaving), "GetBuildingResourcesLeaveCalculator"));
-
     /// <summary>
     /// Calculate resources to drop for the old thing before destroying it
     /// </summary>
     /// <param name="oldThing">Thing to drop resource for</param>
     /// 
-
     public static void DeconstructDropStuff(Thing oldThing)
     {
         if (oldThing is null || !oldThing.Spawned || oldThing.Map is null)
@@ -232,14 +368,16 @@ class ReplaceFrame : Frame
         if (stuffDef == null)
             return;
 
-        //preferably GenLeaving.DoLeavingsFor here, but don't want to drop non-stuff things.
+        // We use our own calculator here instead of standard GenLeaving.DoLeavingsFor 
+        // because we only want to drop the 'stuff' (material) used in construction,
+        // rather than all items (like components/steel) usually dropped by deconstruction.
         if (GenLeaving.CanBuildingLeaveResources(oldThing, DestroyMode.Deconstruct))
         {
             var count = TotalStuffNeeded(oldDef, stuffDef);
             var leaveCount = GetBuildingResourcesLeaveCalculator(oldThing, DestroyMode.Deconstruct)(count);
             if (leaveCount > 0)
             {
-                Thing leftThing = ThingMaker.MakeThing(stuffDef);
+                var leftThing = ThingMaker.MakeThing(stuffDef);
                 leftThing.stackCount = leaveCount;
                 GenDrop.TryDropSpawn(leftThing, oldThing.Position, oldThing.Map, ThingPlaceMode.Near, out _);
             }
@@ -254,15 +392,10 @@ class ReplaceFrame : Frame
     /// <param name="worker">The pawn who finished the construction, if applicable.</param>
     public static void FinalizeReplace(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
     {
-        DeconstructDropStuff(oldThing);
+        // TODO: Replace the WARNING()
+        RSLog.Warning($"FinalizeReplace old={oldThing} new={newThing}");
+        RSLog.Warning($"oldThing.Destroyed={oldThing.Destroyed} " + $"Spawned={oldThing.Spawned} " + $"MapNull={oldThing.Map == null}");
 
-        newThing.SetFactionDirect(faction ?? oldThing.Faction);
-        newThing.RemoveFromStatWorkerCaches();
-        newThing.HitPoints = newThing.MaxHitPoints; // TODO: Setting for keep health
-
-        // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints));
-
-        newThing.Notify_ColorChanged();
 
         // Set the quality of the new thing base on construction level of builder TODO MAKE THIS OPTION
         //if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
@@ -276,7 +409,47 @@ class ReplaceFrame : Frame
 
 
         if (!oldThing.Destroyed)
+        {
+            DeconstructDropStuff(oldThing);
+
+            RSLog.Warning(
+                $"OLD STATUS " +
+                $"spawned={oldThing.Spawned} " +
+                $"mapNull={oldThing.Map == null}");
+
+            RSLog.Warning(
+                $"NEW STATUS " +
+                $"spawned={newThing.Spawned} " +
+                $"destroyed={newThing.Destroyed}");
+
+            RSLog.Warning(
+                $"DestroyMode path executing. " +
+                $"Faction={oldThing.Faction} " +
+                $"HP={oldThing.HitPoints}/{oldThing.MaxHitPoints}");
+
+            newThing.SetFactionDirect(faction ?? oldThing.Faction);
+            newThing.RemoveFromStatWorkerCaches();
+
+            // Current design: New buildings spawn at full health.
+            // Future consideration: Add an option to calculate HitPoints based on the 
+            // old building's percentage of MaxHitPoints. TODO
+            // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints)); // For keeping hit points if we decide to
+            newThing.HitPoints = newThing.MaxHitPoints;
+            newThing.Notify_ColorChanged();
+
+            var attached = GenConstruct.GetAttachedBuildings(oldThing);
+            foreach (var t in attached)
+            {
+                RSLog.Warning(
+                    $"{t.def.defName} destroyed={t.Destroyed} spawned={t.Spawned}");
+            }
+
             oldThing.Destroy(DestroyMode.Deconstruct);
+        }
+        else
+        {
+            RSLog.Warning("Old thing already destroyed before FinalizeReplace");
+        }
     }
 
     /// <summary>
@@ -291,15 +464,26 @@ class ReplaceFrame : Frame
 
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.AppendLine("ContainedResources".Translate() + ":");
-        stringBuilder.AppendLine(string.Concat(new object[]
-        {
-            Stuff.LabelCap,
-            ": ",
-            CountStuffHas(),
-            " / ",
-            TotalStuffNeeded()
-        }));
+        stringBuilder.AppendLine(string.Concat(
+            [
+                Stuff.LabelCap,
+                ": ",
+                CountStuffHas(),
+                " / ",
+                TotalStuffNeeded()
+            ]));
         stringBuilder.Append("WorkLeft".Translate() + ": " + this.WorkLeft.ToStringWorkAmount());
+
         return stringBuilder.ToString();
+    }
+
+    /// <summary>Saves and loads the state of the replacement process during game save/load cycles.</summary>
+    public override void ExposeData()
+    {
+        base.ExposeData();
+
+        Scribe_References.Look(ref oldThing, "oldThing");
+        Scribe_Defs.Look(ref oldStuff, "oldStuff");
+        Scribe_Deep.Look(ref replaceData, "replaceData");
     }
 }

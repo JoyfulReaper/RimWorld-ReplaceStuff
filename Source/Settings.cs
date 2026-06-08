@@ -27,10 +27,10 @@ public class Settings : ModSettings
     internal bool hideOverwallCoolers;
     internal bool hideNormalCoolers;
 
-    private string _version = "0.0.11";
+    private string _version = "0.0.14";
     private List<string> _preferredBridgeOrder = new();
 
-    public readonly string debugPrefix = "[ReplaceStuffPerfomance]"; // TODO implment
+    public readonly string debugPrefix = "[ReplaceStuffPerfomance]";
 
     public string Version => _version;
 
@@ -101,7 +101,6 @@ public class Settings : ModSettings
     public override void ExposeData()
     {
         Scribe_Values.Look(ref _version, "Version", Version);
-
         Scribe_Values.Look(ref hideOverwallCoolers, "hideOverwallCoolers");
         Scribe_Values.Look(ref hideNormalCoolers, "hideNormalCoolers");
 
@@ -127,10 +126,7 @@ public class Settings : ModSettings
 
         for (int i = _preferredBridgeOrder.Count - 1; i >= 0; i--)
         {
-            TerrainDef def =
-                DefDatabase<TerrainDef>.GetNamed(
-                    _preferredBridgeOrder[i],
-                    false);
+            var def = DefDatabase<TerrainDef>.GetNamed(_preferredBridgeOrder[i], false);
 
             if (def == null)
                 continue;

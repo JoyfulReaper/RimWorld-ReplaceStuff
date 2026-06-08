@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Verse;
 using RimWorld;
+using Replace_Stuff.Utilities;
 namespace Replace_Stuff.PlaceBridges
 {
 	//a list of terrain that adds new affordances, like what a bridge does
@@ -81,7 +82,7 @@ namespace Replace_Stuff.PlaceBridges
 			}
 
 			//Log.Message($"All affordances: {DefDatabase<TerrainAffordanceDef>.AllDefs.ToStringSafeEnumerable()}");
-			Log.Message($"Affordances worth bridging: {actuallyRequiredAffordances.ToStringSafeEnumerable()}");
+			RSLog.Debug($"Affordances worth bridging: {actuallyRequiredAffordances.ToStringSafeEnumerable()}");
 
 			foreach (TerrainAffordanceDef needDef in actuallyRequiredAffordances)
 			{
@@ -116,7 +117,7 @@ namespace Replace_Stuff.PlaceBridges
 				}
 			}
 			allBridgeTerrains.RemoveDuplicates();
-			Log.Message($"Bridges: {allBridgeTerrains.ToStringSafeEnumerable()}");
+			RSLog.Debug($"Bridges: {allBridgeTerrains.ToStringSafeEnumerable()}");
 		}
 
 		public static bool IsBridgelike(this BuildableDef tdef) => allBridgeTerrains.Contains(tdef);

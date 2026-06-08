@@ -57,6 +57,7 @@
     <Publicize Include="Assembly-CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Comps\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 

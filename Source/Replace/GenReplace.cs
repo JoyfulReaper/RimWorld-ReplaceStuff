@@ -13,6 +13,7 @@
 
 using HarmonyLib;
 using Replace_Stuff.DestroyedRestore;
+using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -48,15 +49,23 @@ static class GenReplace
 {
     public static ReplaceFrame PlaceReplaceFrame(Thing oldThing, ThingDef stuff)
     {
+        RSLog.Warning($"PlaceReplaceFrame called for {oldThing}");
+
         ThingDef replaceFrameDef =
             ThingDefGenerator_ReplaceFrame.ReplaceFrameDefFor(oldThing.def);
+
+        if (replaceFrameDef == null)
+        {
+            RSLog.Warning($"No replace frame def found for {oldThing.def.defName}");
+            return null;
+        }
 
         if (replaceFrameDef == null)
             return null;
 
         ReplaceFrame replaceFrame = (ReplaceFrame)ThingMaker.MakeThing(replaceFrameDef, stuff);
 
-        replaceFrame.replaceData = BuildingStateTransfer.Capture(oldThing);
+        replaceFrame.replaceData = BuildingStateTransfer.Capture(oldThing, new HashSet<int>());
 
         replaceFrame.SetFactionDirect(Faction.OfPlayer);
         oldThing.SetFactionDirect(Faction.OfPlayer);
@@ -69,6 +78,15 @@ static class GenReplace
         GenSpawn.Spawn(replaceFrame, oldThing.Position, oldThing.Map, oldThing.Rotation);
         return replaceFrame;
     }
+
+    public static Thing CompleteReplacement(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
+    {
+        ReplaceFrame.FinalizeReplace(oldThing, newThing, worker, faction);
+        BuildingStateTransfer.Apply(replaceData, newThing);
+
+        return newThing;
+    }
+
 }
 
 //[HarmonyPatch(typeof(DefGenerator), "GenerateImpliedDefs_PreResolve")]
