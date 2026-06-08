@@ -164,8 +164,20 @@ class ReplaceFrame : Frame
         if (oldThing != null && oldThing.Spawned)
         {
             var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
+            List<Thing> storedThings = null;
+
+            if (oldThing is Building_Storage oldStorage)
+            {
+                storedThings = GenReplace.ExtractStoredThings(oldStorage);
+            }
+
             GenReplace.CompleteReplacement(oldThing, newThing, replaceData, worker);
             GenSpawn.Spawn(newThing, Position, Map, Rotation, WipeMode.Vanish);
+
+            if (storedThings != null && newThing is Building_Storage newStorage)
+            {
+                GenReplace.RestoreStoredThings(newStorage, storedThings);
+            }
 
             resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
 
@@ -184,6 +196,21 @@ class ReplaceFrame : Frame
         }
     }
 
+    //public static void RestoreStoredThings(Building_Storage storage, List<Thing> things)
+    //{
+    //    if (things == null)
+    //        return;
+
+    //    foreach (Thing thing in things)
+    //    {
+    //        GenPlace.TryPlaceThing(
+    //            thing,
+    //            storage.Position,
+    //            storage.Map,
+    //            ThingPlaceMode.Near);
+    //    }
+    //}
+
     /// <summary>
     /// Synchronizes a newly spawned object's state to match its finalized form, 
     /// handling stat cache invalidation, health recovery, and quality assignment.
@@ -192,8 +219,6 @@ class ReplaceFrame : Frame
     /// <param name="worker">The pawn who finished the construction, if applicable.</param>
     public static void FinalizeReplace(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
     {
-        DeconstructDropStuff(oldThing);
-
         // Set the quality of the new thing base on construction level of builder TODO MAKE THIS OPTION
         //if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
         //{

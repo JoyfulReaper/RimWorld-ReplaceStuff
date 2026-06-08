@@ -76,26 +76,48 @@ static class GenReplace
 
     public static Thing CompleteReplacement(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
     {
-        List<Thing> storedThings = null;
-        if (oldThing is Building_Storage oldStorage)
-        {
-            storedThings = ExtractStoredThings(oldStorage);
-        }
-
         ReplaceFrame.FinalizeReplace(oldThing, newThing, worker, faction);
+
         //GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
         BuildingStateTransfer.Apply(replaceData, newThing);
-
-        if (storedThings != null && newThing is Building_Storage newStorage)
-        {
-            RestoreStoredThings(newStorage, storedThings);
-        }
 
         return newThing;
     }
 
+    private static void DebugStorage(Building_Storage storage, string stage)
+    {
+        if (storage is not null)
+        {
+            string posStr = storage.Spawned ? storage.Position.ToString() : "UNSPAWNED";
+            bool hasMap = storage.Map != null;
+
+            RSLog.Debug("DebugStorage(): " +
+                $"{stage}: " +
+                $"Quantity={storage.GetSlotGroup().HeldThings.Count()} " +
+                $"Spawned={storage.Spawned} " +
+                $"Map={hasMap} " +
+                $"Pos={posStr}");
+
+            if (storage?.GetSlotGroup() == null)
+            {
+                RSLog.Debug("<no slot group>");
+                return;
+
+            }
+            else
+            {
+                RSLog.Debug($"DebugStorage(): {stage}: Held things:");
+                RSLog.Debug(String.Join(", ", storage.GetSlotGroup().HeldThings
+                    .Select(t => $"{t.def.defName} x{t.stackCount} ({t.thingIDNumber})")));
+            }
+        }
+        else
+            RSLog.Debug($"{stage}: Storage is null");
+    }
+
     public static List<Thing> ExtractStoredThings(Building_Storage storage)
     {
+        DebugStorage(storage, "Before Extract");
         List<Thing> result = new();
 
         foreach (Thing thing in storage.GetSlotGroup().HeldThings.ToList())
@@ -111,12 +133,50 @@ static class GenReplace
     {
         foreach (Thing thing in things)
         {
-            GenPlace.TryPlaceThing(
+            bool success = GenPlace.TryPlaceThing(
                 thing,
                 storage.Position,
                 storage.Map,
                 ThingPlaceMode.Near);
+
+            RSLog.Debug(
+                $"Restore {thing.def.defName} "
+                + $"ID={thing.thingIDNumber} "
+                + $"Success={success}");
+
+            RSLog.Debug(
+                $"{thing.thingIDNumber} "
+                + $"Spawned={thing.Spawned} "
+                + $"Pos={(thing.Spawned ? thing.Position.ToString() : "UNSPAWNED")}");
+
+            DebugStorage(storage, $"After placing {thing.def.defName}");
         }
+
+        DebugStorage(storage, "After Restore");
+        //    foreach (Thing thing in things)
+        //    {
+        //        if (!GenPlace.TryPlaceThing(
+        //            thing,
+        //            storage.Position,
+        //            storage.Map,
+        //            ThingPlaceMode.Near))
+        //        {
+        //            Thing placedThing;
+
+        //            bool success = GenPlace.TryPlaceThing(
+        //                thing,
+        //                storage.Position,
+        //                storage.Map,
+        //                ThingPlaceMode.Near,
+        //                out placedThing);
+
+        //            RSLog.Debug(
+        //                $"Restore {thing.thingIDNumber} "
+        //                + $"success={success} "
+        //                + $"placed={placedThing?.Position}");
+        //        }
+        //    }
+        //    DebugStorage(storage, "After Restore");
     }
 }
 
@@ -164,6 +224,7 @@ public static class ThingDefGenerator_ReplaceFrame
 
         return null;
     }
+
     public static bool HasReplaceFrame(this ThingDef def)
     {
         if (def == null)
