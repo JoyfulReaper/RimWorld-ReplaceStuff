@@ -31,19 +31,25 @@ public class ReplaceData : IExposable
 
     public List<AttachedBuildingData> attachedBuildings = new();
 
+    public string storageLabel;
+
 
     // Storage
     public ThingFilter storageFilter;
 
     public StoragePriority? storagePriority;
 
-
     public void ExposeData()
     {
+        Scribe_Values.Look(ref storageLabel, "label");
         Scribe_References.Look(ref faction, "faction");
         Scribe_Values.Look(ref quality, "quality");
+        Scribe_Values.Look(ref rotation, "rotation");
         Scribe_Values.Look(ref targetTemperature, "targetTemperature");
         Scribe_Defs.Look(ref plantDef, "plantDef");
         Scribe_Collections.Look(ref bills, "bills", LookMode.Deep);
+        Scribe_Deep.Look(ref storageFilter, "storageFilter");
+        Scribe_Values.Look(ref storagePriority, "storagePriority");
+        Scribe_Collections.Look(ref attachedBuildings, "attachedBuildings", LookMode.Deep);
     }
 }

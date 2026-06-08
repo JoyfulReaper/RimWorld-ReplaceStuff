@@ -76,13 +76,48 @@ static class GenReplace
 
     public static Thing CompleteReplacement(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
     {
+        List<Thing> storedThings = null;
+        if (oldThing is Building_Storage oldStorage)
+        {
+            storedThings = ExtractStoredThings(oldStorage);
+        }
+
         ReplaceFrame.FinalizeReplace(oldThing, newThing, worker, faction);
         //GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
         BuildingStateTransfer.Apply(replaceData, newThing);
 
+        if (storedThings != null && newThing is Building_Storage newStorage)
+        {
+            RestoreStoredThings(newStorage, storedThings);
+        }
+
         return newThing;
     }
 
+    public static List<Thing> ExtractStoredThings(Building_Storage storage)
+    {
+        List<Thing> result = new();
+
+        foreach (Thing thing in storage.GetSlotGroup().HeldThings.ToList())
+        {
+            thing.DeSpawn();
+            result.Add(thing);
+        }
+
+        return result;
+    }
+
+    public static void RestoreStoredThings(Building_Storage storage, List<Thing> things)
+    {
+        foreach (Thing thing in things)
+        {
+            GenPlace.TryPlaceThing(
+                thing,
+                storage.Position,
+                storage.Map,
+                ThingPlaceMode.Near);
+        }
+    }
 }
 
 //[HarmonyPatch(typeof(DefGenerator), "GenerateImpliedDefs_PreResolve")]
@@ -239,6 +274,7 @@ public static class ThingDefGenerator_ReplaceFrame
         };
     }
 
-    public static bool IsReplaceFrame(this ThingDef def) => def.thingClass == typeof(ReplaceFrame);
+    public static bool IsReplaceFrame(this ThingDef def) =>
+        def.thingClass == typeof(ReplaceFrame);
 
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Replace Stuff - Performance Edition [BETA]</name>
+	<name>Replace Stuff - Performance Edition [ALPHA]</name>
 	<author>Kyle Givler</author>
 	<supportedVersions>
 		<li>1.6</li>
@@ -12,6 +12,7 @@ This version maintains the core functionality of replacing building materials in
 This mod is currentely under heavy active development. Please report any issues.
 
 I am refactoring, cleaning and modernizing the code for Replace Stuff from the ground up with perfromance in mind.
+Please Note: This is a major refactor in progress and I am aware some functions are broken, however please do sumbit any bugs/issues on github or in the comments.
 
 OPTIMIZATIONS:
 - Refactored and rebuilt from the ground up with perfromance in mind.
