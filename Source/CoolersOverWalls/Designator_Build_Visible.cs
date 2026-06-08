@@ -36,7 +36,7 @@ public static class HideCoolerBuild
 
 		var def = __instance.PlacingDef;
 
-		if (ReplaceStuffPrefomanceMod.settings.hideOverwallCoolers &&
+		if (ReplaceStuffPrefomance.settings.hideOverwallCoolers &&
 			(def == OverWallDef.Cooler_Over ||
 			def == OverWallDef.Cooler_Over2W ||
 			def == OverWallDef.Vent_Over ||
@@ -46,7 +46,7 @@ public static class HideCoolerBuild
 			return;
 		}
 
-		if (ReplaceStuffPrefomanceMod.settings.hideNormalCoolers &&
+		if (ReplaceStuffPrefomance.settings.hideNormalCoolers &&
 			(__instance.PlacingDef == ThingDefOf.Cooler ||
 			__instance.PlacingDef == OverWallDef.Vent))
 		{

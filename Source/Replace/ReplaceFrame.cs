@@ -324,6 +324,55 @@ class ReplaceFrame : Frame
 
 
     /// <summary>
+    /// Synchronizes a newly spawned object's state to match its finalized form, 
+    /// handling stat cache invalidation, health recovery, and quality assignment.
+    /// </summary>
+    /// <param name="thing">The newly spawned building.</param>
+    /// <param name="worker">The pawn who finished the construction, if applicable.</param>
+    public static void FinalizeReplace(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
+    {
+        DeconstructDropStuff(oldThing);
+
+        // Set the quality of the new thing base on construction level of builder TODO MAKE THIS OPTION
+        //if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
+        //{
+        //    QualityCategory qualityCreatedByPawn =
+        //        QualityUtility.GenerateQualityCreatedByPawn(worker, SkillDefOf.Construction);
+
+        //    compQuality.SetQuality(qualityCreatedByPawn, ArtGenerationContext.Colony);
+        //    QualityUtility.SendCraftNotification(newThing, worker);
+        //}
+
+        if (!oldThing.Destroyed)
+        {
+            DeconstructDropStuff(oldThing);
+
+            newThing.SetFactionDirect(faction ?? oldThing.Faction);
+            newThing.RemoveFromStatWorkerCaches();
+
+            // Current design: New buildings spawn at full health.
+            // Future consideration: Add an option to calculate HitPoints based on the 
+            // old building's percentage of MaxHitPoints. TODO
+            // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints)); // For keeping hit points if we decide to
+            newThing.HitPoints = newThing.MaxHitPoints;
+            newThing.Notify_ColorChanged();
+
+            if (worker != null && oldThing.TryGetComp<CompQuality>() is CompQuality compQuality)
+            {
+                QualityCategory qualityCreatedByPawn = QualityUtility.GenerateQualityCreatedByPawn(worker, SkillDefOf.Construction);
+                compQuality.SetQuality(qualityCreatedByPawn, ArtGenerationContext.Colony);
+                QualityUtility.SendCraftNotification(newThing, worker); // TODO is this a bug?
+            }
+
+            oldThing.Destroy(DestroyMode.Deconstruct);
+        }
+        else
+        {
+            RSLog.Error("FinalizeReplace(): oldThing was already destroyed.");
+        }
+    }
+
+    /// <summary>
     /// Handles the cleanup and feedback when a replacement task fails (e.g., pawn interrupted or material deficit).
     /// </summary>
     /// <param name="worker">The pawn who was attempting the work.</param>
@@ -359,9 +408,12 @@ class ReplaceFrame : Frame
         if (oldThing is null || !oldThing.Spawned || oldThing.Map is null)
             return;
 
+#if DEBUG
+        // nothing
+#else
         if (Current.ProgramState != ProgramState.Playing)
             return;
-
+#endif
         var oldDef = oldThing.def;
         var stuffDef = oldThing.Stuff;
 

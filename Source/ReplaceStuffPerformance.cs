@@ -24,19 +24,24 @@ namespace Replace_Stuff;
 /// <summary>
 /// I'm a Mod!
 /// </summary>
-public class ReplaceStuffPrefomanceMod : Verse.Mod
+public class ReplaceStuffPrefomance : Verse.Mod
 {
     public static Settings settings;
     public static Harmony _harmony;
 
-    public ReplaceStuffPrefomanceMod(ModContentPack content) : base(content)
+    public ReplaceStuffPrefomance(ModContentPack content) : base(content)
     {
         settings = GetSettings<Settings>();
 
         _harmony = new Harmony("ReplaceStuff.Perfomance");
         _harmony.PatchAll();
 
+#if DEBUG
+        Verse.Log.Message($"[ReplaceStuffPerfomance] Version {settings.Version} <color=#66CCFF>DEBUG BUILD</color>");
+#else
         Verse.Log.Message($"[ReplaceStuffPerfomance] Version {settings.Version}");
+#endif
+
     }
 
 

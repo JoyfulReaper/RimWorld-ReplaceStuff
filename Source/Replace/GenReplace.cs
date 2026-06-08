@@ -62,8 +62,9 @@ static class GenReplace
 
         if (replaceFrameDef == null)
             return null;
+        }
 
-        ReplaceFrame replaceFrame = (ReplaceFrame)ThingMaker.MakeThing(replaceFrameDef, stuff);
+        var replaceFrame = (ReplaceFrame)ThingMaker.MakeThing(replaceFrameDef, stuff);
 
         replaceFrame.replaceData = BuildingStateTransfer.Capture(oldThing, new HashSet<int>());
 
@@ -218,7 +219,7 @@ public static class ThingDefGenerator_ReplaceFrame
         thingDef.entityDefToBuild = def;
         //def.replaceFrameDef = thingDef;	//Dictionary instead
 
-        thingDef.modContentPack = LoadedModManager.GetMod<ReplaceStuffPrefomanceMod>().Content;
+        thingDef.modContentPack = LoadedModManager.GetMod<ReplaceStuffPrefomance>().Content;
         return thingDef;
     }
 
