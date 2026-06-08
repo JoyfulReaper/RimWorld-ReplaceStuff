@@ -84,16 +84,6 @@ static class GenReplace
         ReplaceFrame.FinalizeReplace(oldThing, newThing, worker, faction);
         BuildingStateTransfer.Apply(replaceData, newThing);
 
-        if (newThing is Building_Storage bs)
-        {
-            var s = bs.GetStoreSettings();
-
-            RSLog.Debug(
-                $"POST COMPLETE thingID={newThing.ThingID}" +
-                $"Priority={s.Priority} " +
-                $"Defs={s.filter.AllowedDefCount}");
-        }
-
         return newThing;
     }
 
