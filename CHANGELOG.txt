@@ -1,0 +1,34 @@
+----------------------------------------------------------------
+6/9/2026: Version 0.0.27
+Milestone 1: Replacement System Refactor
+
+This update introduces a major internal overhaul of Replace Stuff's replacement pipeline. While most of the work is behind the scenes, it lays the foundation for improved compatibility, maintainability, and future features.
+
+Added:
+-New replacement pipeline architecture.
+-Improved state preservation framework for building replacements.
+-Better handling of replacement initialization and building setup.
+-Expanded debugging and diagnostic logging for development builds.
+
+Changed
+-Refactored ReplacementFrame logic into smaller, more maintainable stages.
+-Separated persistent building data (storage settings, bills, temperatures, etc.) from transient state (stored inventory).
+-Simplified instant replacement and standard replacement workflows.
+-Improved rotation and spawn ordering during replacements.
+-Centralized replacement initialization to reduce duplicate logic.
+-General code cleanup and internal optimization.
+
+Fixed
+-Various issues related to replacement ordering and object lifecycle.
+-Improved handling of replacement failures and edge cases.
+-Multiple internal cleanup and stability improvements.
+
+Known Issues
+-Some storage-related edge cases, particularly with certain shelf configurations, are still being investigated.
+-Additional state restoration features will continue to be refined in future updates.
+
+Developer Notes
+
+This milestone represents a substantial rewrite of the core replacement system. Although many of the changes are internal, they provide a cleaner foundation for future bug fixes, compatibility improvements, and new functionality.
+
+----------------------------------------------------------------
