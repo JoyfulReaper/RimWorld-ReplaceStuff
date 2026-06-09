@@ -16,15 +16,25 @@ public static class ReplaceUtility
 {
     public static Thing InstantReplace(Thing oldThing, ThingDef newStuff, Pawn worker = null, Faction faction = null)
     {
-        if (oldThing is null || oldThing.Destroyed || oldThing.Map is null)
+        if (oldThing is null || oldThing.Map is null)
             return null;
 
-        var data = BuildingStateTransfer.Capture(oldThing, new HashSet<int>());
-        var newThing = ThingMaker.MakeThing(oldThing.def, newStuff);
+        if (!oldThing.Destroyed)
+        {
+            var data = BuildingStateTransfer.Capture(oldThing, new HashSet<int>());
+            var newThing = ThingMaker.MakeThing(oldThing.def, newStuff);
 
-        GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
-        GenReplace.ApplyReplacementState(oldThing, newThing, data, worker, faction);
+            GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
+            //GenReplace.ApplyReplacementState(oldThing, newThing, data, worker, faction); <- Dead code now?
+            ReplacementFrame.InitializeReplacement(oldThing, newThing, worker);
+            BuildingStateTransfer.Apply(data, newThing);
 
-        return newThing;
+            return newThing;
+        }
+        else
+        {
+            RSLog.Error("InstantReplace()Tried to replace a destroyed thing.");
+            return null;
+        }
     }
 }

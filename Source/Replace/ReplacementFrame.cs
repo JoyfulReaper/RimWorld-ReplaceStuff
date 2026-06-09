@@ -1,5 +1,5 @@
 ﻿/*
- * REPLACE STUFF: Perfomance Edition
+ * REPLACE STUFF: Performance  Edition
  * 
  * 
  * Part of this code is based on Replace Stuff
@@ -11,13 +11,96 @@
  * Licensed under the MIT License.
  */
 
+// Just so its in the git history here is the old flow for reference
+//    /*
+//     * REPLACEMENT EXECUTION FLOW
+//     * =====================================================================================
+//     *
+//     * DESIGNATION
+//     * -----------
+//     * GenReplace.TrySpawnReplacementFrame(oldThing, stuff)
+//     *     |
+//     *     +--> BuildingStateTransfer.Capture(oldThing)
+//     *     |       |
+//     *     |       +--> Capture faction
+//     *     |       +--> Capture rotation
+//     *     |       +--> Capture quality
+//     *     |       +--> Capture bills
+//     *     |       +--> Capture storage settings
+//     *     |       +--> Capture temperatures
+//     *     |       +--> Capture grow zones
+//     *     |       +--> Capture attached buildings
+//     *     |
+//     *     +--> Create ReplacementFrame
+//     *     +--> Store ReplaceData
+//     *     +--> Store targetThing
+//     *     +--> Spawn frame
+//     *
+//     *
+//     * CONSTRUCTION COMPLETION
+//     * -----------------------
+//     *
+//     * Harmony:
+//     * Frame.CompleteConstruction()
+//     *     |
+//     *     +--> ReplacementFrame.CompleteConstruction()
+//     *             |
+//     *             +--> Verify targetThing still exists
+//     *             |
+//     *             +--> ThingMaker.MakeThing()
+//     *             |       Create replacement building
+//     *             |
+//     *             +--> [Storage]
+//     *             |       ExtractStoredThings()
+//     *             |
+//     *             +--> BuildingStateTransfer.Apply()
+//     *             |       Restore captured state
+//     *             |       (storage filters, faction, etc.)
+//     *             |
+//     *             +--> GenReplace.ApplyReplacementState()
+//     *             |       |
+//     *             |       +--> ReplacementFrame.FinalizeReplacement()
+//     *             |               |
+//     *             |               +--> Set faction
+//     *             |               +--> Clear stat caches
+//     *             |               +--> Restore hitpoints
+//     *             |               +--> Notify_ColorChanged()
+//     *             |               +--> Apply construction quality
+//     *             |               +--> Destroy old building
+//     *             |
+//     *             +--> [Storage]
+//     *             |       RestoreStoredThings()
+//     *             |
+//     *             +--> Destroy frame resources
+//     *             |
+//     *             +--> Destroy attached buildings
+//     *             |
+//     *             +--> Increment construction records
+//     *             |
+//     *             +--> END
+//     *
+//     *
+//     * FAILURE PATH
+//     * ------------
+//     *
+//     * Frame.FailConstruction()
+//     *     |
+//     *     +--> ReplacementFrame.FailConstruction()
+//     *             |
+//     *             +--> Clamp work completed
+//     *             +--> Drop remaining resources
+//     *             +--> Construction failed message
+//     *
+//     * =====================================================================================
+//     *
+//     */
+
 using HarmonyLib;
 using Replace_Stuff.DestroyedRestore;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using UnityEngine;
 using Verse;
@@ -44,376 +127,72 @@ public class ReplacementFrame : Frame
     /// <summary>Encapsulated state data transferred from the target structure to the new one.</summary>
     public ReplaceData replaceData;
 
-    public delegate Func<int, int> GetBuildingResourcesLeaveCalculatorDel(Thing oldThing, DestroyMode mode);
-
     private const float MaxDeconstructWork = 3000f;
     private static readonly Dictionary<ReplaceFrameKey, List<ThingDefCountClass>> _cachedReplaceCosts = new();
     private const float LargeConstructionThreshold = 1400f;
     private static Difficulty _cachedDifficulty;
 
-    /// <summary>
-    /// Dynamically generates the UI label for the frame, appending a "Replacing" tag 
-    /// to clarify the building's current construction state.
-    /// </summary>
-    /// 
-    public override string Label
-    {
-        get
-        {
-            string text = def.entityDefToBuild.label + "TD.ReplacingTag".Translate();
-            return Stuff != null ? $"{Stuff.label} {text}" : text;
-        }
-    }
-
-    /// <summary>
-    /// Calculates the labor required to complete the construction phase of the replacement.
-    /// </summary>
-    public float WorkToReplace =>
-        def.entityDefToBuild.GetStatValueAbstract(StatDefOf.WorkToBuild, Stuff);
-
-    /// <summary>
-    /// Calculates the labor required to deconstruct the <see cref="TargetStructure"/>.
-    /// </summary>
-    public float WorkToDeconstruct =>
-        WorkToDeconstructDef(def, targetStuff);
-
-    /// <summary>
-    /// Returns the sum of labor for deconstruction and construction.
-    /// </summary>
-    // Frame.WorkToBuild is not virtual.
-    // Harmony redirects calls to this replacement implementation.
-    public new float WorkToBuild =>
-        WorkToDeconstruct + WorkToReplace;
-
-    // Using AccessTools because GetBuildingResourcesLeaveCalculator is an internal RimWorld method.
-    // This allows us to accurately calculate return resources without duplicating game logic.
-    public static readonly GetBuildingResourcesLeaveCalculatorDel GetBuildingResourcesLeaveCalculator =
-        AccessTools.MethodDelegate<GetBuildingResourcesLeaveCalculatorDel>(AccessTools.Method(typeof(GenLeaving), "GetBuildingResourcesLeaveCalculator"));
-
-    /// <summary>
-    /// Calculates the labor required to deconstruct a specific building definition, 
-    /// clamped by <see cref="MaxDeconstructWork"/> to prevent excessive replacement times.
-    /// </summary>
-    public static float WorkToDeconstructDef(ThingDef def, ThingDef oldStuff = null)
-    {
-        var deWork = (def.entityDefToBuild as ThingDef ?? def)
-            .GetStatValueAbstract(StatDefOf.WorkToBuild, oldStuff);
-
-        return Mathf.Min(deWork, MaxDeconstructWork);
-    }
+    public delegate Func<int, int> GetBuildingResourcesLeaveCalculatorDel(Thing oldThing, DestroyMode mode);
 
 
-    public int GetRequiredMaterialCount()
-    {
-        return GetRequiredMaterialCount(def.entityDefToBuild, Stuff);
-    }
-
-    /// <summary>
-    /// Returns the total quantity of material units required to complete the new structure.
-    /// </summary>
-    /// <param name="toBuild">The definition of the building being constructed.</param>
-    /// <param name="stuff">The material being used.</param>
-    public static int GetRequiredMaterialCount(BuildableDef toBuild, ThingDef stuff)
-    {
-        if (stuff == null || stuff.VolumePerUnit == 0)
-            return 0;
-
-        var count = Mathf.RoundToInt((float)toBuild.costStuffCount / stuff.VolumePerUnit);
-        if (count < 1)
-            count = 1;
-
-        return count;
-    }
-
-    public int CountStuffHas()
-    {
-        return resourceContainer.TotalStackCountOfDef(Stuff);
-    }
-
-    /// <summary>Calculates the remaining quantity of material required to finish the construction project.</summary>
-    public int CountStuffNeeded()
-    {
-        return GetRequiredMaterialCount() - CountStuffHas();
-    }
-
-    // Note that "new" might not normally be called but base TotalMaterialCost is patched below to act as virtual for this method
-    public new List<ThingDefCountClass> TotalMaterialCost()
-    {
-        // Difficulty changes affect resource return percentages. 
-        // We force a cache clear if the storyteller settings have changed to avoid stale data.
-        if (_cachedDifficulty != Find.Storyteller.difficulty)
-        {
-            CostListCalculator.Reset();
-            _cachedDifficulty = Find.Storyteller.difficulty;
-            _cachedReplaceCosts.Clear();
-        }
-
-        //CostListPair key = new(def.entityDefToBuild, Stuff);
-        ReplaceFrameKey key = new(def.entityDefToBuild, Stuff);
-
-        if (!_cachedReplaceCosts.TryGetValue(key, out var value))
-        {
-            value = new()
-            {
-                new(Stuff, GetRequiredMaterialCount())
-            };
-
-            _cachedReplaceCosts[key] = value;
-        }
-
-        return value;
-    }
-
-    /// <summary>
-    /// Completes a replacement frame by creating the replacement building,
-    /// transferring captured state, restoring stored contents, and removing
-    /// the original structure and construction frame.
-    /// </summary>
-    /// <param name="worker">
-    /// The pawn responsible for finishing the replacement.
-    /// </param>
     public new void CompleteConstruction(Pawn worker)
     {
-        // Capture old building state
-        // Remove old building.
-        // Create replacement.
-        // Restore transferable state.
-        // Finalize construction.
-        // Destroy frame.
-
-        /*
-         * REPLACEMENT EXECUTION FLOW
-         * =====================================================================================
-         *
-         * DESIGNATION
-         * -----------
-         * GenReplace.TrySpawnReplacementFrame(oldThing, stuff)
-         *     |
-         *     +--> BuildingStateTransfer.Capture(oldThing)
-         *     |       |
-         *     |       +--> Capture faction
-         *     |       +--> Capture rotation
-         *     |       +--> Capture quality
-         *     |       +--> Capture bills
-         *     |       +--> Capture storage settings
-         *     |       +--> Capture temperatures
-         *     |       +--> Capture grow zones
-         *     |       +--> Capture attached buildings
-         *     |
-         *     +--> Create ReplacementFrame
-         *     +--> Store ReplaceData
-         *     +--> Store targetThing
-         *     +--> Spawn frame
-         *
-         *
-         * CONSTRUCTION COMPLETION
-         * -----------------------
-         *
-         * Harmony:
-         * Frame.CompleteConstruction()
-         *     |
-         *     +--> ReplacementFrame.CompleteConstruction()
-         *             |
-         *             +--> Verify targetThing still exists
-         *             |
-         *             +--> ThingMaker.MakeThing()
-         *             |       Create replacement building
-         *             |
-         *             +--> [Storage]
-         *             |       ExtractStoredThings()
-         *             |
-         *             +--> BuildingStateTransfer.Apply()
-         *             |       Restore captured state
-         *             |       (storage filters, faction, etc.)
-         *             |
-         *             +--> GenReplace.ApplyReplacementState()
-         *             |       |
-         *             |       +--> ReplacementFrame.FinalizeReplacement()
-         *             |               |
-         *             |               +--> Set faction
-         *             |               +--> Clear stat caches
-         *             |               +--> Restore hitpoints
-         *             |               +--> Notify_ColorChanged()
-         *             |               +--> Apply construction quality
-         *             |               +--> Destroy old building
-         *             |
-         *             +--> [Storage]
-         *             |       RestoreStoredThings()
-         *             |
-         *             +--> Destroy frame resources
-         *             |
-         *             +--> Destroy attached buildings
-         *             |
-         *             +--> Increment construction records
-         *             |
-         *             +--> END
-         *
-         *
-         * FAILURE PATH
-         * ------------
-         *
-         * Frame.FailConstruction()
-         *     |
-         *     +--> ReplacementFrame.FailConstruction()
-         *             |
-         *             +--> Clamp work completed
-         *             +--> Drop remaining resources
-         *             +--> Construction failed message
-         *
-         * =====================================================================================
-         *
-         * IMPORTANT:
-         *
-         * ReplaceData contains the persistent state transferred between buildings.
-         *
-         * Current implementation restores:
-         *   - faction
-         *   - rotation (captured)
-         *   - storage filters
-         *   - storage priority
-         *
-         * Additional systems exist but are currently disabled/commented:
-         *   - quality
-         *   - bills
-         *   - temperatures
-         *   - grower settings
-         *   - storage labels
-         *   - attached building restoration
-         *
-         * Storage contents themselves are NOT part of ReplaceData.
-         * They are extracted and restored separately during replacement.
-         *
-         * =====================================================================================
-         */
-
-        if (targetThing is not null && targetThing.Spawned)
-        {
-            RSLog.Debug($"CompleteConstruction() START: Old Rot={targetThing.Rotation}");
-            var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
-            RSLog.Debug($"CompleteConstruction() AFTER MAKETHING: New Rot={newThing.Rotation}");
-
-            List<Thing> storedThings = null;
-
-            if (targetThing is Building_Storage oldStorage)
-            {
-                storedThings = GenReplace.ExtractStoredThings(oldStorage);
-            }
-
-            BuildingStateTransfer.Apply(replaceData, newThing);
-            GenReplace.ApplyReplacementState(targetThing, newThing, replaceData, worker);
-            //GenSpawn.Spawn(newThing, Position, Map, Rotation, WipeMode.Vanish);
-
-            RSLog.Debug($"CompleteConstruction() AFTER SPAWN: New Rot={newThing.Rotation}");
-            if (newThing.Spawned && newThing.Map != null)
-            {
-                RSLog.Debug(string.Join(", ", newThing.Position
-                    .GetThingList(newThing.Map)
-                    .Select(t => t.def.defName)));
-            }
-            RSLog.Debug($"CompleteConstruction() END: New Rot={newThing.Rotation}");
-
-            if (storedThings is not null && newThing is Building_Storage newStorage)
-            {
-                GenReplace.RestoreStoredThings(newStorage, storedThings);
-            }
-
-            resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
-
-            foreach (var thing in GenConstruct.GetAttachedBuildings(targetThing))
-            {
-                thing.Destroy(DestroyMode.Vanish);
-            }
-
-            worker?.records.Increment(RecordDefOf.ThingsConstructed);
-            worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
-        }
-        else
+        if (targetThing is null || !targetThing.Spawned)
         {
             resourceContainer.TryDropAll(Position, Map, ThingPlaceMode.Near);
             Destroy(DestroyMode.Cancel);
+            return;
         }
+
+        var oldThing = targetThing;
+
+        var transientState = ExtractTransientState();
+        DeconstructDropStuff(oldThing);
+        var newThing = CreateReplacement();
+
+        // Replacement order matters:
+        // Spawn -> Apply persistent state -> Finalize -> Restore contents
+        // Some building components require the thing to be spawned
+        // before their saved state can be restored.
+
+        // Some building state restoration expects the thing to be spawned.
+        SpawnReplacement(newThing);
+        RSLog.Debug(
+            $"AFTER SPAWN: Old Spawned={oldThing.Spawned} " +
+            $"Old Destroyed={oldThing.Destroyed} " +
+            $"New Spawned={newThing.Spawned} " +
+            $"Spawned={targetThing.Spawned}");
+
+        InitializeReplacement(oldThing, newThing, worker);
+        ApplyPersistentState(newThing);
+        RestoreTransientState(newThing, transientState);
+        Cleanup(worker);
     }
 
-    /// <summary>
-    /// Synchronizes a newly spawned object's state to match its finalized form, 
-    /// handling stat cache invalidation, health recovery, and quality assignment.
-    /// </summary>
-    /// <param name="thing">The newly spawned building.</param>
-    /// <param name="worker">The pawn who finished the construction, if applicable.</param>
-    public static void FinalizeReplacement(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
+    public static void InitializeReplacement(Thing oldThing, Thing newThing, Pawn worker, Faction faction = null)
     {
-        RSLog.Debug(
-            $"PrepareReplacementBuilding(): ttart " +
-            $"OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} " +
-            $"NewRot={(newThing is null ? "null" : newThing.Rotation.ToString())} {newThing.Rotation}");
+        // Current design: New buildings spawn at full health.
+        // Future consideration: Add an option to calculate HitPoints based on the 
+        // old building's percentage of MaxHitPoints. TODO
+        // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints)); // For keeping hit points if we decide to
+        newThing.SetFactionDirect(faction ?? oldThing.Faction);
+        newThing.RemoveFromStatWorkerCaches();
 
-        // Set the quality of the new thing base on construction level of builder TODO MAKE THIS OPTION
-        //if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
-        //{
-        //    QualityCategory qualityCreatedByPawn =
-        //        QualityUtility.GenerateQualityCreatedByPawn(worker, SkillDefOf.Construction);
+        newThing.HitPoints = newThing.MaxHitPoints;
+        newThing.Notify_ColorChanged();
 
-        //    compQuality.SetQuality(qualityCreatedByPawn, ArtGenerationContext.Colony);
-        //    QualityUtility.SendCraftNotification(newThing, worker);
-        //}
+        ApplyConstructionQuality(newThing, worker);
 
-        if (!oldThing.Destroyed)
+    }
+
+    private static void ApplyConstructionQuality(Thing newThing, Pawn worker)
+    {
+        if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
         {
-            RSLog.Debug(
-            $"PrepareReplacementBuilding(): START " +
-            $"OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} " +
-            $"NewRot={(newThing is null ? "null" : newThing.Rotation.ToString())} {newThing.Rotation}");
-
-            //DeconstructDropStuff(oldThing);
-
-            newThing.SetFactionDirect(faction ?? oldThing.Faction);
-            newThing.RemoveFromStatWorkerCaches();
-
-            RSLog.Debug(
-            $"PrepareReplacementBuilding(): FACTION, STATCACHE SET: OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} "
-            + $"NewRot={(newThing is null ? "null" : newThing.Rotation.ToString())} {newThing.Rotation}");
-
-            // Current design: New buildings spawn at full health.
-            // Future consideration: Add an option to calculate HitPoints based on the 
-            // old building's percentage of MaxHitPoints. TODO
-            // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints)); // For keeping hit points if we decide to
-            newThing.HitPoints = newThing.MaxHitPoints;
-            newThing.Notify_ColorChanged();
-
-            RSLog.Debug(
-                        $"PrepareReplacementBuilding(): HITPOINTS, Notify_ColotChanged: OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} "
-                        + $"NewRot={(newThing is null ? "null" : newThing.Rotation.ToString())} {newThing.Rotation}");
-
-            if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
-            {
-                QualityCategory qualityCreatedByPawn = QualityUtility.GenerateQualityCreatedByPawn(worker, SkillDefOf.Construction);
-                compQuality.SetQuality(qualityCreatedByPawn, ArtGenerationContext.Colony);
-                QualityUtility.SendCraftNotification(newThing, worker);
-
-                RSLog.Debug(
-                    $"PrepareReplacementBuilding(): QUALITY, CRAFT NOTE: OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} "
-                    + $"NewRot={(newThing is null ? "null" : newThing.Rotation.ToString())} {newThing.Rotation}");
-
-            }
-
-            oldThing.Destroy(DestroyMode.Deconstruct);
-            if (newThing.Spawned && newThing.Map != null)
-            {
-                RSLog.Debug(
-                    string.Join(", ",
-                        newThing.Position
-                            .GetThingList(newThing.Map)
-                            .Select(t => t.def.defName)));
-            }
+            QualityCategory qualityCreatedByPawn = QualityUtility.GenerateQualityCreatedByPawn(worker, SkillDefOf.Construction);
+            compQuality.SetQuality(qualityCreatedByPawn, ArtGenerationContext.Colony);
+            QualityUtility.SendCraftNotification(newThing, worker);
         }
-        else
-        {
-            RSLog.Error("FinalizeReplace(): oldThing was already destroyed.");
-        }
-        RSLog.Debug(
-            $"PrepareReplacementBuilding(): end " +
-            $"OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} " +
-            $"NewRot={(newThing is null ? "null" : newThing.Rotation.ToString())} {newThing.Rotation}");
     }
 
     /// <summary>
@@ -480,6 +259,53 @@ public class ReplacementFrame : Frame
         }
     }
 
+    private List<Thing> ExtractTransientState()
+    {
+        if (targetThing is Building_Storage storage)
+            return GenReplace.ExtractStoredThings(storage);
+
+        return null;
+    }
+
+    private void ApplyPersistentState(Thing newThing)
+    {
+        BuildingStateTransfer.Apply(replaceData, newThing);
+    }
+
+    private void RestoreTransientState(Thing newThing, List<Thing> storedThings)
+    {
+        if (storedThings is not null &&
+            newThing is Building_Storage storage)
+        {
+            GenReplace.RestoreStoredThings(storage, storedThings);
+        }
+    }
+
+    private void SpawnReplacement(Thing newThing)
+    {
+        // IMPORTANT:
+        // GenSpawn.Spawn(..., WipeMode.Vanish) immediately destroys the
+        // existing building occupying the cell. Any state needed from
+        // targetThing must be captured before spawning.
+
+        GenSpawn.Spawn(newThing, Position, targetThing.Map, targetThing.Rotation, WipeMode.Vanish);
+        RSLog.Debug(
+            $"SpawnReplacement(): " +
+            $"Spawned={newThing.Spawned} " +
+            $"Pos={newThing.Position} " +
+            $"Rot={newThing.Rotation}");
+    }
+
+    private Thing CreateReplacement()
+    {
+        // MakeThing
+        RSLog.Debug($"BuildReplacement() START: Old Rot={targetThing.Rotation}");
+        var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
+        RSLog.Debug($"BuildReplacement() AFTER MAKETHING: New Rot={newThing.Rotation}");
+
+        return newThing;
+    }
+
     /// <summary>
     /// Generates the inspection string displayed in the bottom-left corner of the UI 
     /// when the player selects the <see cref="ReplacementFrame"/>.
@@ -498,6 +324,135 @@ public class ReplacementFrame : Frame
         stringBuilder.Append("WorkLeft".Translate()).Append(": ").Append(this.WorkLeft.ToStringWorkAmount());
 
         return stringBuilder.ToString();
+    }
+
+    private void Cleanup(Pawn worker)
+    {
+        resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
+
+        RSLog.Debug(
+            $"Cleanup: old Spawned={targetThing.Spawned} Destroyed={targetThing.Destroyed}");
+
+        foreach (var thing in GenConstruct.GetAttachedBuildings(targetThing))
+        {
+            thing.Destroy(DestroyMode.Vanish);
+        }
+
+        worker?.records.Increment(RecordDefOf.ThingsConstructed);
+        worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
+    }
+
+
+    /// <summary>
+    /// Dynamically generates the UI label for the frame, appending a "Replacing" tag 
+    /// to clarify the building's current construction state.
+    /// </summary>
+    /// 
+    public override string Label
+    {
+        get
+        {
+            string text = def.entityDefToBuild.label + "TD.ReplacingTag".Translate();
+            return Stuff != null ? $"{Stuff.label} {text}" : text;
+        }
+    }
+
+    /// <summary>
+    /// Calculates the labor required to complete the construction phase of the replacement.
+    /// </summary>
+    public float WorkToReplace =>
+        def.entityDefToBuild.GetStatValueAbstract(StatDefOf.WorkToBuild, Stuff);
+
+    /// <summary>
+    /// Calculates the labor required to deconstruct the <see cref="TargetStructure"/>.
+    /// </summary>
+    public float WorkToDeconstruct =>
+        WorkToDeconstructDef(def, targetStuff);
+
+    /// <summary>
+    /// Returns the sum of labor for deconstruction and construction.
+    /// </summary>
+    // Frame.WorkToBuild is not virtual.
+    // Harmony redirects calls to this replacement implementation.
+    public new float WorkToBuild =>
+        WorkToDeconstruct + WorkToReplace;
+
+    // Using AccessTools because GetBuildingResourcesLeaveCalculator is an internal RimWorld method.
+    // This allows us to accurately calculate return resources without duplicating game logic.
+    public static readonly GetBuildingResourcesLeaveCalculatorDel GetBuildingResourcesLeaveCalculator =
+        AccessTools.MethodDelegate<GetBuildingResourcesLeaveCalculatorDel>(AccessTools.Method(typeof(GenLeaving), "GetBuildingResourcesLeaveCalculator"));
+
+    /// <summary>
+    /// Calculates the labor required to deconstruct a specific building definition, 
+    /// clamped by <see cref="MaxDeconstructWork"/> to prevent excessive replacement times.
+    /// </summary>
+    public static float WorkToDeconstructDef(ThingDef def, ThingDef oldStuff = null)
+    {
+        var deWork = (def.entityDefToBuild as ThingDef ?? def)
+            .GetStatValueAbstract(StatDefOf.WorkToBuild, oldStuff);
+
+        return Mathf.Min(deWork, MaxDeconstructWork);
+    }
+
+    public int GetRequiredMaterialCount()
+    {
+        return GetRequiredMaterialCount(def.entityDefToBuild, Stuff);
+    }
+
+    /// <summary>
+    /// Returns the total quantity of material units required to complete the new structure.
+    /// </summary>
+    /// <param name="toBuild">The definition of the building being constructed.</param>
+    /// <param name="stuff">The material being used.</param>
+    public static int GetRequiredMaterialCount(BuildableDef toBuild, ThingDef stuff)
+    {
+        if (stuff == null || stuff.VolumePerUnit == 0)
+            return 0;
+
+        var count = Mathf.RoundToInt((float)toBuild.costStuffCount / stuff.VolumePerUnit);
+        if (count < 1)
+            count = 1;
+
+        return count;
+    }
+
+    public int CountStuffHas()
+    {
+        return resourceContainer.TotalStackCountOfDef(Stuff);
+    }
+
+    /// <summary>Calculates the remaining quantity of material required to finish the construction project.</summary>
+    public int CountStuffNeeded()
+    {
+        return GetRequiredMaterialCount() - CountStuffHas();
+    }
+
+    // Note that "new" might not normally be called but base TotalMaterialCost is patched below to act as virtual for this method
+    public new List<ThingDefCountClass> TotalMaterialCost()
+    {
+        // Difficulty changes affect resource return percentages. 
+        // We force a cache clear if the storyteller settings have changed to avoid stale data.
+        if (_cachedDifficulty != Find.Storyteller.difficulty)
+        {
+            CostListCalculator.Reset();
+            _cachedDifficulty = Find.Storyteller.difficulty;
+            _cachedReplaceCosts.Clear();
+        }
+
+        //CostListPair key = new(def.entityDefToBuild, Stuff);
+        ReplaceFrameKey key = new(def.entityDefToBuild, Stuff);
+
+        if (!_cachedReplaceCosts.TryGetValue(key, out var value))
+        {
+            value = new()
+            {
+                new(Stuff, GetRequiredMaterialCount())
+            };
+
+            _cachedReplaceCosts[key] = value;
+        }
+
+        return value;
     }
 
     /// <summary>Saves and loads the state of the replacement process during game save/load cycles.</summary>

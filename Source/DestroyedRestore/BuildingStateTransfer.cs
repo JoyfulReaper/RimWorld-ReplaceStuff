@@ -126,7 +126,6 @@ public static class BuildingStateTransfer
         if (data is null)
             return;
 
-        thing.SetFactionDirect(data.faction);
 
         // Quality
         //if (data.quality.HasValue && thing.TryGetComp<CompQuality>() is CompQuality cq)

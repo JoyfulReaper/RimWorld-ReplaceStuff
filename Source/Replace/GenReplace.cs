@@ -1,5 +1,5 @@
 ﻿/*
- * REPLACE STUFF: Perfomance Edition
+ * REPLACE STUFF: Performance  Edition
  * 
  * 
  * Part of this code is based on Replace Stuff
@@ -33,93 +33,38 @@ public static class GenReplace
     /// <param name="targetThing">The existing item or building targeted for replacement.</param>
     /// <param name="stuff">The material def choice designated for the replacement structure.</param>
     /// <returns>A fully initialized and spawned <see cref="ReplacementFrame"/> instance if successful; otherwise, <c>null</c>.</returns>
-    public static ReplacementFrame TrySpawnReplacementFrame(Thing oldThing, ThingDef stuff)
+    public static ReplacementFrame TrySpawnReplacementFrame(Thing targetThing, ThingDef stuff)
     {
         var replacementFrameDefs =
-            ThingDefGenerator_ReplacementFrame.ReplaceFrameDefFor(oldThing.def);
+            ThingDefGenerator_ReplacementFrame.ReplaceFrameDefFor(targetThing.def);
 
         if (replacementFrameDefs is null)
         {
-            RSLog.Debug($"No replace frame def found for {oldThing.def.defName}");
+            RSLog.Debug($"No replace frame def found for {targetThing.def.defName}");
             return null;
         }
 
         var replaceFrame = (ReplacementFrame)ThingMaker.MakeThing(replacementFrameDefs, stuff);
-        replaceFrame.replaceData = BuildingStateTransfer.Capture(oldThing, new HashSet<int>());
+        replaceFrame.replaceData = BuildingStateTransfer.Capture(targetThing, new HashSet<int>());
 
         replaceFrame.SetFactionDirect(Faction.OfPlayer);
         //oldThing.SetFactionDirect(Faction.OfPlayer); Done in PrepareReplacementBuilding now
 
-        replaceFrame.targetThing = oldThing;
-        replaceFrame.targetStuff = oldThing.Stuff;
+        replaceFrame.targetThing = targetThing;
+        replaceFrame.targetStuff = targetThing.Stuff;
 
 
         RSLog.Debug(
-            $"GenReplace.PlaceReplaceFrame(): BEFORE SPAWN: OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} "
+            $"GenReplace.PlaceReplaceFrame(): BEFORE SPAWN: OldRot={(targetThing is null ? "null" : targetThing.Rotation.ToString())} "
             + $"NewRot=New thing not spawned yet");
 
-        GenSpawn.Spawn(replaceFrame, oldThing.Position, oldThing.Map, oldThing.Rotation);
+        GenSpawn.Spawn(replaceFrame, targetThing.Position, targetThing.Map, targetThing.Rotation);
 
         RSLog.Debug(
-            $"GenReplace.PlaceReplaceFrame(): AFTER SPAWN: OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} "
+            $"GenReplace.PlaceReplaceFrame(): AFTER SPAWN: OldRot={(targetThing is null ? "null" : targetThing.Rotation.ToString())} "
             + $"NewRot={(replaceFrame is null ? "null" : replaceFrame.Rotation.ToString())} {replaceFrame.Rotation}");
 
         return replaceFrame;
-    }
-
-    /// <summary>
-    /// Chains state transitions and assignments to conclude an in-place structural replacement event.
-    /// </summary>
-    /// <param name="oldThing">The original world object structure undergoing teardown mechanics.</param>
-    /// <param name="newThing">The pristine world building piece replacing the old target entity.</param>
-    /// <param name="replaceData">The runtime variable state payload to reapply to the replacement asset structure.</param>
-    /// <param name="worker">The worker pawn responsible for executing the completion cycle.</param>
-    /// <param name="faction">Optional custom alignment faction properties override specification.</param>
-    /// <returns>A clean active structural reference to the freshly integrated world item object.</returns>
-    public static Thing ApplyReplacementState(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
-    {
-        RSLog.Debug($"FinalizeReplacement() START: Old Rot={oldThing.Rotation} New Rot={newThing.Rotation}");
-        ReplacementFrame.FinalizeReplacement(oldThing, newThing, worker, faction);
-
-        //GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
-        //BuildingStateTransfer.Apply(replaceData, newThing);
-        RSLog.Debug($"FinalizeReplacement() END: Old Rot={oldThing.Rotation} New Rot={newThing.Rotation}");
-        return newThing;
-    }
-
-    /// <summary>
-    /// Profiles deep inventory state diagnostic data during hot-swap container replacement routines.
-    /// </summary>
-    [System.Diagnostics.Conditional("DEBUG")]
-    private static void DebugStorage(Building_Storage storage, string stage)
-    {
-        if (storage is not null)
-        {
-            var posStr = storage.Spawned ? storage.Position.ToString() : "UNSPAWNED";
-            var hasMap = storage.Map != null;
-
-            RSLog.Debug("DebugStorage(): " +
-                $"{stage}: " +
-                $"Quantity={storage.GetSlotGroup().HeldThings.Count()} " +
-                $"Spawned={storage.Spawned} " +
-                $"Map={hasMap} " +
-                $"Pos={posStr}");
-
-            if (storage?.GetSlotGroup() == null)
-            {
-                RSLog.Debug("<no slot group>");
-                return;
-
-            }
-            else
-            {
-                RSLog.Debug($"DebugStorage(): {stage}: Held things:");
-                RSLog.Debug(String.Join(", ", storage.GetSlotGroup().HeldThings
-                    .Select(t => $"{t.def.defName} x{t.stackCount} ({t.thingIDNumber})")));
-            }
-        }
-        else
-            RSLog.Debug($"{stage}: Storage is null");
     }
 
     /// <summary>
@@ -172,5 +117,40 @@ public static class GenReplace
         }
 
         DebugStorage(storage, "After Restore");
+    }
+
+    /// <summary>
+    /// Profiles deep inventory state diagnostic data during hot-swap container replacement routines.
+    /// </summary>
+    [System.Diagnostics.Conditional("DEBUG")]
+    private static void DebugStorage(Building_Storage storage, string stage)
+    {
+        if (storage is not null)
+        {
+            var posStr = storage.Spawned ? storage.Position.ToString() : "UNSPAWNED";
+            var hasMap = storage.Map != null;
+
+            RSLog.Debug("DebugStorage(): " +
+                $"{stage}: " +
+                $"Quantity={storage.GetSlotGroup().HeldThings.Count()} " +
+                $"Spawned={storage.Spawned} " +
+                $"Map={hasMap} " +
+                $"Pos={posStr}");
+
+            if (storage?.GetSlotGroup() == null)
+            {
+                RSLog.Debug("<no slot group>");
+                return;
+
+            }
+            else
+            {
+                RSLog.Debug($"DebugStorage(): {stage}: Held things:");
+                RSLog.Debug(String.Join(", ", storage.GetSlotGroup().HeldThings
+                    .Select(t => $"{t.def.defName} x{t.stackCount} ({t.thingIDNumber})")));
+            }
+        }
+        else
+            RSLog.Debug($"{stage}: Storage is null");
     }
 }
