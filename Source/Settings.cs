@@ -3,7 +3,7 @@
  * 
  * 
  * Part of this code is based on Replace Stuff
- * Copyright (c) 2024 Alex Tearse-Doyle
+ * Copyright (c) 2025 Alex Tearse-Doyle
  * Licensed under the MIT License.
  *
  * Modified by Kyle Givler
@@ -27,7 +27,7 @@ public class Settings : ModSettings
     internal bool hideOverwallCoolers;
     internal bool hideNormalCoolers;
 
-    private string _version = "0.0.23";
+    private string _version = "0.0.24";
     private List<string> _preferredBridgeOrder = new();
 
     public readonly string debugPrefix = "[ReplaceStuffPerfomance]";

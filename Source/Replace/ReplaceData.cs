@@ -1,7 +1,7 @@
 ﻿/*
  * REPLACE STUFF: Perfomance Edition
  * * * Part of this code is based on Replace Stuff
- * Copyright (c) 2024 Alex Tearse-Doyle
+ * Copyright (c) 2025 Alex Tearse-Doyle
  * Licensed under the MIT License.
  *
  * Modified by Kyle Givler

@@ -1,9 +1,9 @@
 ﻿/*
- * REPLACE STUFF: Perfomance Edition
+ * REPLACE STUFF: Perfomance Edition 
  * 
  * 
  * Part of this code is based on Replace Stuff
- * Copyright (c) 2024 Alex Tearse-Doyle
+ * Copyright (c) 2025 Alex Tearse-Doyle
  * Licensed under the MIT License.
  *
  * Modified by Kyle Givler
@@ -50,8 +50,6 @@ public class ReplaceStuffPrefomance : Verse.Mod
     {
         static ModStartup()
         {
-            //Hugslibs-added defs will be queued up before this Static Constructor
-            //So queue replace frame generation after that
             LongEventHandler.QueueLongEvent(() => ThingDefGenerator_ReplaceFrame.AddReplaceFrames(), null, true, null);
             LongEventHandler.QueueLongEvent(CoolersOverWalls.DesignatorBuildDropdownStuffFix.SanityCheck, null, true, null);
             LongEventHandler.QueueLongEvent(ReplacementLoader.AddRulesFromXML, null, true, null);
