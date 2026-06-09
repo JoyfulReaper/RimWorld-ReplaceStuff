@@ -23,28 +23,6 @@ using Verse;
 
 namespace Replace_Stuff.Replace;
 
-[StaticConstructorOnStartup]
-public static class QBTypes
-{
-    public static DesignationDef qbDesDef;
-    public static Type compQBType;
-    public static Type compPropQBType;
-
-    static QBTypes()
-    {
-        try
-        {
-            compQBType = AccessTools.TypeByName("CompQualityBuilder");
-            compPropQBType = AccessTools.TypeByName("CompProperties_QualityBuilderr"); // TODO is this a typo or is that the right type?
-            qbDesDef = DefDatabase<DesignationDef>.GetNamed("SkilledBuilder", false);
-        }
-        catch (System.Reflection.ReflectionTypeLoadException) //Aeh, this happens to people, should not happen, meh.
-        {
-            Verse.Log.Warning("Replace Stuff failed to check for Quality Builder");
-        }
-    }
-}
-
 static class GenReplace
 {
     public static ReplacementFrame PlaceReplaceFrame(Thing oldThing, ThingDef stuff)
@@ -328,9 +306,9 @@ public static class ThingDefGenerator_ReplaceFrame
         }
 
         //Support QualityBuilder
-        if (QBTypes.compPropQBType != null)
+        if (QualityBuilderCompat.z != null)
             if (def.HasComp(typeof(CompQuality)) && def.building != null)
-                thingDef.comps.Add((CompProperties)Activator.CreateInstance(QBTypes.compPropQBType));
+                thingDef.comps.Add((CompProperties)Activator.CreateInstance(QualityBuilderCompat.z));
 
         thingDef.entityDefToBuild = def;
         //def.replaceFrameDef = thingDef;	//Dictionary instead

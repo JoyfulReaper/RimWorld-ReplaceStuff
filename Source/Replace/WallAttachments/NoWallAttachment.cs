@@ -40,7 +40,6 @@ public static class NoWallAttachment
         // if(thing is ReplaceFrame) continue;
         // (This is probably redundant because the wall under the replace frame will probably always be checked first and returned.)
 
-
         // The first br should branch to the entry point for the loop, keep that label to continue to
         var continueLabel = (Label)instructions.First(ci => ci.opcode == OpCodes.Br_S).operand;
         var defInfo = AccessTools.Field(typeof(Thing), nameof(Thing.def));
