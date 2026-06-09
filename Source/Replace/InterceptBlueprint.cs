@@ -23,7 +23,6 @@ namespace Replace_Stuff.Replace;
 [HarmonyPatch(typeof(Designator_Build), nameof(Designator_Build.DesignateSingleCell))]
 class InterceptDesignator_Build
 {
-    // TODO Start refactoring from here -
     /// <summary>
     /// Intercepts the build command to check for existing structures that can be replaced.
     /// </summary>
@@ -41,13 +40,12 @@ class InterceptDesignator_Build
         System.Diagnostics.Debugger.Break();
 #endif
 
-        if (__instance == null || ___entDef == null) return true;
+        if (__instance is null || ___entDef is null) return true;
 
-        var thingDef = ___entDef as ThingDef;
-        if (thingDef == null)
+        if (___entDef is not ThingDef thingDef)
             return true;
 
-        if (thingDef.MadeFromStuff && __instance.StuffDef == null)
+        if (thingDef.MadeFromStuff && __instance.StuffDef is null)
         {
             return true;
         }
@@ -82,7 +80,7 @@ class InterceptDesignator_Build
             }
 
             // Fallback for regular buildings
-            if (thingToReplace == null)
+            if (thingToReplace is null)
             {
                 thingToReplace = replaceable;
             }
