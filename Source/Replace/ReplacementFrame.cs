@@ -487,20 +487,15 @@ public class ReplacementFrame : Frame
     /// <returns>A formatted string detailing material progress and remaining labor.</returns>
     public override string GetInspectString()
     {
-        if (Stuff == null)
+        if (Stuff is null)
             return base.GetInspectString();
 
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.AppendLine("ContainedResources".Translate() + ":");
-        stringBuilder.AppendLine(string.Concat(
-            [
-                Stuff.LabelCap,
-                ": ",
-                CountStuffHas(),
-                " / ",
-                GetRequiredMaterialCount()
-            ]));
-        stringBuilder.Append("WorkLeft".Translate() + ": " + this.WorkLeft.ToStringWorkAmount());
+
+        // Optimized to clear out array allocations from string.Concat during UI redraw ticks
+        stringBuilder.Append(Stuff.LabelCap).Append(": ").Append(CountStuffHas()).Append(" / ").AppendLine(GetRequiredMaterialCount().ToString());
+        stringBuilder.Append("WorkLeft".Translate()).Append(": ").Append(this.WorkLeft.ToStringWorkAmount());
 
         return stringBuilder.ToString();
     }

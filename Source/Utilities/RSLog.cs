@@ -20,10 +20,10 @@ static class RSLog
     // TODO: Option for if the prefix should be colored or not
     // the color tags can make the log harder to read
     public static string PrefixColored =>
-        $"<color=#66CCFF>{Prefix}</color>";
+        $"<color=#66CCFF>{LoggingPrefix}</color>";
 
-    public static string Prefix =>
-        ReplaceStuffPerformance.settings.debugPrefix;
+    public static string LoggingPrefix =>
+        ReplaceStuffPerformance.settings.MessagePrefix;
 
     /// <summary>
     /// Log a message to Verse.Log.Messages if built in debug mode
@@ -50,7 +50,7 @@ static class RSLog
     /// <param name="x"></param>
     public static void Warning(string message)
     {
-        Verse.Log.Warning($"{Prefix}: {message}");
+        Verse.Log.Warning($"{LoggingPrefix}: {message}");
     }
 
     /// <summary>
@@ -59,6 +59,6 @@ static class RSLog
     /// <param name="x"></param>
     public static void Error(string message)
     {
-        Verse.Log.Error($"{Prefix}: {message}");
+        Verse.Log.Error($"{LoggingPrefix}: {message}");
     }
 }

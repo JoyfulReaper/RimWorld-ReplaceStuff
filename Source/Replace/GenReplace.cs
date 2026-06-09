@@ -78,12 +78,12 @@ public static class GenReplace
     /// <returns>A clean active structural reference to the freshly integrated world item object.</returns>
     public static Thing ApplyReplacementState(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
     {
-        RSLog.Debug($"ApplyReplacementState() START: Old Rot={oldThing.Rotation} New Rot={newThing.Rotation}");
+        RSLog.Debug($"FinalizeReplacement() START: Old Rot={oldThing.Rotation} New Rot={newThing.Rotation}");
         ReplacementFrame.FinalizeReplacement(oldThing, newThing, worker, faction);
 
         //GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
         //BuildingStateTransfer.Apply(replaceData, newThing);
-        RSLog.Debug($"ApplyReplacementState() END: Old Rot={oldThing.Rotation} New Rot={newThing.Rotation}");
+        RSLog.Debug($"FinalizeReplacement() END: Old Rot={oldThing.Rotation} New Rot={newThing.Rotation}");
         return newThing;
     }
 
