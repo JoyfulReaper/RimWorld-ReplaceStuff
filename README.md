@@ -1,6 +1,8 @@
 # Replace Stuff: Performance Edition
 A performance-focused continuation and modernization of Replace Stuff for RimWorld.
 Upgrade buildings in-place without tearing apart your colony.
+> **⚠️ Project Status:** This project is currently in its early stages of development. While core systems are being actively refactored, please consider this pre-alpha/early work. Be sure to back up critical saves and report any bugs or edge cases on GitHub.
+> 
 # The Vanilla Problem
 Upgrading your base in vanilla RimWorld can be frustrating.
 Want to replace a wooden wall with granite? Your colonists first tear down the old wall, leaving gaps in your defenses, exposing rooms to the outdoors, and potentially causing temperature problems or roof collapses.
@@ -19,7 +21,7 @@ Current and planned state preservation includes:
 Replacement frames are generated dynamically, allowing many buildings from other mods to participate without requiring dedicated compatibility patches.
 The goal is to support as many artificial buildings as possible while remaining lightweight, reliable, and maintainable.
 # Performance Edition
-This project is an ongoing effort to modernize and refactor the original Replace Stuff codebase.
+This project is an ongoing effort in its early stages to modernize and refactor the original Replace Stuff codebase.
 Current areas of focus include:
  * Cleaner architecture.
  * Better performance.
