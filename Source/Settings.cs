@@ -27,7 +27,7 @@ public class Settings : ModSettings
     internal bool hideOverwallCoolers;
     internal bool hideNormalCoolers;
 
-    private string _version = "0.0.22";
+    private string _version = "0.0.23";
     private List<string> _preferredBridgeOrder = new();
 
     public readonly string debugPrefix = "[ReplaceStuffPerfomance]";

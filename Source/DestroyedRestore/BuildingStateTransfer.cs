@@ -16,7 +16,6 @@ using Replace_Stuff.Utilities;
 using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using Verse;
 
 namespace Replace_Stuff.DestroyedRestore;
@@ -58,6 +57,17 @@ public static class BuildingStateTransfer
             data.storageFilter = new ThingFilter();
             data.storageFilter.CopyAllowancesFrom(settings.filter);
             data.storagePriority = settings.Priority;
+
+
+            //var t = data.Sto
+
+            RSLog.Debug(
+                $"CAPTURE IstoreSettingsParent:" +
+                // $" StorageGroup={data.St" +
+                $" oldRot={data.rotation} " +
+                $" newRot={thing.Rotation} " +
+                $" settings={settings?.GetHashCode()} " +
+                $" priorityBefore={settings.Priority}");
         }
 
         // Stored items
@@ -107,6 +117,7 @@ public static class BuildingStateTransfer
 
     public static void Apply(ReplaceData data, Thing thing)
     {
+        //LOG storage parent, priorityallowed defs and rotation
         RSLog.Debug(
             $"APPLY CALLED " +
             $"Thing={thing} " +
@@ -114,53 +125,63 @@ public static class BuildingStateTransfer
             $"Priority={data.storagePriority} " +
             $"Defs={data.storageFilter?.AllowedDefCount}");
 
+
         if (data is null)
             return;
 
         thing.SetFactionDirect(data.faction);
 
         // Quality
-        if (data.quality.HasValue && thing.TryGetComp<CompQuality>() is CompQuality cq)
-        {
-            cq.SetQuality(data.quality.Value, ArtGenerationContext.Colony);
-        }
+        //if (data.quality.HasValue && thing.TryGetComp<CompQuality>() is CompQuality cq)
+        //{
+        //    cq.SetQuality(data.quality.Value, ArtGenerationContext.Colony);
+        //}
 
 
-        // Target temperature
-        if (data.targetTemperature.HasValue)
-        {
-            if (thing is Building_Cooler cooler)
-                cooler.compTempControl.targetTemperature =
-                    data.targetTemperature.Value;
+        //// Target temperature
+        //if (data.targetTemperature.HasValue)
+        //{
+        //    if (thing is Building_Cooler cooler)
+        //        cooler.compTempControl.targetTemperature =
+        //            data.targetTemperature.Value;
 
-            if (thing is Building_Heater heater)
-                heater.compTempControl.targetTemperature =
-                    data.targetTemperature.Value;
-        }
+        //    if (thing is Building_Heater heater)
+        //        heater.compTempControl.targetTemperature =
+        //            data.targetTemperature.Value;
+        //}
 
-        // Growers
-        if (data.plantDef != null && thing is Building_PlantGrower grower)
-        {
-            grower.SetPlantDefToGrow(data.plantDef);
-        }
+        //// Growers
+        //if (data.plantDef != null && thing is Building_PlantGrower grower)
+        //{
+        //    grower.SetPlantDefToGrow(data.plantDef);
+        //}
 
-        //if (data.bills != null && thing is Building_WorkTable table)
+        ////if (data.bills != null && thing is Building_WorkTable table)
+        ////{
+        ////    foreach (Bill bill in data.bills)
+        ////        table.BillStack.AddBill(bill);
+        ////}
+
+        //// Bill stacks
+        //if (data.bills != null && thing is Building_WorkTable table && table.BillStack.Count == 0)
         //{
         //    foreach (Bill bill in data.bills)
         //        table.BillStack.AddBill(bill);
         //}
 
-        // Bill stacks
-        if (data.bills != null && thing is Building_WorkTable table && table.BillStack.Count == 0)
-        {
-            foreach (Bill bill in data.bills)
-                table.BillStack.AddBill(bill);
-        }
-
         // Storage filters/pirority
         if (thing is IStoreSettingsParent storageParent)
         {
             var settings = storageParent.GetStoreSettings();
+            RSLog.Debug($"Apply(): ");
+
+            RSLog.Debug(
+                $"APPLY IS IstorageParent:" +
+                $" oldRot={data.rotation} " +
+                $" newRot={thing.Rotation} " +
+                $" settings={settings?.GetHashCode()} " +
+                $" priorityBefore={settings.Priority}");
+
 
             if (data.storageFilter != null)
                 settings.filter.CopyAllowancesFrom(data.storageFilter);
@@ -169,37 +190,37 @@ public static class BuildingStateTransfer
                 settings.Priority = data.storagePriority.Value;
         }
 
-        // Stored items
-        if (thing is Building_Storage storage)
-            storage.label = data.storageLabel;
+        //// Stored items
+        //if (thing is Building_Storage storage)
+        //    storage.label = data.storageLabel;
 
-        // Attachments (ex Wall Lamps)
-        foreach (var attachment in data.attachedBuildings)
-        {
-            RSLog.Debug($"RESTORING ATTACHMENT {attachment.def.defName} at {attachment.position}");
-            Thing newAttachment = ThingMaker.MakeThing(attachment.def, attachment.stuff);
+        //// Attachments (ex Wall Lamps)
+        //foreach (var attachment in data.attachedBuildings)
+        //{
+        //    RSLog.Debug($"RESTORING ATTACHMENT {attachment.def.defName} at {attachment.position}");
+        //    Thing newAttachment = ThingMaker.MakeThing(attachment.def, attachment.stuff);
 
-            GenSpawn.Spawn(
-                newAttachment,
-                attachment.position,
-                thing.Map,
-                attachment.rotation,
-                WipeMode.Vanish);
+        //    GenSpawn.Spawn(
+        //        newAttachment,
+        //        attachment.position,
+        //        thing.Map,
+        //        attachment.rotation,
+        //        WipeMode.Vanish);
 
-            newAttachment.SetFactionDirect(attachment.faction);
-            newAttachment.RemoveFromStatWorkerCaches();
-            newAttachment.Notify_ColorChanged();
-            newAttachment.HitPoints = Mathf.Min(attachment.hitPoints, newAttachment.MaxHitPoints);
+        //    newAttachment.SetFactionDirect(attachment.faction);
+        //    newAttachment.RemoveFromStatWorkerCaches();
+        //    newAttachment.Notify_ColorChanged();
+        //    newAttachment.HitPoints = Mathf.Min(attachment.hitPoints, newAttachment.MaxHitPoints);
 
-            if (attachment.quality.HasValue && newAttachment.TryGetComp<CompQuality>() is CompQuality aCq)
-            {
-                aCq.SetQuality(
-                    attachment.quality.Value,
-                    ArtGenerationContext.Colony);
-            }
+        //    if (attachment.quality.HasValue && newAttachment.TryGetComp<CompQuality>() is CompQuality aCq)
+        //    {
+        //        aCq.SetQuality(
+        //            attachment.quality.Value,
+        //            ArtGenerationContext.Colony);
+        //    }
 
-            if (attachment.state != null)
-                Apply(attachment.state, newAttachment);
-        }
+        //    if (attachment.state != null)
+        //        Apply(attachment.state, newAttachment);
+        //}
     }
 }

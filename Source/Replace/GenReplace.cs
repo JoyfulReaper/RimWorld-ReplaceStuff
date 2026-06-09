@@ -59,7 +59,6 @@ static class GenReplace
         }
 
         var replaceFrame = (ReplaceFrame)ThingMaker.MakeThing(replaceFrameDef, stuff);
-
         replaceFrame.replaceData = BuildingStateTransfer.Capture(oldThing, new HashSet<int>());
 
         replaceFrame.SetFactionDirect(Faction.OfPlayer);
@@ -69,9 +68,33 @@ static class GenReplace
         replaceFrame.oldStuff = oldThing.Stuff;
 
 
+        RSLog.Debug(
+            $"GenReplace.PlaceReplaceFrame(): BEFORE SPAWN: OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} "
+            + $"NewRot=New thing not spawned yet");
 
         GenSpawn.Spawn(replaceFrame, oldThing.Position, oldThing.Map, oldThing.Rotation);
+        // TODO Apply here
+
+
+        RSLog.Debug(
+            $"GenReplace.PlaceReplaceFrame(): AFTER SPAWN: OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} "
+            + $"NewRot={(replaceFrame is null ? "null" : replaceFrame.Rotation.ToString())} {replaceFrame.Rotation}");
+
         return replaceFrame;
+    }
+
+    private static ThingPlaceMode GetRestoreMode(
+        Building_Storage storage,
+        Thing thing)
+    {
+        if (storage.GetSlotGroup().HeldThings.Count() <
+            storage.GetSlotGroup().CellsList.Sum(
+                c => c.GetMaxItemsAllowedInCell(storage.Map)))
+        {
+            return ThingPlaceMode.Direct;
+        }
+
+        return ThingPlaceMode.Near;
     }
 
     /// <summary>
@@ -94,11 +117,12 @@ static class GenReplace
     /// </param>
     public static Thing ApplyReplacementState(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
     {
+        RSLog.Debug($"ApplyReplacementState() START: Old Rot={oldThing.Rotation} New Rot={newThing.Rotation}");
         ReplaceFrame.PrepareReplacementBuilding(oldThing, newThing, worker, faction);
 
         //GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
-        BuildingStateTransfer.Apply(replaceData, newThing);
-
+        //BuildingStateTransfer.Apply(replaceData, newThing);
+        RSLog.Debug($"ApplyReplacementState() END: Old Rot={oldThing.Rotation} New Rot={newThing.Rotation}");
         return newThing;
     }
 
@@ -156,6 +180,13 @@ static class GenReplace
                 storage.Position,
                 storage.Map,
                 ThingPlaceMode.Direct); // Changed from Near for testing TODO
+
+            if (!success)
+            {
+                success = GenPlace.TryPlaceThing(thing, storage.Position, storage.Map, ThingPlaceMode.Near);
+                RSLog.Debug(
+                    $"Overflow drop {thing.def.defName} Success={success}");
+            }
 
             RSLog.Debug(
                 $"Restore {thing.def.defName} "

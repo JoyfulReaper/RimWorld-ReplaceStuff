@@ -12,10 +12,12 @@
  */
 
 using HarmonyLib;
+using Replace_Stuff.DestroyedRestore;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using Verse;
@@ -162,9 +164,13 @@ class ReplaceFrame : Frame
     /// </param>
     public new void CompleteConstruction(Pawn worker)
     {
-        if (oldThing != null && oldThing.Spawned)
+        if (oldThing is not null && oldThing.Spawned)
         {
+            RSLog.Debug($"CompleteConstruction() START: Old Rot={oldThing.Rotation}");
+
             var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
+            RSLog.Debug($"CompleteConstruction() AFTER MAKETHING: New Rot={newThing.Rotation}");
+
             List<Thing> storedThings = null;
 
             if (oldThing is Building_Storage oldStorage)
@@ -172,15 +178,25 @@ class ReplaceFrame : Frame
                 storedThings = GenReplace.ExtractStoredThings(oldStorage);
             }
 
+            BuildingStateTransfer.Apply(replaceData, newThing);
             GenReplace.ApplyReplacementState(oldThing, newThing, replaceData, worker);
-            GenSpawn.Spawn(newThing, Position, Map, Rotation, WipeMode.Vanish);
+            //GenSpawn.Spawn(newThing, Position, Map, Rotation, WipeMode.Vanish);
 
+            RSLog.Debug($"CompleteConstruction() AFTER SPAWN: New Rot={newThing.Rotation}");
 
+            if (newThing.Spawned && newThing.Map != null)
+            {
+                RSLog.Debug(
+                    string.Join(", ",
+                        newThing.Position
+                            .GetThingList(newThing.Map)
+                            .Select(t => t.def.defName)));
+            }
+            RSLog.Debug($"CompleteConstruction() END: New Rot={newThing.Rotation}");
 
             if (storedThings != null && newThing is Building_Storage newStorage)
             {
                 GenReplace.RestoreStoredThings(newStorage, storedThings);
-                var inspect = newStorage.GetSlotGroup().HeldThings; // INSEPCT IS THERE ALREADY STEEL HERE?
             }
 
             resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
@@ -200,21 +216,6 @@ class ReplaceFrame : Frame
         }
     }
 
-    //public static void RestoreStoredThings(Building_Storage storage, List<Thing> things)
-    //{
-    //    if (things == null)
-    //        return;
-
-    //    foreach (Thing thing in things)
-    //    {
-    //        GenPlace.TryPlaceThing(
-    //            thing,
-    //            storage.Position,
-    //            storage.Map,
-    //            ThingPlaceMode.Near);
-    //    }
-    //}
-
     /// <summary>
     /// Synchronizes a newly spawned object's state to match its finalized form, 
     /// handling stat cache invalidation, health recovery, and quality assignment.
@@ -223,6 +224,11 @@ class ReplaceFrame : Frame
     /// <param name="worker">The pawn who finished the construction, if applicable.</param>
     public static void PrepareReplacementBuilding(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
     {
+        RSLog.Debug(
+            $"PrepareReplacementBuilding(): ttart " +
+            $"OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} " +
+            $"NewRot={(newThing is null ? "null" : newThing.Rotation.ToString())} {newThing.Rotation}");
+
         // Set the quality of the new thing base on construction level of builder TODO MAKE THIS OPTION
         //if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
         //{
@@ -235,10 +241,19 @@ class ReplaceFrame : Frame
 
         if (!oldThing.Destroyed)
         {
-            DeconstructDropStuff(oldThing);
+            RSLog.Debug(
+            $"PrepareReplacementBuilding(): START " +
+            $"OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} " +
+            $"NewRot={(newThing is null ? "null" : newThing.Rotation.ToString())} {newThing.Rotation}");
+
+            //DeconstructDropStuff(oldThing);
 
             newThing.SetFactionDirect(faction ?? oldThing.Faction);
             newThing.RemoveFromStatWorkerCaches();
+
+            RSLog.Debug(
+            $"PrepareReplacementBuilding(): FACTION, STATCACHE SET: OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} "
+            + $"NewRot={(newThing is null ? "null" : newThing.Rotation.ToString())} {newThing.Rotation}");
 
             // Current design: New buildings spawn at full health.
             // Future consideration: Add an option to calculate HitPoints based on the 
@@ -247,20 +262,40 @@ class ReplaceFrame : Frame
             newThing.HitPoints = newThing.MaxHitPoints;
             newThing.Notify_ColorChanged();
 
+            RSLog.Debug(
+                        $"PrepareReplacementBuilding(): HITPOINTS, Notify_ColotChanged: OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} "
+                        + $"NewRot={(newThing is null ? "null" : newThing.Rotation.ToString())} {newThing.Rotation}");
+
             if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
             {
                 QualityCategory qualityCreatedByPawn = QualityUtility.GenerateQualityCreatedByPawn(worker, SkillDefOf.Construction);
                 compQuality.SetQuality(qualityCreatedByPawn, ArtGenerationContext.Colony);
                 QualityUtility.SendCraftNotification(newThing, worker);
+
+                RSLog.Debug(
+                    $"PrepareReplacementBuilding(): QUALITY, CRAFT NOTE: OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} "
+                    + $"NewRot={(newThing is null ? "null" : newThing.Rotation.ToString())} {newThing.Rotation}");
+
             }
 
             oldThing.Destroy(DestroyMode.Deconstruct);
-            var inspect = newStorage.GetSlotGroup().HeldThings.Count(); // INSEPECT
+            if (newThing.Spawned && newThing.Map != null)
+            {
+                RSLog.Debug(
+                    string.Join(", ",
+                        newThing.Position
+                            .GetThingList(newThing.Map)
+                            .Select(t => t.def.defName)));
+            }
         }
         else
         {
             RSLog.Error("FinalizeReplace(): oldThing was already destroyed.");
         }
+        RSLog.Debug(
+            $"PrepareReplacementBuilding(): end " +
+            $"OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} " +
+            $"NewRot={(newThing is null ? "null" : newThing.Rotation.ToString())} {newThing.Rotation}");
     }
 
     /// <summary>
