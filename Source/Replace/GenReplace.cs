@@ -47,7 +47,7 @@ public static class QBTypes
 
 static class GenReplace
 {
-    public static ReplaceFrame PlaceReplaceFrame(Thing oldThing, ThingDef stuff)
+    public static ReplacementFrame PlaceReplaceFrame(Thing oldThing, ThingDef stuff)
     {
         ThingDef replaceFrameDef =
             ThingDefGenerator_ReplaceFrame.ReplaceFrameDefFor(oldThing.def);
@@ -58,14 +58,14 @@ static class GenReplace
             return null;
         }
 
-        var replaceFrame = (ReplaceFrame)ThingMaker.MakeThing(replaceFrameDef, stuff);
+        var replaceFrame = (ReplacementFrame)ThingMaker.MakeThing(replaceFrameDef, stuff);
         replaceFrame.replaceData = BuildingStateTransfer.Capture(oldThing, new HashSet<int>());
 
         replaceFrame.SetFactionDirect(Faction.OfPlayer);
         oldThing.SetFactionDirect(Faction.OfPlayer);
 
-        replaceFrame.oldThing = oldThing;
-        replaceFrame.oldStuff = oldThing.Stuff;
+        replaceFrame.targetThing = oldThing;
+        replaceFrame.targetStuff = oldThing.Stuff;
 
 
         RSLog.Debug(
@@ -118,7 +118,7 @@ static class GenReplace
     public static Thing ApplyReplacementState(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
     {
         RSLog.Debug($"ApplyReplacementState() START: Old Rot={oldThing.Rotation} New Rot={newThing.Rotation}");
-        ReplaceFrame.PrepareReplacementBuilding(oldThing, newThing, worker, faction);
+        ReplacementFrame.PrepareReplacementBuilding(oldThing, newThing, worker, faction);
 
         //GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
         //BuildingStateTransfer.Apply(replaceData, newThing);
@@ -346,7 +346,7 @@ public static class ThingDefGenerator_ReplaceFrame
             isFrameInt = true,
             category = ThingCategory.Building,
             label = "Unspecified stuff replacement frame",
-            thingClass = typeof(ReplaceFrame),
+            thingClass = typeof(ReplacementFrame),
             altitudeLayer = AltitudeLayer.BuildingOnTop,
             useHitPoints = true,
             selectable = true,
@@ -361,6 +361,6 @@ public static class ThingDefGenerator_ReplaceFrame
     }
 
     public static bool IsReplaceFrame(this ThingDef def) =>
-        def.thingClass == typeof(ReplaceFrame);
+        def.thingClass == typeof(ReplacementFrame);
 
 }

@@ -25,31 +25,29 @@ using Verse;
 namespace Replace_Stuff.Replace;
 
 /// <summary>
-/// Represents a specialized construction frame used to replace an existing <see cref="Thing"/> 
-/// with a new one in-place.
+/// A specialized <see cref="Frame"/> that handles the atomic transition from an 
+/// existing <see cref="Thing"/> to a new one using different materials or definitions.
 /// </summary>
 /// <remarks>
-/// <para>
-/// This class extends <see cref="Frame"/> to manage the transition between an existing 
-/// structure (<see cref="oldThing"/>) and a new one. It handles the specific economic and 
-/// labor requirements of both deconstructing the old object and constructing the replacement.
-/// </para>
+/// The <see cref="ReplacementFrame"/> manages the lifecycle of a replacement task, 
+/// including deconstructing the <see cref="TargetStructure"/>, calculating the 
+/// transition cost, and applying state data (bills, settings, etc.) to the new instance.
 /// </remarks>
-class ReplaceFrame : Frame
+class ReplacementFrame : Frame
 {
-    /// <summary>The building currently being replaced.</summary>
-    public Thing oldThing;
+    /// <summary>The building targeted for replacement.</summary>
+    public Thing targetThing;
 
-    /// <summary>The material definition of the original structure, used for calculating deconstruction costs.</summary>
-    public ThingDef oldStuff;
+    /// <summary>The material definition of the original structure, used for resource recovery calculations.</summary>
+    public ThingDef targetStuff;
 
+    /// <summary>Encapsulated state data transferred from the target structure to the new one.</summary>
     public ReplaceData replaceData;
 
     public delegate Func<int, int> GetBuildingResourcesLeaveCalculatorDel(Thing oldThing, DestroyMode mode);
 
     private const float MaxDeconstructWork = 3000f;
     private static readonly Dictionary<ReplaceFrameKey, List<ThingDefCountClass>> _cachedReplaceCosts = new();
-    //private static readonly Dictionary<CostListPair, List<ThingDefCountClass>> _cachedReplaceCosts = new(FastCostListPairComparer.Instance);
     private const float LargeConstructionThreshold = 1400f;
     private static Difficulty _cachedDifficulty;
 
@@ -67,13 +65,21 @@ class ReplaceFrame : Frame
         }
     }
 
+    /// <summary>
+    /// Calculates the labor required to complete the construction phase of the replacement.
+    /// </summary>
     public float WorkToReplace =>
         def.entityDefToBuild.GetStatValueAbstract(StatDefOf.WorkToBuild, Stuff);
 
+    /// <summary>
+    /// Calculates the labor required to deconstruct the <see cref="TargetStructure"/>.
+    /// </summary>
     public float WorkToDeconstruct =>
-        WorkToDeconstructDef(def, oldStuff);
+        WorkToDeconstructDef(def, targetStuff);
 
-    /// <summary>Returns the total labor required to complete the replacement (Deconstruction + Construction).</summary>
+    /// <summary>
+    /// Returns the sum of labor for deconstruction and construction.
+    /// </summary>
     public new float WorkToBuild =>
         WorkToDeconstruct + WorkToReplace;
 
@@ -95,14 +101,17 @@ class ReplaceFrame : Frame
     }
 
 
-    /// <summary>Calculates the total amount of raw material units required for the new structure.</summary>
-    public int TotalStuffNeeded()
+    public int GetRequiredMaterialCount()
     {
-        return TotalStuffNeeded(def.entityDefToBuild, Stuff);
+        return GetRequiredMaterialCount(def.entityDefToBuild, Stuff);
     }
 
-    /// <summary>Calculates the total amount of raw material units required for the new structure.</summary>
-    public static int TotalStuffNeeded(BuildableDef toBuild, ThingDef stuff)
+    /// <summary>
+    /// Returns the total quantity of material units required to complete the new structure.
+    /// </summary>
+    /// <param name="toBuild">The definition of the building being constructed.</param>
+    /// <param name="stuff">The material being used.</param>
+    public static int GetRequiredMaterialCount(BuildableDef toBuild, ThingDef stuff)
     {
         if (stuff == null || stuff.VolumePerUnit == 0)
             return 0;
@@ -122,7 +131,7 @@ class ReplaceFrame : Frame
     /// <summary>Calculates the remaining quantity of material required to finish the construction project.</summary>
     public int CountStuffNeeded()
     {
-        return TotalStuffNeeded() - CountStuffHas();
+        return GetRequiredMaterialCount() - CountStuffHas();
     }
 
     // Note that "new" might not normally be called but base TotalMaterialCost is patched below to act as virtual for this method
@@ -144,7 +153,7 @@ class ReplaceFrame : Frame
         {
             value = new()
             {
-                new(Stuff, TotalStuffNeeded())
+                new(Stuff, GetRequiredMaterialCount())
             };
 
             _cachedReplaceCosts[key] = value;
@@ -163,22 +172,22 @@ class ReplaceFrame : Frame
     /// </param>
     public new void CompleteConstruction(Pawn worker)
     {
-        if (oldThing is not null && oldThing.Spawned)
+        if (targetThing is not null && targetThing.Spawned)
         {
-            RSLog.Debug($"CompleteConstruction() START: Old Rot={oldThing.Rotation}");
+            RSLog.Debug($"CompleteConstruction() START: Old Rot={targetThing.Rotation}");
 
             var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
             RSLog.Debug($"CompleteConstruction() AFTER MAKETHING: New Rot={newThing.Rotation}");
 
             List<Thing> storedThings = null;
 
-            if (oldThing is Building_Storage oldStorage)
+            if (targetThing is Building_Storage oldStorage)
             {
                 storedThings = GenReplace.ExtractStoredThings(oldStorage);
             }
 
             BuildingStateTransfer.Apply(replaceData, newThing);
-            GenReplace.ApplyReplacementState(oldThing, newThing, replaceData, worker);
+            GenReplace.ApplyReplacementState(targetThing, newThing, replaceData, worker);
             //GenSpawn.Spawn(newThing, Position, Map, Rotation, WipeMode.Vanish);
 
             RSLog.Debug($"CompleteConstruction() AFTER SPAWN: New Rot={newThing.Rotation}");
@@ -200,7 +209,7 @@ class ReplaceFrame : Frame
 
             resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
 
-            foreach (var thing in GenConstruct.GetAttachedBuildings(oldThing))
+            foreach (var thing in GenConstruct.GetAttachedBuildings(targetThing))
             {
                 thing.Destroy(DestroyMode.Vanish);
             }
@@ -303,7 +312,7 @@ class ReplaceFrame : Frame
     /// <param name="worker">The pawn who was attempting the work.</param>
     public new void FailConstruction(Pawn worker)
     {
-        RSLog.Debug($"Failed replace frame! work was {workDone}, Decon is {WorkToDeconstructDef(def, oldStuff)}, total is {WorkToBuild}");
+        RSLog.Debug($"Failed replace frame! work was {workDone}, Decon is {WorkToDeconstructDef(def, targetStuff)}, total is {WorkToBuild}");
 
         // Cap workDone at the cost of deconstruction. 
         // If they hadn't even finished deconstruction, they shouldn't get progress credit 
@@ -350,7 +359,7 @@ class ReplaceFrame : Frame
         // rather than all items (like components/steel) usually dropped by deconstruction.
         if (GenLeaving.CanBuildingLeaveResources(oldThing, DestroyMode.Deconstruct))
         {
-            var count = TotalStuffNeeded(oldDef, stuffDef);
+            var count = GetRequiredMaterialCount(oldDef, stuffDef);
             var leaveCount = GetBuildingResourcesLeaveCalculator(oldThing, DestroyMode.Deconstruct)(count);
             if (leaveCount > 0)
             {
@@ -363,7 +372,7 @@ class ReplaceFrame : Frame
 
     /// <summary>
     /// Generates the inspection string displayed in the bottom-left corner of the UI 
-    /// when the player selects the <see cref="ReplaceFrame"/>.
+    /// when the player selects the <see cref="ReplacementFrame"/>.
     /// </summary>
     /// <returns>A formatted string detailing material progress and remaining labor.</returns>
     public override string GetInspectString()
@@ -379,7 +388,7 @@ class ReplaceFrame : Frame
                 ": ",
                 CountStuffHas(),
                 " / ",
-                TotalStuffNeeded()
+                GetRequiredMaterialCount()
             ]));
         stringBuilder.Append("WorkLeft".Translate() + ": " + this.WorkLeft.ToStringWorkAmount());
 
@@ -391,8 +400,8 @@ class ReplaceFrame : Frame
     {
         base.ExposeData();
 
-        Scribe_References.Look(ref oldThing, "oldThing");
-        Scribe_Defs.Look(ref oldStuff, "oldStuff");
+        Scribe_References.Look(ref targetThing, "oldThing");
+        Scribe_Defs.Look(ref targetStuff, "oldStuff");
         Scribe_Deep.Look(ref replaceData, "replaceData");
     }
 }

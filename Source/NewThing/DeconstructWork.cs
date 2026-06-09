@@ -42,11 +42,11 @@ namespace Replace_Stuff.NewThing
 		//public float WorkToBuild
 		public static void Postfix(Frame __instance, ref float __result)
 		{
-			if (__instance is ReplaceFrame)
+			if (__instance is ReplacementFrame)
 				return; //ReplaceFrame already has its WorkToBuild set to the correct methods.
 
 			if (__instance.IsNewThingReplacement(out Thing oldThing))
-				__result += ReplaceFrame.WorkToDeconstructDef(oldThing.def, oldThing.Stuff);
+				__result += ReplacementFrame.WorkToDeconstructDef(oldThing.def, oldThing.Stuff);
 		}
 	}
 
@@ -64,7 +64,7 @@ namespace Replace_Stuff.NewThing
 		public static void Postfix(Frame __instance, ref float __result)
 		{
 			if (__instance.IsNewThingReplacement(out Thing oldThing))
-				__result += ReplaceFrame.WorkToDeconstructDef(oldThing.def, oldThing.Stuff);
+				__result += ReplacementFrame.WorkToDeconstructDef(oldThing.def, oldThing.Stuff);
 		}
 	}
 }

@@ -54,11 +54,6 @@ public class ReplaceStuffPrefomance : Verse.Mod
             CoolersOverWalls.DesignatorBuildDropdownStuffFix.SanityCheck();
             ReplacementLoader.AddRulesFromXML();
             ReserveSharing.Initialize(_harmony);
-
-            //LongEventHandler.QueueLongEvent(() => ThingDefGenerator_ReplaceFrame.AddReplaceFrames(), null, true, null);
-            //LongEventHandler.QueueLongEvent(CoolersOverWalls.DesignatorBuildDropdownStuffFix.SanityCheck, null, true, null);
-            //LongEventHandler.QueueLongEvent(ReplacementLoader.AddRulesFromXML, null, true, null);
-            //LongEventHandler.QueueLongEvent(() => ReserveSharing.Initialize(_harmony), "ReplaceStuff.Initializing", false, null);
         }
     }
 

@@ -22,7 +22,7 @@ namespace Replace_Stuff.Replace.WallAttachments
     /// Prevents replacement frames from reporting wall attachments.
     /// </summary>
     /// <remarks>
-    /// A <see cref="ReplaceFrame"/> temporarily occupies the same cell as the
+    /// A <see cref="ReplacementFrame"/> temporarily occupies the same cell as the
     /// building being replaced. Any attached structures (wall lights, vents,
     /// coolers, etc.) should remain associated with the original building
     /// until replacement is complete.
@@ -47,7 +47,7 @@ namespace Replace_Stuff.Replace.WallAttachments
                 return false;
             }
 
-            if (thing is ReplaceFrame)
+            if (thing is ReplacementFrame)
             {
                 __result = emptyList;
                 return false; // skip original method

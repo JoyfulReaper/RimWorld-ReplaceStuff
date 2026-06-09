@@ -36,7 +36,7 @@ static class DisableThing
         {
             if (tileThing == thing) continue;
 
-            if (tileThing is ReplaceFrame rf && rf.workDone > 0 && rf.oldThing == thing) return true;
+            if (tileThing is ReplacementFrame rf && rf.workDone > 0 && rf.targetThing == thing) return true;
             if (tileThing is Frame fr && fr.workDone > 0 && fr.CanReplace(thing)) return true;
         }
 

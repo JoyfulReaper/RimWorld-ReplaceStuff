@@ -18,9 +18,30 @@ using Verse;
 
 namespace Replace_Stuff.Replace
 {
+    /// <summary>
+    /// Handles the orchestration of replacing existing structures with new material definitions.
+    /// </summary>
+    /// <remarks>
+    /// This class acts as the central logic gate for determining how to transition from an existing 
+    /// <see cref="Thing"/> (or <see cref="Frame"/>/<see cref="Blueprint"/>) to a replacement structure.
+    /// It manages bridge requirements, state preservation, and the spawning of new construction tasks.
+    /// </remarks>
     internal class ReplaceHandler
     {
-        // TODO Start refactoring from here -
+        /// <summary>
+        /// Executes the replacement process for a specific structure using the provided <see cref="ThingDef"/>.
+        /// </summary>
+        /// <param name="thing">The existing structure, blueprint, or replacement frame to be replaced.</param>
+        /// <param name="stuffDef">The new <see cref="ThingDef"/> (material) to use for the replacement.</param>
+        /// <remarks>
+        /// This method:
+        /// <list type="bullet">
+        /// <item><description>Ensures necessary bridges are placed if the site requires terrain support.</description></item>
+        /// <item><description>Handles cleanup of existing blueprints, frames, or structures.</description></item>
+        /// <item><description>Spawns the new <see cref="ReplacementFrame"/> or <see cref="Blueprint_Build"/>.</description></item>
+        /// <item><description>Provides instant replacement feedback under God Mode.</description></item>
+        /// </list>
+        /// </remarks>
         public static void ExecuteReplacement(Thing thing, ThingDef stuffDef)
         {
             var pos = thing.Position;
@@ -40,18 +61,18 @@ namespace Replace_Stuff.Replace
 
                 GenConstruct.PlaceBlueprintForBuild(oldBP.def.entityDefToBuild, pos, map, rot, Faction.OfPlayer, stuffDef);
             }
-            else if (thing is ReplaceFrame oldRF)
+            else if (thing is ReplacementFrame oldRF)
             {
                 if (DebugSettings.godMode)
                 {
-                    ReplaceUtility.InstantReplace(oldRF.oldThing, stuffDef);
+                    ReplaceUtility.InstantReplace(oldRF.targetThing, stuffDef);
                     oldRF.Destroy(DestroyMode.Cancel);
                     return;
                 }
-                if (oldRF.oldStuff != stuffDef)
+                if (oldRF.targetStuff != stuffDef)
                 {
                     //replacement frame should keep deconstruction work mount
-                    ReplaceFrame newFrame = GenReplace.PlaceReplaceFrame(oldRF.oldThing, stuffDef);
+                    var newFrame = GenReplace.PlaceReplaceFrame(oldRF.targetThing, stuffDef);
                     if (newFrame != null)
                     {
                         newFrame.workDone = Mathf.Min(oldRF.workDone, oldRF.WorkToDeconstruct);
@@ -65,7 +86,6 @@ namespace Replace_Stuff.Replace
             else if (thing is Frame oldFrame)
             {
                 oldFrame.Destroy(DestroyMode.Cancel);
-
                 GenConstruct.PlaceBlueprintForBuild(oldFrame.def.entityDefToBuild, pos, map, rot, Faction.OfPlayer, stuffDef);
             }
             else if (DebugSettings.godMode)
@@ -74,7 +94,6 @@ namespace Replace_Stuff.Replace
             }
             else
             {
-                //Oh of course the standard case is, just place a replace frame! I almost forgot about that.
                 GenReplace.PlaceReplaceFrame(thing, stuffDef);
             }
 

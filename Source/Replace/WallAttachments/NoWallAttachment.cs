@@ -24,13 +24,13 @@ namespace Replace_Stuff.Replace.WallAttachments;
 public static class NoWallAttachment
 {
     /// <summary>
-    /// Prevents <see cref="ReplaceFrame"/> objects from being treated as
+    /// Prevents <see cref="ReplacementFrame"/> objects from being treated as
     /// wall attachments during placement validation.
     /// </summary>
     /// <remarks>
     /// RimWorld scans nearby things when determining whether a wall has
     /// attached structures (vents, coolers, etc.). During replacement,
-    /// the temporary <see cref="ReplaceFrame"/> should be ignored,
+    /// the temporary <see cref="ReplacementFrame"/> should be ignored,
     /// otherwise it can interfere with attachment logic.
     /// </remarks>
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -55,7 +55,7 @@ public static class NoWallAttachment
             if (i + 1 < insts.Count && insts[i + 1].LoadsField(defInfo))
             {
                 // stack has: Thing thing from the list
-                yield return new CodeInstruction(OpCodes.Isinst, typeof(ReplaceFrame));// thing == typeof(ReplaceFrame)
+                yield return new CodeInstruction(OpCodes.Isinst, typeof(ReplacementFrame));// thing == typeof(ReplaceFrame)
                 yield return new CodeInstruction(OpCodes.Brtrue_S, continueLabel);// if(thing == typeof(ReplaceFrame)) continue;
 
                 // Call ldlocal for Thing again to replace what was there (with, maybe, no labels...)

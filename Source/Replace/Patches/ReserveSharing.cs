@@ -42,7 +42,7 @@ namespace Replace_Stuff.Replace.Patches;
 /// a <see cref="LocalTargetInfo"/> via a Harmony <see cref="HarmonyMethod.Prefix"/>. 
 /// It performs a target redirection, effectively "tricking" the AI into 
 /// interacting with the original <see cref="Thing"/> regardless of whether 
-/// they are targeting the <see cref="ReplaceFrame"/> or the underlying 
+/// they are targeting the <see cref="ReplacementFrame"/> or the underlying 
 /// construction <see cref="Frame"/>.
 /// </para>
 /// </remarks>
@@ -81,8 +81,8 @@ public static class ReserveSharing
         if (!target.IsValid || !target.HasThing)
             return;
 
-        if (target.Thing is ReplaceFrame replaceFrame)
-            target = replaceFrame.oldThing;
+        if (target.Thing is ReplacementFrame replaceFrame)
+            target = replaceFrame.targetThing;
         else if (target.Thing is Frame frame && frame.IsNewThingReplacement(out Thing oldThing))
             target = oldThing;
     }

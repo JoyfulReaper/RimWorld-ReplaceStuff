@@ -18,7 +18,7 @@ using Verse;
 namespace Replace_Stuff.Replace.Patches;
 
 /// <summary>
-/// Harmony patch that overrides construction obstruction checks for <see cref="ReplaceFrame"/> instances.
+/// Harmony patch that overrides construction obstruction checks for <see cref="ReplacementFrame"/> instances.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -27,14 +27,14 @@ namespace Replace_Stuff.Replace.Patches;
 /// construction of an item.
 /// </para> 
 /// <para>
-/// Since <see cref="ReplaceFrame"/> objects are designed to be placed directly atop existing, 
+/// Since <see cref="ReplacementFrame"/> objects are designed to be placed directly atop existing, 
 /// functional structures, they would otherwise trigger this obstruction logic and prevent 
 /// the player from queuing replacements.
 /// </para>
 /// <para>
 /// This patch acts as a <see cref="HarmonyLib.HarmonyPatchType.Postfix"/> on the blocking logic, 
 /// forcing the result to <c>false</c> whenever the object being constructed is a 
-/// <see cref="ReplaceFrame"/>, effectively "ghosting" the frame so it does not collide with 
+/// <see cref="ReplacementFrame"/>, effectively "ghosting" the frame so it does not collide with 
 /// its own placement validation.
 /// </para>
 /// </remarks>
@@ -47,7 +47,7 @@ class GenConstructPatches
         if (!__result || constructible is Blueprint_Install)
             return;
 
-        if (constructible is ReplaceFrame)
+        if (constructible is ReplacementFrame)
         {
             __result = false;
             return;

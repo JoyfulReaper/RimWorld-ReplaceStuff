@@ -79,7 +79,7 @@ public class Designator_ReplaceStuff : Designator
                 {
                     var thing = thingsInCell[t];
 
-                    if (thing is not ReplaceFrame && CanReplaceStuffFor(stuffDef, thing))
+                    if (thing is not ReplacementFrame && CanReplaceStuffFor(stuffDef, thing))
                     {
                         if (GenConstruct.BuiltDefOf(thing.def) is ThingDef builtDef)
                         {
@@ -173,7 +173,7 @@ public class Designator_ReplaceStuff : Designator
             var things = cell.GetThingList(Map);
             for (int i = 0; i < things.Count; i++)
             {
-                if (things[i] is ReplaceFrame rf && rf.EntityToBuildStuff() == stuffDef)
+                if (things[i] is ReplacementFrame rf && rf.EntityToBuildStuff() == stuffDef)
                     return false;
             }
 

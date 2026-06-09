@@ -19,14 +19,14 @@ namespace Replace_Stuff.Patches;
 
 /// <summary>
 /// Intercepts requests for material costs to ensure the game uses 
-/// <see cref="ReplaceFrame.TotalMaterialCost"/> for replacement tasks.
+/// <see cref="ReplacementFrame.TotalMaterialCost"/> for replacement tasks.
 /// </summary>
 [HarmonyPatch(typeof(Frame), nameof(Frame.TotalMaterialCost))]
 internal static class Frame_TotalMaterialCost_Patch
 {
     public static bool Prefix(Frame __instance, ref List<ThingDefCountClass> __result)
     {
-        if (__instance is ReplaceFrame rf)
+        if (__instance is ReplacementFrame rf)
         {
             __result = rf.TotalMaterialCost();
             return false;
@@ -36,7 +36,7 @@ internal static class Frame_TotalMaterialCost_Patch
 }
 
 /// <summary>
-/// Redirects construction completion to <see cref="ReplaceFrame.CompleteConstruction"/>,
+/// Redirects construction completion to <see cref="ReplacementFrame.CompleteConstruction"/>,
 /// handling the destruction of the old object and spawning of the new one.
 /// </summary>
 [HarmonyPatch(typeof(Frame), nameof(Frame.CompleteConstruction))]
@@ -48,7 +48,7 @@ internal static class Frame_CompleteConstruction_Patch
         System.Diagnostics.Debugger.Break();
 #endif
 
-        if (__instance is ReplaceFrame rf)
+        if (__instance is ReplacementFrame rf)
         {
             rf.CompleteConstruction(worker);
             return false;
@@ -58,7 +58,7 @@ internal static class Frame_CompleteConstruction_Patch
 }
 
 /// <summary>
-/// Redirects construction failure to <see cref="ReplaceFrame.FailConstruction"/>,
+/// Redirects construction failure to <see cref="ReplacementFrame.FailConstruction"/>,
 /// ensuring partial material refunds for failed replacements.
 /// </summary>
 [HarmonyPatch(typeof(Frame), nameof(Frame.FailConstruction))]
@@ -66,7 +66,7 @@ internal static class Frame_FailConstruction_Patch
 {
     public static bool Prefix(Frame __instance, Pawn worker)
     {
-        if (__instance is ReplaceFrame rf)
+        if (__instance is ReplacementFrame rf)
         {
             rf.FailConstruction(worker);
             return false;
@@ -84,7 +84,7 @@ internal static class Frame_WorkToBuild_Patch
 {
     public static bool Prefix(Frame __instance, ref float __result)
     {
-        if (__instance is ReplaceFrame rf)
+        if (__instance is ReplacementFrame rf)
         {
             __result = rf.WorkToBuild;
             return false;

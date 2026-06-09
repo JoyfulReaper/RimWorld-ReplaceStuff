@@ -10,16 +10,10 @@ using Verse;
 namespace Replace_Stuff.Replace;
 
 // Define our own struct to act as the Dictionary key
-public readonly struct ReplaceFrameKey : IEquatable<ReplaceFrameKey>
+public readonly struct ReplaceFrameKey(BuildableDef buildable, ThingDef stuff) : IEquatable<ReplaceFrameKey>
 {
-    public readonly BuildableDef Buildable;
-    public readonly ThingDef Stuff;
-
-    public ReplaceFrameKey(BuildableDef buildable, ThingDef stuff)
-    {
-        Buildable = buildable;
-        Stuff = stuff;
-    }
+    public readonly BuildableDef Buildable = buildable;
+    public readonly ThingDef Stuff = stuff;
 
     public bool Equals(ReplaceFrameKey other) =>
         Buildable == other.Buildable && Stuff == other.Stuff;
