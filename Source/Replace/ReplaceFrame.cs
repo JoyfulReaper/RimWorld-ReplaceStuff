@@ -21,8 +21,6 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using Verse;
-using CostListPair = RimWorld.CostListCalculator.CostListPair;
-using FastCostListPairComparer = RimWorld.CostListCalculator.FastCostListPairComparer;
 
 namespace Replace_Stuff.Replace;
 
@@ -50,10 +48,10 @@ class ReplaceFrame : Frame
     public delegate Func<int, int> GetBuildingResourcesLeaveCalculatorDel(Thing oldThing, DestroyMode mode);
 
     private const float MaxDeconstructWork = 3000f;
-
-    private static readonly Dictionary<CostListPair, List<ThingDefCountClass>> _cachedReplaceCosts = new(FastCostListPairComparer.Instance);
+    private static readonly Dictionary<ReplaceFrameKey, List<ThingDefCountClass>> _cachedReplaceCosts = new();
+    //private static readonly Dictionary<CostListPair, List<ThingDefCountClass>> _cachedReplaceCosts = new(FastCostListPairComparer.Instance);
     private const float LargeConstructionThreshold = 1400f;
-
+    private static Difficulty _cachedDifficulty;
 
     /// <summary>
     /// Dynamically generates the UI label for the frame, appending a "Replacing" tag 
@@ -132,14 +130,15 @@ class ReplaceFrame : Frame
     {
         // Difficulty changes affect resource return percentages. 
         // We force a cache clear if the storyteller settings have changed to avoid stale data.
-        if (CostListCalculator.cachedDifficulty != Find.Storyteller.difficulty)
+        if (_cachedDifficulty != Find.Storyteller.difficulty)
         {
             CostListCalculator.Reset();
-            CostListCalculator.cachedDifficulty = Find.Storyteller.difficulty;
+            _cachedDifficulty = Find.Storyteller.difficulty;
             _cachedReplaceCosts.Clear();
         }
 
-        CostListPair key = new(def.entityDefToBuild, Stuff);
+        //CostListPair key = new(def.entityDefToBuild, Stuff);
+        ReplaceFrameKey key = new(def.entityDefToBuild, Stuff);
 
         if (!_cachedReplaceCosts.TryGetValue(key, out var value))
         {

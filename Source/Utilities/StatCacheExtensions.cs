@@ -55,12 +55,8 @@ public static class StatCacheExtensions
     {
         foreach (StatDef statDef in DefDatabase<StatDef>.AllDefsListForReading)
         {
-            var worker = statDef.workerInt;
-            if (worker != null)
-            {
-                worker.temporaryStatCache?.Remove(thing);
-                worker.immutableStatCache?.TryRemove(thing, out _);
-            }
+            var worker = statDef.Worker;
+            worker?.TryClearCache();
         }
     }
 }

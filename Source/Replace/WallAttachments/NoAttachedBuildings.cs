@@ -41,11 +41,18 @@ namespace Replace_Stuff.Replace.WallAttachments
         /// </summary>
         public static bool Prefix(Thing thing, ref List<Thing> __result)
         {
-            if (thing is ReplaceFrame)
+            if (thing is null || !thing.Spawned || thing.Map != null)
             {
                 __result = emptyList;
                 return false;
             }
+
+            if (thing is ReplaceFrame)
+            {
+                __result = emptyList;
+                return false; // skip original method
+            }
+
             return true;
         }
     }

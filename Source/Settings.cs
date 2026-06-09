@@ -35,6 +35,10 @@ public class Settings : ModSettings
     public string Version => _version;
 
     // Settings Dialog
+    /// <summary>
+    /// Draws the settings window
+    /// </summary>
+    /// <param name="inRect"></param>
     public void DoWindowContents(Rect inRect)
     {
         var listing = new Listing_Standard();
@@ -50,8 +54,11 @@ public class Settings : ModSettings
         listing.End();
     }
 
+    /// <summary>
+    /// Draws the list of bridgelike terrains and allows re-ordering
+    /// </summary>
+    /// <param name="options"></param>
     // TODO: Replace with a cleaner reorder UI.
-    // Current implementation favors simplicity and stability.
     private void DoBridgeList(Listing_Standard options)
     {
         options.GapLine();
@@ -98,6 +105,10 @@ public class Settings : ModSettings
         }
     }
 
+
+    /// <summary>
+    /// Handles saving and loading of settings
+    /// </summary>
     public override void ExposeData()
     {
         Scribe_Values.Look(ref _version, "Version", Version);
