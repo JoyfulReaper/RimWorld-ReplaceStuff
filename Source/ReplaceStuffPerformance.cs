@@ -1,5 +1,5 @@
 ﻿/*
- * REPLACE STUFF: Perfomance Edition 
+ * REPLACE STUFF: Performance  Edition 
  * 
  * 
  * Part of this code is based on Replace Stuff
@@ -33,13 +33,13 @@ public class ReplaceStuffPerformance : Verse.Mod
     {
         settings = GetSettings<Settings>();
 
-        _harmony = new Harmony("ReplaceStuff.Perfomance");
+        _harmony = new Harmony("ReplaceStuff.Performance ");
         _harmony.PatchAll();
 
 #if DEBUG
-        Verse.Log.Message($"[ReplaceStuffPerfomance] Version {settings.Version} <color=#66CCFF>DEBUG BUILD</color>");
+        Verse.Log.Message($"[ReplaceStuffPerformance ] Version {settings.Version} <color=#66CCFF>DEBUG BUILD</color>");
 #else
-        Verse.Log.Message($"[ReplaceStuffPerfomance] Version {settings.Version}");
+        Verse.Log.Message($"[ReplaceStuffPerformance ] Version {settings.Version}");
 #endif
 
     }
@@ -67,6 +67,6 @@ public class ReplaceStuffPerformance : Verse.Mod
     {
         // TODO: Do better, make translations
         var result = "TD.ReplaceStuff".Translate();
-        return $"{result} Perfomance Version ({settings.Version})";
+        return $"{result} Performance  Version ({settings.Version})";
     }
 }

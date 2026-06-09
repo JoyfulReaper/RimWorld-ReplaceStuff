@@ -1,5 +1,5 @@
 ﻿/*
- * REPLACE STUFF: Perfomance Edition
+ * REPLACE STUFF: Performance  Edition
  * * * Part of this code is based on Replace Stuff
  * Copyright (c) 2025 Alex Tearse-Doyle
  * Licensed under the MIT License.

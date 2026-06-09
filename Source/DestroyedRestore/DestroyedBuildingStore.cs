@@ -1,5 +1,5 @@
 ﻿/*
- * REPLACE STUFF: Perfomance Edition
+ * REPLACE STUFF: Performance  Edition
  * 
  * 
  * Part of this code is based on Replace Stuff
@@ -105,7 +105,7 @@ public class DestroyedBuildingStore : MapComponent
                 if (!pos.GetThingList(map).Any(t => t.def.IsFrame || t.def.IsBlueprint))
                 {
                     Verse.Log.Warning(
-                        $"[ReplaceStuffPerfomance] - Forgetting orphaned building state at {pos}");
+                        $"[ReplaceStuffPerformance ] - Forgetting orphaned building state at {pos}");
                     destroyedBuildings.Remove(pos);
                 }
             }

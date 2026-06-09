@@ -1,5 +1,5 @@
 ﻿/*
- * REPLACE STUFF: Perfomance Edition
+ * REPLACE STUFF: Performance  Edition
  * Copyright (c) 2026 Kyle Givler
  * Licensed under the MIT License.
  */
