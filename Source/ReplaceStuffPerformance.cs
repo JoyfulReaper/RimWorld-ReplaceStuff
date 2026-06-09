@@ -24,12 +24,12 @@ namespace Replace_Stuff;
 /// <summary>
 /// I'm a Mod!
 /// </summary>
-public class ReplaceStuffPrefomance : Verse.Mod
+public class ReplaceStuffPerformance : Verse.Mod
 {
     public static Settings settings;
     public static Harmony _harmony;
 
-    public ReplaceStuffPrefomance(ModContentPack content) : base(content)
+    public ReplaceStuffPerformance(ModContentPack content) : base(content)
     {
         settings = GetSettings<Settings>();
 

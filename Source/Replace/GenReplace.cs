@@ -35,7 +35,7 @@ public static class QBTypes
         try
         {
             compQBType = AccessTools.TypeByName("CompQualityBuilder");
-            compPropQBType = AccessTools.TypeByName("CompProperties_QualityBuilderr");
+            compPropQBType = AccessTools.TypeByName("CompProperties_QualityBuilderr"); // TODO is this a typo or is that the right type?
             qbDesDef = DefDatabase<DesignationDef>.GetNamed("SkilledBuilder", false);
         }
         catch (System.Reflection.ReflectionTypeLoadException) //Aeh, this happens to people, should not happen, meh.
@@ -335,7 +335,7 @@ public static class ThingDefGenerator_ReplaceFrame
         thingDef.entityDefToBuild = def;
         //def.replaceFrameDef = thingDef;	//Dictionary instead
 
-        thingDef.modContentPack = LoadedModManager.GetMod<ReplaceStuffPrefomance>().Content;
+        thingDef.modContentPack = LoadedModManager.GetMod<ReplaceStuffPerformance>().Content;
         return thingDef;
     }
 
