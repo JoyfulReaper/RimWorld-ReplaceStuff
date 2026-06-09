@@ -48,7 +48,7 @@ public static class GenReplace
         replaceFrame.replaceData = BuildingStateTransfer.Capture(oldThing, new HashSet<int>());
 
         replaceFrame.SetFactionDirect(Faction.OfPlayer);
-        oldThing.SetFactionDirect(Faction.OfPlayer);
+        //oldThing.SetFactionDirect(Faction.OfPlayer); Done in PrepareReplacementBuilding now
 
         replaceFrame.targetThing = oldThing;
         replaceFrame.targetStuff = oldThing.Stuff;
@@ -79,7 +79,7 @@ public static class GenReplace
     public static Thing ApplyReplacementState(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
     {
         RSLog.Debug($"ApplyReplacementState() START: Old Rot={oldThing.Rotation} New Rot={newThing.Rotation}");
-        ReplacementFrame.PrepareReplacementBuilding(oldThing, newThing, worker, faction);
+        ReplacementFrame.FinalizeReplacement(oldThing, newThing, worker, faction);
 
         //GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
         //BuildingStateTransfer.Apply(replaceData, newThing);

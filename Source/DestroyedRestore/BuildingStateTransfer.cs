@@ -58,9 +58,6 @@ public static class BuildingStateTransfer
             data.storageFilter.CopyAllowancesFrom(settings.filter);
             data.storagePriority = settings.Priority;
 
-
-            //var t = data.Sto
-
             RSLog.Debug(
                 $"CAPTURE IstoreSettingsParent:" +
                 // $" StorageGroup={data.St" +

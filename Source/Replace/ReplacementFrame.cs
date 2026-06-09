@@ -80,6 +80,8 @@ public class ReplacementFrame : Frame
     /// <summary>
     /// Returns the sum of labor for deconstruction and construction.
     /// </summary>
+    // Frame.WorkToBuild is not virtual.
+    // Harmony redirects calls to this replacement implementation.
     public new float WorkToBuild =>
         WorkToDeconstruct + WorkToReplace;
 
@@ -172,10 +174,121 @@ public class ReplacementFrame : Frame
     /// </param>
     public new void CompleteConstruction(Pawn worker)
     {
+        // Capture old building state
+        // Remove old building.
+        // Create replacement.
+        // Restore transferable state.
+        // Finalize construction.
+        // Destroy frame.
+
+        /*
+         * REPLACEMENT EXECUTION FLOW
+         * =====================================================================================
+         *
+         * DESIGNATION
+         * -----------
+         * GenReplace.TrySpawnReplacementFrame(oldThing, stuff)
+         *     |
+         *     +--> BuildingStateTransfer.Capture(oldThing)
+         *     |       |
+         *     |       +--> Capture faction
+         *     |       +--> Capture rotation
+         *     |       +--> Capture quality
+         *     |       +--> Capture bills
+         *     |       +--> Capture storage settings
+         *     |       +--> Capture temperatures
+         *     |       +--> Capture grow zones
+         *     |       +--> Capture attached buildings
+         *     |
+         *     +--> Create ReplacementFrame
+         *     +--> Store ReplaceData
+         *     +--> Store targetThing
+         *     +--> Spawn frame
+         *
+         *
+         * CONSTRUCTION COMPLETION
+         * -----------------------
+         *
+         * Harmony:
+         * Frame.CompleteConstruction()
+         *     |
+         *     +--> ReplacementFrame.CompleteConstruction()
+         *             |
+         *             +--> Verify targetThing still exists
+         *             |
+         *             +--> ThingMaker.MakeThing()
+         *             |       Create replacement building
+         *             |
+         *             +--> [Storage]
+         *             |       ExtractStoredThings()
+         *             |
+         *             +--> BuildingStateTransfer.Apply()
+         *             |       Restore captured state
+         *             |       (storage filters, faction, etc.)
+         *             |
+         *             +--> GenReplace.ApplyReplacementState()
+         *             |       |
+         *             |       +--> ReplacementFrame.FinalizeReplacement()
+         *             |               |
+         *             |               +--> Set faction
+         *             |               +--> Clear stat caches
+         *             |               +--> Restore hitpoints
+         *             |               +--> Notify_ColorChanged()
+         *             |               +--> Apply construction quality
+         *             |               +--> Destroy old building
+         *             |
+         *             +--> [Storage]
+         *             |       RestoreStoredThings()
+         *             |
+         *             +--> Destroy frame resources
+         *             |
+         *             +--> Destroy attached buildings
+         *             |
+         *             +--> Increment construction records
+         *             |
+         *             +--> END
+         *
+         *
+         * FAILURE PATH
+         * ------------
+         *
+         * Frame.FailConstruction()
+         *     |
+         *     +--> ReplacementFrame.FailConstruction()
+         *             |
+         *             +--> Clamp work completed
+         *             +--> Drop remaining resources
+         *             +--> Construction failed message
+         *
+         * =====================================================================================
+         *
+         * IMPORTANT:
+         *
+         * ReplaceData contains the persistent state transferred between buildings.
+         *
+         * Current implementation restores:
+         *   - faction
+         *   - rotation (captured)
+         *   - storage filters
+         *   - storage priority
+         *
+         * Additional systems exist but are currently disabled/commented:
+         *   - quality
+         *   - bills
+         *   - temperatures
+         *   - grower settings
+         *   - storage labels
+         *   - attached building restoration
+         *
+         * Storage contents themselves are NOT part of ReplaceData.
+         * They are extracted and restored separately during replacement.
+         *
+         * =====================================================================================
+         */
+
         if (targetThing is not null && targetThing.Spawned)
         {
             RSLog.Debug($"CompleteConstruction() START: Old Rot={targetThing.Rotation}");
-
             var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
             RSLog.Debug($"CompleteConstruction() AFTER MAKETHING: New Rot={newThing.Rotation}");
 
@@ -191,18 +304,15 @@ public class ReplacementFrame : Frame
             //GenSpawn.Spawn(newThing, Position, Map, Rotation, WipeMode.Vanish);
 
             RSLog.Debug($"CompleteConstruction() AFTER SPAWN: New Rot={newThing.Rotation}");
-
             if (newThing.Spawned && newThing.Map != null)
             {
-                RSLog.Debug(
-                    string.Join(", ",
-                        newThing.Position
-                            .GetThingList(newThing.Map)
-                            .Select(t => t.def.defName)));
+                RSLog.Debug(string.Join(", ", newThing.Position
+                    .GetThingList(newThing.Map)
+                    .Select(t => t.def.defName)));
             }
             RSLog.Debug($"CompleteConstruction() END: New Rot={newThing.Rotation}");
 
-            if (storedThings != null && newThing is Building_Storage newStorage)
+            if (storedThings is not null && newThing is Building_Storage newStorage)
             {
                 GenReplace.RestoreStoredThings(newStorage, storedThings);
             }
@@ -230,7 +340,7 @@ public class ReplacementFrame : Frame
     /// </summary>
     /// <param name="thing">The newly spawned building.</param>
     /// <param name="worker">The pawn who finished the construction, if applicable.</param>
-    public static void PrepareReplacementBuilding(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
+    public static void FinalizeReplacement(Thing oldThing, Thing newThing, Pawn worker = null, Faction faction = null)
     {
         RSLog.Debug(
             $"PrepareReplacementBuilding(): ttart " +
