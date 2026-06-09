@@ -33,7 +33,7 @@ namespace Replace_Stuff.Replace;
 /// including deconstructing the <see cref="TargetStructure"/>, calculating the 
 /// transition cost, and applying state data (bills, settings, etc.) to the new instance.
 /// </remarks>
-class ReplacementFrame : Frame
+public class ReplacementFrame : Frame
 {
     /// <summary>The building targeted for replacement.</summary>
     public Thing targetThing;

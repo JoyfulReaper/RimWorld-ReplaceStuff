@@ -50,7 +50,7 @@ public class ReplaceStuffPerformance : Verse.Mod
     {
         static ModStartup()
         {
-            ThingDefGenerator_ReplaceFrame.AddReplaceFrames();
+            ThingDefGenerator_ReplacementFrame.AddReplaceFrames();
             CoolersOverWalls.DesignatorBuildDropdownStuffFix.SanityCheck();
             ReplacementLoader.AddRulesFromXML();
             ReserveSharing.Initialize(_harmony);

@@ -201,7 +201,7 @@ public class Designator_ReplaceStuff : Designator
             if (frame.EntityToBuildStuff() == stuff)
                 return false;
         }
-        else if (thing.def.HasReplaceFrame())
+        else if (thing.def.HasReplacementFrrame())
         {
             if (thing.Stuff == stuff)
                 return false;
@@ -262,7 +262,7 @@ public class Designator_ReplaceStuff : Designator
 
         if (thingToReplace is not null)
         {
-            ReplaceHandler.ExecuteReplacement(thingToReplace, stuffDef);
+            ReplacementHandler.ExecuteReplacement(thingToReplace, stuffDef);
         }
     }
 

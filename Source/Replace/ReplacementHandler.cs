@@ -26,7 +26,7 @@ namespace Replace_Stuff.Replace
     /// <see cref="Thing"/> (or <see cref="Frame"/>/<see cref="Blueprint"/>) to a replacement structure.
     /// It manages bridge requirements, state preservation, and the spawning of new construction tasks.
     /// </remarks>
-    internal class ReplaceHandler
+    internal class ReplacementHandler
     {
         /// <summary>
         /// Executes the replacement process for a specific structure using the provided <see cref="ThingDef"/>.
@@ -72,7 +72,7 @@ namespace Replace_Stuff.Replace
                 if (oldRF.targetStuff != stuffDef)
                 {
                     //replacement frame should keep deconstruction work mount
-                    var newFrame = GenReplace.PlaceReplaceFrame(oldRF.targetThing, stuffDef);
+                    var newFrame = GenReplace.TrySpawnReplacementFrame(oldRF.targetThing, stuffDef);
                     if (newFrame != null)
                     {
                         newFrame.workDone = Mathf.Min(oldRF.workDone, oldRF.WorkToDeconstruct);
@@ -94,7 +94,7 @@ namespace Replace_Stuff.Replace
             }
             else
             {
-                GenReplace.PlaceReplaceFrame(thing, stuffDef);
+                GenReplace.TrySpawnReplacementFrame(thing, stuffDef);
             }
 
             FleckMaker.ThrowMetaPuffs(GenAdj.OccupiedRect(pos, rot, thing.def.size), map);

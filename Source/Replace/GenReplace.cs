@@ -11,32 +11,40 @@
  * Licensed under the MIT License.
  */
 
-using HarmonyLib;
 using Replace_Stuff.DestroyedRestore;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
-using UnityEngine;
 using Verse;
 
 namespace Replace_Stuff.Replace;
 
-static class GenReplace
+/// <summary>
+/// Utility functions handling world interactions, structure conversions, and data transformations for object replacements.
+/// </summary>
+public static class GenReplace
 {
-    public static ReplacementFrame PlaceReplaceFrame(Thing oldThing, ThingDef stuff)
+    /// <summary>
+    /// Instantiates and spawns a <see cref="ReplacementFrame"/> over an existing structure to begin a material replacement.
+    /// </summary>
+    /// <param name="targetThing">The existing item or building targeted for replacement.</param>
+    /// <param name="stuff">The material def choice designated for the replacement structure.</param>
+    /// <returns>A fully initialized and spawned <see cref="ReplacementFrame"/> instance if successful; otherwise, <c>null</c>.</returns>
+    public static ReplacementFrame TrySpawnReplacementFrame(Thing oldThing, ThingDef stuff)
     {
-        ThingDef replaceFrameDef =
-            ThingDefGenerator_ReplaceFrame.ReplaceFrameDefFor(oldThing.def);
+        var replacementFrameDefs =
+            ThingDefGenerator_ReplacementFrame.ReplaceFrameDefFor(oldThing.def);
 
-        if (replaceFrameDef == null)
+        if (replacementFrameDefs is null)
         {
             RSLog.Debug($"No replace frame def found for {oldThing.def.defName}");
             return null;
         }
 
-        var replaceFrame = (ReplacementFrame)ThingMaker.MakeThing(replaceFrameDef, stuff);
+        var replaceFrame = (ReplacementFrame)ThingMaker.MakeThing(replacementFrameDefs, stuff);
         replaceFrame.replaceData = BuildingStateTransfer.Capture(oldThing, new HashSet<int>());
 
         replaceFrame.SetFactionDirect(Faction.OfPlayer);
@@ -51,8 +59,6 @@ static class GenReplace
             + $"NewRot=New thing not spawned yet");
 
         GenSpawn.Spawn(replaceFrame, oldThing.Position, oldThing.Map, oldThing.Rotation);
-        // TODO Apply here
-
 
         RSLog.Debug(
             $"GenReplace.PlaceReplaceFrame(): AFTER SPAWN: OldRot={(oldThing is null ? "null" : oldThing.Rotation.ToString())} "
@@ -61,38 +67,15 @@ static class GenReplace
         return replaceFrame;
     }
 
-    private static ThingPlaceMode GetRestoreMode(
-        Building_Storage storage,
-        Thing thing)
-    {
-        if (storage.GetSlotGroup().HeldThings.Count() <
-            storage.GetSlotGroup().CellsList.Sum(
-                c => c.GetMaxItemsAllowedInCell(storage.Map)))
-        {
-            return ThingPlaceMode.Direct;
-        }
-
-        return ThingPlaceMode.Near;
-    }
-
     /// <summary>
-    /// Prepares a replacement building by transferring essential runtime
-    /// state from the original structure, generating deconstruction
-    /// resources, assigning faction and quality data, and retiring the
-    /// original building.
+    /// Chains state transitions and assignments to conclude an in-place structural replacement event.
     /// </summary>
-    /// <param name="oldThing">
-    /// The building being replaced.
-    /// </param>
-    /// <param name="newThing">
-    /// The replacement building instance.
-    /// </param>
-    /// <param name="worker">
-    /// The pawn performing the replacement, if applicable.
-    /// </param>
-    /// <param name="faction">
-    /// Optional faction override for the replacement building.
-    /// </param>
+    /// <param name="oldThing">The original world object structure undergoing teardown mechanics.</param>
+    /// <param name="newThing">The pristine world building piece replacing the old target entity.</param>
+    /// <param name="replaceData">The runtime variable state payload to reapply to the replacement asset structure.</param>
+    /// <param name="worker">The worker pawn responsible for executing the completion cycle.</param>
+    /// <param name="faction">Optional custom alignment faction properties override specification.</param>
+    /// <returns>A clean active structural reference to the freshly integrated world item object.</returns>
     public static Thing ApplyReplacementState(Thing oldThing, Thing newThing, ReplaceData replaceData, Pawn worker = null, Faction faction = null)
     {
         RSLog.Debug($"ApplyReplacementState() START: Old Rot={oldThing.Rotation} New Rot={newThing.Rotation}");
@@ -104,12 +87,16 @@ static class GenReplace
         return newThing;
     }
 
+    /// <summary>
+    /// Profiles deep inventory state diagnostic data during hot-swap container replacement routines.
+    /// </summary>
+    [System.Diagnostics.Conditional("DEBUG")]
     private static void DebugStorage(Building_Storage storage, string stage)
     {
         if (storage is not null)
         {
-            string posStr = storage.Spawned ? storage.Position.ToString() : "UNSPAWNED";
-            bool hasMap = storage.Map != null;
+            var posStr = storage.Spawned ? storage.Position.ToString() : "UNSPAWNED";
+            var hasMap = storage.Map != null;
 
             RSLog.Debug("DebugStorage(): " +
                 $"{stage}: " +
@@ -135,6 +122,11 @@ static class GenReplace
             RSLog.Debug($"{stage}: Storage is null");
     }
 
+    /// <summary>
+    /// Restores previously extracted stock items to the boundaries of a newly updated facility.
+    /// </summary>
+    /// <param name="storage">The newly built facility unit receiving the items list collection.</param>
+    /// <param name="things">The inventory item pieces to return back to world map positions.</param>
     public static List<Thing> ExtractStoredThings(Building_Storage storage)
     {
         DebugStorage(storage, "Before Extract");
@@ -153,7 +145,7 @@ static class GenReplace
     {
         foreach (Thing thing in things)
         {
-            bool success = GenPlace.TryPlaceThing(
+            var success = GenPlace.TryPlaceThing(
                 thing,
                 storage.Position,
                 storage.Map,
@@ -181,164 +173,4 @@ static class GenReplace
 
         DebugStorage(storage, "After Restore");
     }
-}
-
-//[HarmonyPatch(typeof(DefGenerator), "GenerateImpliedDefs_PreResolve")]
-[StaticConstructorOnStartup]
-public static class ThingDefGenerator_ReplaceFrame
-{
-    /*
-    public static void Postfix()
-    {
-        // would be nice but mods don't add defs early enough.
-        // I mean they assume blueprints/frames don't need to be implied from them
-        // But replace frames sure can!
-        AddReplaceFrames(false);
-    }
-    */
-    public delegate void GiveShortHashDel(Def d, Type t, HashSet<ushort> h);
-    public static GiveShortHashDel GiveShortHash = AccessTools.MethodDelegate<GiveShortHashDel>(AccessTools.Method(typeof(ShortHashGiver), "GiveShortHash"));
-    public static void AddReplaceFrames(bool addShortHash = true)
-    {
-        Type type = typeof(ThingDef);
-
-        // Slow reflection since this is only once:
-        HashSet<ushort> takenHashes = ((Dictionary<Type, HashSet<ushort>>)AccessTools.Field(typeof(ShortHashGiver), "takenHashesPerDeftype").GetValue(null))[type];
-
-        foreach (ThingDef current in ThingDefGenerator_ReplaceFrame.ImpliedReplaceFrameDefs())
-        {
-            if (addShortHash)  //Wouldn't need this if other mods added defs earlier. Oh well.
-                GiveShortHash(current, type, takenHashes);
-            current.PostLoad();
-            DefDatabase<ThingDef>.Add(current);
-        }
-    }
-
-    public static Dictionary<ThingDef, ThingDef> replaceFrameDefs;
-    public static ThingDef ReplaceFrameDefFor(ThingDef def)
-    {
-        if (replaceFrameDefs == null)
-        {
-            return null;
-        }
-
-        if (replaceFrameDefs.TryGetValue(def, out ThingDef replaceFrame))
-            return replaceFrame;
-
-        return null;
-    }
-
-    public static bool HasReplaceFrame(this ThingDef def)
-    {
-        if (def == null)
-            return false;
-
-        if (replaceFrameDefs == null)
-        {
-            return false;
-        }
-
-        return replaceFrameDefs.ContainsKey(def);
-    }
-
-    public static IEnumerable<ThingDef> ImpliedReplaceFrameDefs()
-    {
-        replaceFrameDefs = new Dictionary<ThingDef, ThingDef>();
-        foreach (ThingDef def in DefDatabase<ThingDef>.AllDefs.ToList<ThingDef>())
-        {
-            if (def.designationCategory != null && def.IsBuildingArtificial && !def.IsFrame && def.MadeFromStuff)
-            {
-                ThingDef replaceFrameDef = NewReplaceFrameDef_Thing(def);
-                replaceFrameDefs[def] = replaceFrameDef;
-                yield return replaceFrameDef;
-            }
-        }
-    }
-
-    private static Color DrawColor(ThingDef def)
-    {
-        if (def.MadeFromStuff)
-            return Color.white;
-
-        var costList = def.entityDefToBuild.CostList;
-        if (costList == null) return new Color(0.6f, 0.6f, 0.6f);
-
-        foreach (var costItem in costList)
-        {
-            var costDef = costItem.thingDef;
-            if (costDef.IsStuff && costDef.stuffProps.color != Color.white)
-                return def.GetColorForStuff(costDef);
-        }
-
-        return new Color(0.6f, 0.6f, 0.6f);
-    }
-
-    public static ThingDef NewReplaceFrameDef_Thing(ThingDef def)
-    {
-        ThingDef thingDef = BaseReplaceFrameDef();
-        thingDef.defName = def.defName + "_ReplaceStuff";
-        thingDef.label = def.label + "TD.ReplacingTag".Translate();//Not entirely sure if this is needed since ReplaceFrame.Label doesn't use it, but, this is vanilla Frame code.
-        thingDef.size = def.size;
-        thingDef.SetStatBaseValue(StatDefOf.MaxHitPoints, (float)def.BaseMaxHitPoints * 0.25f);
-        thingDef.SetStatBaseValue(StatDefOf.Beauty, -8f);
-        thingDef.fillPercent = 0.2f;
-        thingDef.pathCost = 10;
-        thingDef.description = def.description;
-        thingDef.passability = def.passability;
-        thingDef.selectable = def.selectable;
-        thingDef.constructEffect = def.constructEffect;
-        thingDef.building.isEdifice = false;
-        thingDef.constructionSkillPrerequisite = def.constructionSkillPrerequisite;
-        thingDef.clearBuildingArea = false;
-        thingDef.drawPlaceWorkersWhileSelected = def.drawPlaceWorkersWhileSelected;
-        thingDef.stuffCategories = def.stuffCategories;
-
-        if (def.size.x <= 4 && def.size.z <= 4)
-        {
-            thingDef.drawerType = DrawerType.RealtimeOnly;
-            thingDef.graphicData = new GraphicData();
-            thingDef.graphicData.graphicClass = typeof(Graphic_Single);
-            thingDef.graphicData.texPath = $"ReplaceStuffFrame/{def.size.x}x{def.size.z}";
-            thingDef.graphicData.drawSize = new Vector2(def.size.x, def.size.z);
-            thingDef.graphicData.drawOffset = def.graphicData.drawOffset;
-            thingDef.graphicData.shaderType = ShaderTypeDefOf.Transparent;
-            thingDef.graphicData.color = DrawColor(thingDef);
-        }
-
-        //Support QualityBuilder
-        if (QualityBuilderCompat.z != null)
-            if (def.HasComp(typeof(CompQuality)) && def.building != null)
-                thingDef.comps.Add((CompProperties)Activator.CreateInstance(QualityBuilderCompat.z));
-
-        thingDef.entityDefToBuild = def;
-        //def.replaceFrameDef = thingDef;	//Dictionary instead
-
-        thingDef.modContentPack = LoadedModManager.GetMod<ReplaceStuffPerformance>().Content;
-        return thingDef;
-    }
-
-    static ThingDef BaseReplaceFrameDef()
-    {
-        return new ThingDef
-        {
-            isFrameInt = true,
-            category = ThingCategory.Building,
-            label = "Unspecified stuff replacement frame",
-            thingClass = typeof(ReplacementFrame),
-            altitudeLayer = AltitudeLayer.BuildingOnTop,
-            useHitPoints = true,
-            selectable = true,
-            building = new BuildingProperties(),
-            comps =
-                {
-                    new CompProperties_Forbiddable()
-                },
-            scatterableOnMapGen = false,
-            leaveResourcesWhenKilled = true
-        };
-    }
-
-    public static bool IsReplaceFrame(this ThingDef def) =>
-        def.thingClass == typeof(ReplacementFrame);
-
 }
