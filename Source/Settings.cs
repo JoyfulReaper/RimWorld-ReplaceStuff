@@ -132,14 +132,14 @@ public class Settings : ModSettings
 
     private void ApplyBridgeOrder()
     {
-        if (_preferredBridgeOrder == null || _preferredBridgeOrder.Count == 0)
+        if (_preferredBridgeOrder is null || _preferredBridgeOrder.Count == 0)
             return;
 
         for (int i = _preferredBridgeOrder.Count - 1; i >= 0; i--)
         {
             var def = DefDatabase<TerrainDef>.GetNamed(_preferredBridgeOrder[i], false);
 
-            if (def == null)
+            if (def is null)
                 continue;
 
             if (!BridgelikeTerrain.allBridgeTerrains.Remove(def))

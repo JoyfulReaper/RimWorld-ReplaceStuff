@@ -36,7 +36,7 @@ public static class GenReplace
     public static ReplacementFrame TrySpawnReplacementFrame(Thing targetThing, ThingDef stuff)
     {
         var replacementFrameDefs =
-            ThingDefGenerator_ReplacementFrame.ReplaceFrameDefFor(targetThing.def);
+            ThingDefGenerator_ReplacementFrame.ReplacementFrameDefFor(targetThing.def);
 
         if (replacementFrameDefs is null)
         {

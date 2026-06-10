@@ -14,7 +14,7 @@
 using HarmonyLib;
 using Replace_Stuff.Compatibility;
 using Replace_Stuff.Replace;
-using Replace_Stuff.Replace.Patches;
+using Replace_Stuff.Replace.Patches.RservationManager;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -32,7 +32,6 @@ public class ReplaceStuffPerformance : Verse.Mod
     public ReplaceStuffPerformance(ModContentPack content) : base(content)
     {
         settings = GetSettings<Settings>();
-
         _harmony = new Harmony("ReplaceStuff.Performance ");
         _harmony.PatchAll();
 
@@ -44,16 +43,15 @@ public class ReplaceStuffPerformance : Verse.Mod
 
     }
 
-
     [StaticConstructorOnStartup]
     public static class ModStartup
     {
         static ModStartup()
         {
-            ThingDefGenerator_ReplacementFrame.AddReplaceFrames();
+            ThingDefGenerator_ReplacementFrame.AddReplacementFrames();
             CoolersOverWalls.DesignatorBuildDropdownStuffFix.SanityCheck();
             ReplacementLoader.AddRulesFromXML();
-            ReserveSharing.Initialize(_harmony);
+            Patch_ReservationManager.Initialize(_harmony);
         }
     }
 
@@ -67,6 +65,6 @@ public class ReplaceStuffPerformance : Verse.Mod
     {
         // TODO: Do better, make translations
         var result = "TD.ReplaceStuff".Translate();
-        return $"{result} Performance  Version ({settings.Version})";
+        return $"{result} Performance Editon ({settings.Version})";
     }
 }

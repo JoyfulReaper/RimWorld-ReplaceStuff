@@ -201,7 +201,7 @@ public class Designator_ReplaceStuff : Designator
             if (frame.EntityToBuildStuff() == stuff)
                 return false;
         }
-        else if (thing.def.HasReplacementFrrame())
+        else if (thing.def.HasReplacementFrame())
         {
             if (thing.Stuff == stuff)
                 return false;

@@ -15,10 +15,11 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.Replace.Patches;
+namespace Replace_Stuff.Replace.Patches.GenConstruct;
 
 /// <summary>
-/// Harmony patch that overrides construction obstruction checks for <see cref="ReplacementFrame"/> instances.
+/// Redirects reservation requests from replacement frames back to the
+/// original structures they represent.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -38,8 +39,8 @@ namespace Replace_Stuff.Replace.Patches;
 /// its own placement validation.
 /// </para>
 /// </remarks>
-[HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
-class GenConstructPatches
+[HarmonyPatch(typeof(RimWorld.GenConstruct), "BlocksConstruction")]
+class Patch_GenConstruct_BlocksConstruction
 {
     //public static bool BlocksConstruction(Thing constructible, Thing t)
     public static void Postfix(Thing constructible, Thing t, ref bool __result)
@@ -56,7 +57,7 @@ class GenConstructPatches
         if (constructible is Blueprint_Build blueprint)
         {
             BuildableDef entDef = blueprint.def.entityDefToBuild;
-            if (entDef != null && GenConstruct.CanReplace(entDef, t.def, blueprint.stuffToUse, t.Stuff))
+            if (entDef is not null && RimWorld.GenConstruct.CanReplace(entDef, t.def, blueprint.stuffToUse, t.Stuff))
             {
                 __result = false;
             }
