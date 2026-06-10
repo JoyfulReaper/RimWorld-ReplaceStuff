@@ -167,7 +167,7 @@ public class Designator_ReplaceStuff : Designator
         DesignatorContext.designating = true;
         try
         {
-            if (!ReplacementValidator.CanReplaceStuffAt(stuffDef, cell, Map))
+            if (!ReplacementValidator.IsReplacable(stuffDef, cell, Map))
                 return false;
 
             var things = cell.GetThingList(Map);

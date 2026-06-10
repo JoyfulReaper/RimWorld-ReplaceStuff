@@ -1,4 +1,4 @@
-﻿/*
+﻿/*/*
  * REPLACE STUFF: Performance  Edition
  * 
  * 
@@ -16,76 +16,101 @@ using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using Verse;
 
 namespace Replace_Stuff.Replace;
 
 /// <summary>
-/// Utility functions handling world interactions, structure conversions, and data transformations for object replacements.
+/// Provides shared helper methods used throughout the replacement
+/// pipeline.
 /// </summary>
-public static class GenReplace
+/// <remarks>
+/// Contains functionality shared by both instant replacements
+/// and frame-based replacement construction, including replacement
+/// frame creation, temporary storage extraction/restoration,
+/// and immediate replacement operations.
+/// </remarks>
+public static class ReplacementUtility
 {
     /// <summary>
-    /// Instantiates and spawns a <see cref="ReplacementFrame"/> over an existing structure to begin a material replacement.
+    /// Creates and spawns a <see cref="ReplacementFrame"/>
+    /// for an existing structure.
     /// </summary>
     /// <param name="targetThing">The existing item or building targeted for replacement.</param>
     /// <param name="stuff">The material def choice designated for the replacement structure.</param>
     /// <returns>A fully initialized and spawned <see cref="ReplacementFrame"/> instance if successful; otherwise, <c>null</c>.</returns>
-    public static ReplacementFrame TrySpawnReplacementFrame(Thing targetThing, ThingDef stuff)
+    public static ReplacementFrame SpawnReplacementFrame(Thing targetThing, ThingDef stuff)
     {
-        var replacementFrameDefs =
+        var replacementFrameDef =
             ThingDefGenerator_ReplacementFrame.ReplacementFrameDefFor(targetThing.def);
 
-        if (replacementFrameDefs is null)
+        if (replacementFrameDef is null)
         {
             RSLog.Debug($"No replace frame def found for {targetThing.def.defName}");
             return null;
         }
 
-        var replaceFrame = (ReplacementFrame)ThingMaker.MakeThing(replacementFrameDefs, stuff);
+        var replaceFrame = (ReplacementFrame)ThingMaker.MakeThing(replacementFrameDef, stuff);
+
         replaceFrame.replaceData = BuildingStateTransfer.Capture(targetThing, new HashSet<int>());
-
         replaceFrame.SetFactionDirect(Faction.OfPlayer);
-        //oldThing.SetFactionDirect(Faction.OfPlayer); Done in PrepareReplacementBuilding now
-
         replaceFrame.targetThing = targetThing;
         replaceFrame.targetStuff = targetThing.Stuff;
 
 
         RSLog.Debug(
-            $"GenReplace.PlaceReplaceFrame(): BEFORE SPAWN: OldRot={(targetThing is null ? "null" : targetThing.Rotation.ToString())} "
+            $"PlaceReplaceFrame(): BEFORE SPAWN: OldRot={(targetThing is null ? "null" : targetThing.Rotation.ToString())} "
             + $"NewRot=New thing not spawned yet");
 
         GenSpawn.Spawn(replaceFrame, targetThing.Position, targetThing.Map, targetThing.Rotation);
 
         RSLog.Debug(
-            $"GenReplace.PlaceReplaceFrame(): AFTER SPAWN: OldRot={(targetThing is null ? "null" : targetThing.Rotation.ToString())} "
+            $"PlaceReplaceFrame(): AFTER SPAWN: OldRot={(targetThing is null ? "null" : targetThing.Rotation.ToString())} "
             + $"NewRot={(replaceFrame is null ? "null" : replaceFrame.Rotation.ToString())} {replaceFrame.Rotation}");
 
         return replaceFrame;
     }
 
     /// <summary>
-    /// Restores previously extracted stock items to the boundaries of a newly updated facility.
+    /// Temporarily removes all items stored within a storage
+    /// building so they can be restored after replacement.
     /// </summary>
-    /// <param name="storage">The newly built facility unit receiving the items list collection.</param>
-    /// <param name="things">The inventory item pieces to return back to world map positions.</param>
+    /// <param name="storage">
+    /// The storage building being replaced.
+    /// </param>
+    /// <returns>
+    /// A list containing all extracted items.
+    /// </returns>
     public static List<Thing> ExtractStoredThings(Building_Storage storage)
     {
         DebugStorage(storage, "Before Extract");
-        List<Thing> result = new();
+        List<Thing> extractedThings = new();
 
         foreach (Thing thing in storage.GetSlotGroup().HeldThings.ToList())
         {
-            result.Add(thing);
+            extractedThings.Add(thing);
             thing.DeSpawn();
         }
 
-        return result;
+        return extractedThings;
     }
 
+    /// <summary>
+    /// Restores previously extracted items to a replacement
+    /// storage building.
+    /// </summary>
+    /// <param name="storage">
+    /// The replacement storage building.
+    /// </param>
+    /// <param name="things">
+    /// The extracted items to restore.
+    /// </param>
+    /// <remarks>
+    /// Attempts direct placement first. If an item cannot
+    /// be inserted due to capacity or slot restrictions,
+    /// it is placed nearby instead.
+    /// </remarks>
     public static void RestoreStoredThings(Building_Storage storage, List<Thing> things)
     {
         foreach (Thing thing in things)
@@ -120,8 +145,15 @@ public static class GenReplace
     }
 
     /// <summary>
-    /// Profiles deep inventory state diagnostic data during hot-swap container replacement routines.
+    /// Emits diagnostic information about a storage building
+    /// and its contents during replacement operations.
     /// </summary>
+    /// <param name="storage">
+    /// The storage building being inspected.
+    /// </param>
+    /// <param name="stage">
+    /// A label identifying the current replacement stage.
+    /// </param>
     [System.Diagnostics.Conditional("DEBUG")]
     private static void DebugStorage(Building_Storage storage, string stage)
     {
@@ -152,5 +184,46 @@ public static class GenReplace
         }
         else
             RSLog.Debug($"{stage}: Storage is null");
+    }
+
+    /// <summary>
+    /// Performs an immediate replacement of an existing <see cref="Thing"/> with a new version 
+    /// constructed from the specified <see cref="ThingDef"/>.
+    /// </summary>
+    /// <param name="oldThing">The target structure to be replaced.</param>
+    /// <param name="newStuff">The material definition for the new structure.</param>
+    /// <param name="worker">Optional: The pawn performing the replacement, if applicable.</param>
+    /// <param name="faction">Optional: The faction context for the replacement.</param>
+    /// <returns>
+    /// The newly spawned <see cref="Thing"/> if successful; otherwise, <c>null</c> if the input 
+    /// is invalid or the target was already destroyed.
+    /// </returns>
+    /// <remarks>
+    /// This method captures the existing building state,
+    /// spawns a replacement using <see cref="WipeMode.Vanish"/>,
+    /// initializes the new structure, and reapplies the
+    /// captured state.
+    /// </remarks>
+    public static Thing InstantReplace(Thing oldThing, ThingDef newStuff, Pawn worker = null)
+    {
+        if (oldThing is null || oldThing.Map is null)
+            return null;
+
+        if (!oldThing.Destroyed)
+        {
+            var data = BuildingStateTransfer.Capture(oldThing, new HashSet<int>());
+            var newThing = ThingMaker.MakeThing(oldThing.def, newStuff);
+
+            GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
+            ReplacementFrame.InitializeReplacement(oldThing, newThing, worker);
+            BuildingStateTransfer.Apply(data, newThing);
+
+            return newThing;
+        }
+        else
+        {
+            RSLog.Error("InstantReplace()Tried to replace a destroyed thing.");
+            return null;
+        }
     }
 }

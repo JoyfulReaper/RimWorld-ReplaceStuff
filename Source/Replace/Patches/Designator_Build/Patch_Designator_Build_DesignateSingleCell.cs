@@ -15,13 +15,23 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.Replace;
+namespace Replace_Stuff.Replace.Patches.Designator_Build;
 
 /// <summary>
-/// Patches the designator build system to support automatic building replacement.
+/// Intercepts build designations to convert eligible construction
+/// orders into material replacement operations.
 /// </summary>
-[HarmonyPatch(typeof(Designator_Build), nameof(Designator_Build.DesignateSingleCell))]
-class InterceptDesignator_Build
+/// <remarks>
+/// When the player attempts to build over an existing structure,
+/// this patch checks whether the target can be replaced with the
+/// selected material instead of creating a separate blueprint.
+///
+/// If a valid replacement target is found, control is passed to
+/// <see cref="ReplacementHandler"/> and the vanilla placement
+/// logic is skipped.
+/// </remarks>
+[HarmonyPatch(typeof(RimWorld.Designator_Build), nameof(RimWorld.Designator_Build.DesignateSingleCell))]
+class Patch_Designator_Build_DesignateSingleCell
 {
     /// <summary>
     /// Intercepts the build command to check for existing structures that can be replaced.
@@ -34,13 +44,14 @@ class InterceptDesignator_Build
     /// <c>false</c> if a replacement was performed (skipping vanilla building), 
     /// <c>true</c> if vanilla building behavior should proceed.
     /// </returns>
-    public static bool Prefix(Designator_Build __instance, IntVec3 c, BuildableDef ___entDef, Rot4 ___placingRot)
+    public static bool Prefix(RimWorld.Designator_Build __instance, IntVec3 c, BuildableDef ___entDef, Rot4 ___placingRot)
     {
 #if DEBUG
         System.Diagnostics.Debugger.Break();
 #endif
 
-        if (__instance is null || ___entDef is null) return true;
+        if (__instance is null || ___entDef is null)
+            return true;
 
         if (___entDef is not ThingDef thingDef)
             return true;
@@ -69,8 +80,11 @@ class InterceptDesignator_Build
         {
             var replaceable = replaceables[i];
 
-            if (replaceable.Rotation != ___placingRot) continue;
-            if (!Designator_ReplaceStuff.CanReplaceStuffFor(__instance.StuffDef, replaceable, thingDef)) continue;
+            if (replaceable.Rotation != ___placingRot)
+                continue;
+
+            if (!Designator_ReplaceStuff.CanReplaceStuffFor(__instance.StuffDef, replaceable, thingDef))
+                continue;
 
             // Priority: Blueprints and Frames
             if (replaceable is Blueprint_Build || replaceable is Frame)

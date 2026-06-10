@@ -1,5 +1,5 @@
 ﻿/*
- * REPLACE STUFF: Performance  Edition
+ * REPLACE STUFF: Performance Edition
  * 
  * 
  * Part of this code is based on Replace Stuff
@@ -85,13 +85,13 @@ public class ReplacementFrame : Frame
         Cleanup(worker);
     }
 
-    public static void InitializeReplacement(Thing oldThing, Thing newThing, Pawn worker, Faction faction = null)
+    public static void InitializeReplacement(Thing oldThing, Thing newThing, Pawn worker)
     {
         // Current design: New buildings spawn at full health.
         // Future consideration: Add an option to calculate HitPoints based on the 
         // old building's percentage of MaxHitPoints. TODO
         // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints)); // For keeping hit points if we decide to
-        newThing.SetFactionDirect(faction ?? oldThing.Faction);
+        newThing.SetFactionDirect(oldThing.Faction);
         newThing.RemoveFromStatWorkerCaches();
 
         newThing.HitPoints = newThing.MaxHitPoints;
@@ -178,7 +178,7 @@ public class ReplacementFrame : Frame
     private List<Thing> ExtractTransientState()
     {
         if (targetThing is Building_Storage storage)
-            return GenReplace.ExtractStoredThings(storage);
+            return ReplacementUtility.ExtractStoredThings(storage);
 
         return null;
     }
@@ -193,7 +193,7 @@ public class ReplacementFrame : Frame
         if (storedThings is not null &&
             newThing is Building_Storage storage)
         {
-            GenReplace.RestoreStoredThings(storage, storedThings);
+            ReplacementUtility.RestoreStoredThings(storage, storedThings);
         }
     }
 
