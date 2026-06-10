@@ -14,7 +14,7 @@
 using HarmonyLib;
 using Replace_Stuff.Compatibility;
 using Replace_Stuff.Replace;
-using Replace_Stuff.Replace.Patches.RservationManager;
+using Replace_Stuff.Replace.Patches;
 using RimWorld;
 using UnityEngine;
 using Verse;

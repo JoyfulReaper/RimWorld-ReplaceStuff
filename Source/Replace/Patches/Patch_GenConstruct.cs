@@ -15,7 +15,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.Replace.Patches.GenConstruct;
+namespace Replace_Stuff.Replace.Patches;
 
 /// <summary>
 /// Redirects reservation requests from replacement frames back to the
@@ -39,8 +39,8 @@ namespace Replace_Stuff.Replace.Patches.GenConstruct;
 /// its own placement validation.
 /// </para>
 /// </remarks>
-[HarmonyPatch(typeof(RimWorld.GenConstruct), "BlocksConstruction")]
-class Patch_GenConstruct_BlocksConstruction
+[HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
+class Patch_GenConstruct
 {
     //public static bool BlocksConstruction(Thing constructible, Thing t)
     public static void Postfix(Thing constructible, Thing t, ref bool __result)

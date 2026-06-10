@@ -20,7 +20,7 @@ using System.Reflection;
 using Verse;
 using Verse.AI;
 
-namespace Replace_Stuff.Replace.Patches.RservationManager;
+namespace Replace_Stuff.Replace.Patches;
 
 /// <summary>
 /// Patches <see cref="ReservationManager"/> so replacement frames and their

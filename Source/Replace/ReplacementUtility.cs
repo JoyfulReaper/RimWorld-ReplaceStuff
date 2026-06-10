@@ -1,5 +1,5 @@
 ﻿/*/*
- * REPLACE STUFF: Performance  Edition
+ * REPLACE STUFF: Performance Edition
  * 
  * 
  * Part of this code is based on Replace Stuff
@@ -12,6 +12,7 @@
  */
 
 using Replace_Stuff.DestroyedRestore;
+using Replace_Stuff.NewThing;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
@@ -225,5 +226,63 @@ public static class ReplacementUtility
             RSLog.Error("InstantReplace()Tried to replace a destroyed thing.");
             return null;
         }
+    }
+
+    /// <summary>
+    /// Determines whether the specified Thing is actively being
+    /// replaced by a partially completed frame.
+    ///
+    /// A Thing is considered to be replacing if:
+    /// - It is spawned,
+    /// - Another Thing exists on the same tile,
+    /// - That Thing is a ReplacementFrame targeting this Thing,
+    ///   or a Frame capable of replacing it,
+    /// - Construction work has begun.
+    /// </summary>
+    /// <param name="thing">
+    /// The Thing to examine.
+    /// </param>
+    /// <returns>
+    /// True if the Thing is actively being replaced;
+    /// otherwise false.
+    /// </returns>
+    public static bool IsBeingReplaced(Thing thing)
+    {
+        if (thing is null || !thing.Spawned)
+            return false;
+
+        var tileThings = thing.Position.GetThingList(thing.Map);
+        var count = tileThings.Count;
+
+        if (count <= 1)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            var tileThing = tileThings[i];
+
+            if (tileThing == thing)
+            {
+                continue;
+            }
+
+            if (tileThing is ReplacementFrame rf &&
+                rf.workDone > 0 &&
+                rf.targetThing == thing)
+            {
+                return true;
+            }
+
+            if (tileThing is Frame fr &&
+                fr.workDone > 0 &&
+                fr.CanReplace(thing))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -15,7 +15,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.Replace.Patches.Designator_Build;
+namespace Replace_Stuff.Replace.Patches;
 
 /// <summary>
 /// Intercepts build designations to convert eligible construction
@@ -30,8 +30,8 @@ namespace Replace_Stuff.Replace.Patches.Designator_Build;
 /// <see cref="ReplacementHandler"/> and the vanilla placement
 /// logic is skipped.
 /// </remarks>
-[HarmonyPatch(typeof(RimWorld.Designator_Build), nameof(RimWorld.Designator_Build.DesignateSingleCell))]
-class Patch_Designator_Build_DesignateSingleCell
+[HarmonyPatch(typeof(Designator_Build), nameof(RimWorld.Designator_Build.DesignateSingleCell))]
+class Patch_Designator_Build
 {
     /// <summary>
     /// Intercepts the build command to check for existing structures that can be replaced.
@@ -44,7 +44,7 @@ class Patch_Designator_Build_DesignateSingleCell
     /// <c>false</c> if a replacement was performed (skipping vanilla building), 
     /// <c>true</c> if vanilla building behavior should proceed.
     /// </returns>
-    public static bool Prefix(RimWorld.Designator_Build __instance, IntVec3 c, BuildableDef ___entDef, Rot4 ___placingRot)
+    public static bool Prefix(Designator_Build __instance, IntVec3 c, BuildableDef ___entDef, Rot4 ___placingRot)
     {
 #if DEBUG
         System.Diagnostics.Debugger.Break();

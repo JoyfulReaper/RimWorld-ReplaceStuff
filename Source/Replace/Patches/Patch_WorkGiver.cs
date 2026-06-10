@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Verse;
 
-namespace Replace_Stuff.Replace.Patches.WorkGiver;
+namespace Replace_Stuff.Replace.Patches;
 
 /// <summary>
 /// Suppresses the dedicated blueprint deconstruction work giver introduced in RimWorld 1.6.
@@ -29,7 +29,7 @@ namespace Replace_Stuff.Replace.Patches.WorkGiver;
 /// Short-circuiting this global look-up saves precious tick time in heavily populated or complex colony grids.
 /// </remarks>
 [HarmonyPatch(typeof(WorkGiver_DeconstructForBlueprint), nameof(WorkGiver_DeconstructForBlueprint.PotentialWorkThingsGlobal))]
-public static class Patch_WorkGiver_DeconstuctForBlueprint
+public static class Patch_WorkGiver
 {
     /// <summary>
     /// Forces the global potential work pool to return empty, effectively disabling this specific work scanner.
