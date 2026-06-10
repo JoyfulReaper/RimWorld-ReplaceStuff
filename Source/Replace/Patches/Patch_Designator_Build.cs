@@ -83,7 +83,7 @@ class Patch_Designator_Build
             if (replaceable.Rotation != ___placingRot)
                 continue;
 
-            if (!Designator_ReplaceStuff.CanReplaceStuffFor(__instance.StuffDef, replaceable, thingDef))
+            if (!Designator_ReplaceStuff.CanReplaceThingWithStuff(__instance.StuffDef, replaceable, thingDef))
                 continue;
 
             // Priority: Blueprints and Frames

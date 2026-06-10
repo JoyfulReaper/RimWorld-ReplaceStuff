@@ -48,7 +48,7 @@ internal static class ReplacementValidator
         var things = cell.GetThingList(map);
         for (int i = 0; i < things.Count; i++)
         {
-            if (Designator_ReplaceStuff.CanReplaceStuffFor(stuff, things[i]))
+            if (Designator_ReplaceStuff.CanReplaceThingWithStuff(stuff, things[i]))
             {
                 return true;
             }
