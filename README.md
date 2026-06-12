@@ -30,6 +30,7 @@ Current areas of focus include:
  * Easier compatibility with other mods.
 # Long-Term Vision
 Replace Stuff: Performance Edition is being designed around a generic building state transfer system.
+* Port to use my Divine Intervention framework.
 * Rather than requiring custom support for every building type, the mod will automatically preserve compatible building and component data whenever possible while providing extension points for more complex behaviors.
 * The objective is to make replacing both vanilla and modded buildings as seamless as possible while minimizing the need for dedicated compatibility patches.
 * Another possibility is having a framework library (DevineIntervention, in planning) provide a message bus to allow other mods to publish their replacement lists to the bus.
