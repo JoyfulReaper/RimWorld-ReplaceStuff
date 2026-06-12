@@ -36,9 +36,9 @@ public class ReplaceStuffPerformance : Verse.Mod
         _harmony.PatchAll();
 
 #if DEBUG
-        Verse.Log.Message($"[ReplaceStuffPerformance ] Version {settings.Version} <color=#66CCFF>DEBUG BUILD</color>");
+        Verse.Log.Message($"[ReplaceStuffPerformance ] Version {settings.Version} <color=red>DEBUG BUILD</color>");
 #else
-        Verse.Log.Message($"[ReplaceStuffPerformance ] Version {settings.Version}");
+        Verse.Log.Message($"[ReplaceStuffPerformance ] Version {settings.Version} <color=green>RELEASE BUILD</color>");
 #endif
 
     }
