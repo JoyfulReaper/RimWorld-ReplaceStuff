@@ -30,10 +30,10 @@ Current areas of focus include:
  * Easier compatibility with other mods.
 # Long-Term Vision
 Replace Stuff: Performance Edition is being designed around a generic building state transfer system.
-Rather than requiring custom support for every building type, the mod will automatically preserve compatible building and component data whenever possible while providing extension points for more complex behaviors.
-The objective is to make replacing both vanilla and modded buildings as seamless as possible while minimizing the need for dedicated compatibility patches.
-Another possibility is having a framework library (DevineIntervention, in planning) provide a message bus to allow other mods to publish their replacement lists to the bus.
-Development is ongoing, and support for additional building behaviors and component types will continue to expand over time.
+* Rather than requiring custom support for every building type, the mod will automatically preserve compatible building and component data whenever possible while providing extension points for more complex behaviors.
+* The objective is to make replacing both vanilla and modded buildings as seamless as possible while minimizing the need for dedicated compatibility patches.
+* Another possibility is having a framework library (DevineIntervention, in planning) provide a message bus to allow other mods to publish their replacement lists to the bus.
+* Development is ongoing, and support for additional building behaviors and component types will continue to expand over time.
 # 🙌 Acknowledgments & Thanks
 As the person forking and refactoring this project, I owe a massive debt of gratitude to the developers who built and maintained the foundation before me. This performance edition is built on the shoulders of giants:
  * **Uuugggg (Alex Tearse-Doyle):** The original creator whose genius gave the RimWorld community one of its absolute best quality-of-life mods.
