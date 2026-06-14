@@ -27,8 +27,6 @@ public class ReplaceData : IExposable
     public List<AttachedBuildingData> attachedBuildings = new();
 
 
-
-
     // Storage
     public string storageLabel;
 
@@ -50,5 +48,7 @@ public class ReplaceData : IExposable
         Scribe_Deep.Look(ref storageFilter, "storageFilter");
         Scribe_Values.Look(ref storagePriority, "storagePriority");
         Scribe_Collections.Look(ref attachedBuildings, "attachedBuildings", LookMode.Deep);
+        Scribe_Deep.Look(ref settings, "settings");
+        Scribe_Values.Look(ref belongedToGroup, "belongedToGroup");
     }
 }

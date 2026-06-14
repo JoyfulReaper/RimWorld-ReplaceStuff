@@ -41,6 +41,7 @@ public static class BuildingStateTransfer
         };
 
         // Quality
+        // TODO: Should the quality depend on the worker rebuilding the thing?
         if (thing.TryGetComp<CompQuality>() is CompQuality qc)
             data.quality = qc.Quality;
 
@@ -165,10 +166,10 @@ public static class BuildingStateTransfer
 
 
         // Quality
-        //if (data.quality.HasValue && thing.TryGetComp<CompQuality>() is CompQuality cq)
-        //{
-        //    cq.SetQuality(data.quality.Value, ArtGenerationContext.Colony);
-        //}
+        if (data.quality.HasValue && thing.TryGetComp<CompQuality>() is CompQuality cq)
+        {
+            cq.SetQuality(data.quality.Value, ArtGenerationContext.Colony);
+        }
 
 
         //// Target temperature
