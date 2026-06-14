@@ -77,24 +77,37 @@ public static class ReplacementUtility
     /// Temporarily removes all items stored within a storage
     /// building so they can be restored after replacement.
     /// </summary>
-    /// <param name="storage">
+    /// <param name="oldStorage">
     /// The storage building being replaced.
     /// </param>
     /// <returns>
     /// A list containing all extracted items.
     /// </returns>
-    public static List<Thing> ExtractStoredThings(Building_Storage storage)
+    public static List<Thing> ExtractStoredThings(Building_Storage oldStorage)
     {
-        DebugStorage(storage, "Before Extract");
-        List<Thing> extractedThings = new();
+        List<Thing> itemsToHold = new List<Thing>();
 
-        foreach (Thing thing in storage.GetSlotGroup().HeldThings.ToList())
+        if (oldStorage?.slotGroup == null)
+            return itemsToHold;
+
+        // Convert the IEnumerable to a concrete List so we can safely index it backwards
+        List<Thing> heldThings = oldStorage.slotGroup.HeldThings.ToList();
+
+        // Loop backwards since we are pulling items out of the map live
+        for (int i = heldThings.Count - 1; i >= 0; i--)
         {
-            extractedThings.Add(thing);
-            thing.DeSpawn();
+            Thing item = heldThings[i];
+            if (item != null && !item.Destroyed)
+            {
+                itemsToHold.Add(item);
+
+                // Lift the item off the map grid so the upcoming Vanish wipe 
+                // doesn't trigger the item drop code path.
+                item.DeSpawn();
+            }
         }
 
-        return extractedThings;
+        return itemsToHold;
     }
 
     /// <summary>
@@ -110,23 +123,32 @@ public static class ReplacementUtility
     /// <remarks>
     /// Attempts direct placement first. If an item cannot
     /// be inserted due to capacity or slot restrictions,
-    /// it is placed nearby instead.
+    /// it bypasses validation and forces a direct map grid spawn.
     /// </remarks>
     public static void RestoreStoredThings(Building_Storage storage, List<Thing> things)
     {
+        if (things == null || storage == null || !storage.Spawned)
+            return;
+
         foreach (Thing thing in things)
         {
+            if (thing == null || thing.Destroyed)
+                continue;
+
+            // Try native, smart placement first
             var success = GenPlace.TryPlaceThing(
                 thing,
                 storage.Position,
                 storage.Map,
-                ThingPlaceMode.Direct); // Changed from Near for testing TODO
+                ThingPlaceMode.Direct);
 
+            // If slot groups aren't ready on this exact frame tick,
+            // push the item straight onto the map grid cell directly.
             if (!success)
             {
-                success = GenPlace.TryPlaceThing(thing, storage.Position, storage.Map, ThingPlaceMode.Near);
-                RSLog.Debug(
-                    $"Overflow drop {thing.def.defName} Success={success}");
+                GenSpawn.Spawn(thing, storage.Position, storage.Map);
+                success = true; // Set to true for accurate diagnostic logging below
+                RSLog.Debug($"Fallback forced direct grid insertion for {thing.def.defName} at {storage.Position}");
             }
 
             RSLog.Debug(

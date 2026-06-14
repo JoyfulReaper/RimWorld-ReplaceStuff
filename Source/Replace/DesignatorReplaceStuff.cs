@@ -36,15 +36,16 @@ public class Designator_ReplaceStuff : Designator
         DrawStyleCategoryDefOf.Orders;
 
     private ThingDef selectedStuffDef;
-
     private static readonly Vector2 DragPriceDrawOffset = new Vector2(19f, 17f);
 
     /// <summary>
     /// Caches the allowed construction materials for each
-    /// buildable definition to avoid repeated enumeration
-    /// during designation and drag operations.
+    /// buildable definition to avoid repeated enumeration.
     /// </summary>
     private static readonly Dictionary<BuildableDef, HashSet<ThingDef>> _allowedStuffCache = new();
+
+    // Cache the localized warning suffix string to prevent GC string generation inside the UI loop
+    private static string _cachedNotEnoughStoredString;
 
     public Designator_ReplaceStuff()
     {
@@ -60,6 +61,8 @@ public class Designator_ReplaceStuff : Designator
         this.ResetSelectedStuff();
 
         hotKey = KeyBindingDefOf.Command_ColonistDraft;
+
+        _cachedNotEnoughStoredString = " (" + "NotEnoughStoredLower".Translate() + ")";
     }
 
     /// <summary>
@@ -84,52 +87,58 @@ public class Designator_ReplaceStuff : Designator
     public override void DrawMouseAttachments()
     {
         base.DrawMouseAttachments();
-        if (!ArchitectCategoryTab.InfoRect.Contains(UI.MousePositionOnUIInverted))
+        if (ArchitectCategoryTab.InfoRect.Contains(UI.MousePositionOnUIInverted))
+            return;
+
+        var cost = 0;
+        var dragCells = Find.DesignatorManager.Dragger.DragCells;
+        var currentMap = Map; // Performance cache: access local register instead of property lookups
+        var grid = currentMap.thingGrid;
+
+        for (int c = 0; c < dragCells.Count; c++)
         {
-            var cost = 0;
-            var dragCells = Find.DesignatorManager.Dragger.DragCells;
+            var cell = dragCells[c];
 
-            // Loop over the cells being dragged
-            for (int c = 0; c < dragCells.Count; c++)
+            var thingsInCell = grid.ThingsListAtFast(cell);
+
+            for (int t = 0; t < thingsInCell.Count; t++)
             {
-                var cell = dragCells[c];
-                var thingsInCell = cell.GetThingList(Map);
+                var thing = thingsInCell[t];
 
-                for (int t = 0; t < thingsInCell.Count; t++)
+                if (thing is not ReplacementFrame && CanReplaceThingWithStuff(selectedStuffDef, thing))
                 {
-                    var thing = thingsInCell[t];
-
-                    if (thing is not ReplacementFrame && CanReplaceThingWithStuff(selectedStuffDef, thing))
+                    if (GenConstruct.BuiltDefOf(thing.def) is ThingDef builtDef)
                     {
-                        if (GenConstruct.BuiltDefOf(thing.def) is ThingDef builtDef)
-                        {
-                            cost += Mathf.RoundToInt((float)builtDef.costStuffCount / selectedStuffDef.VolumePerUnit);
-                        }
+                        cost += Mathf.RoundToInt((float)builtDef.costStuffCount / selectedStuffDef.VolumePerUnit);
                     }
                 }
             }
+        }
 
-            var drawPoint = Event.current.mousePosition + DragPriceDrawOffset;
-            var iconRect = new Rect(drawPoint.x, drawPoint.y, 27f, 27f);
-            GUI.color = selectedStuffDef.uiIconColor;
-            GUI.DrawTexture(iconRect, selectedStuffDef.uiIcon);
+        // Draw Logic
+        var drawPoint = Event.current.mousePosition + DragPriceDrawOffset;
+        var iconRect = new Rect(drawPoint.x, drawPoint.y, 27f, 27f);
+        GUI.color = selectedStuffDef.uiIconColor;
+        GUI.DrawTexture(iconRect, selectedStuffDef.uiIcon);
 
-            var textRect = new Rect(drawPoint.x + 29f, drawPoint.y, 999f, 29f);
-            var text = cost.ToString();
-            if (Map.resourceCounter.GetCount(selectedStuffDef) < cost)
-            {
-                GUI.color = Color.red;
-                text += " (" + "NotEnoughStoredLower".Translate() + ")";
-            }
-            else
-                GUI.color = Color.white;
+        var textRect = new Rect(drawPoint.x + 29f, drawPoint.y, 999f, 29f);
+        var text = cost.ToString();
 
-            Text.Font = GameFont.Small;
-            Text.Anchor = TextAnchor.MiddleLeft;
-            Widgets.Label(textRect, text);
-            Text.Anchor = TextAnchor.UpperLeft;
+        if (currentMap.resourceCounter.GetCount(selectedStuffDef) < cost)
+        {
+            GUI.color = Color.red;
+            text += _cachedNotEnoughStoredString; // Using pre-cached string structure
+        }
+        else
+        {
             GUI.color = Color.white;
         }
+
+        Text.Font = GameFont.Small;
+        Text.Anchor = TextAnchor.MiddleLeft;
+        Widgets.Label(textRect, text);
+        Text.Anchor = TextAnchor.UpperLeft;
+        GUI.color = Color.white;
     }
 
     public override void ProcessInput(Event ev)

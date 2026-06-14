@@ -26,13 +26,17 @@ public class ReplaceData : IExposable
 
     public List<AttachedBuildingData> attachedBuildings = new();
 
-    public string storageLabel;
+
 
 
     // Storage
+    public string storageLabel;
+
     public ThingFilter storageFilter;
 
     public StoragePriority? storagePriority;
+    public StorageSettings settings;
+    public bool belongedToGroup;
 
     public void ExposeData()
     {
