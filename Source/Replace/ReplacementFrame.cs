@@ -75,6 +75,13 @@ public class ReplacementFrame : Frame
         // Some building components require the thing to be spawned
         // before their saved state can be restored.
 
+        // Debug: What is the game seeing in that cell?
+        var thingsInCell = map.thingGrid.ThingsListAt(Position);
+        foreach (var t in thingsInCell)
+        {
+            RSLog.Debug($"Conflict Debug: Found {t.Label} at {t.Position} (Destroyed: {t.Destroyed})");
+        }
+
         // Some building state restoration expects the thing to be spawned.
         SpawnReplacement(newThing, map);
         RSLog.Debug(
@@ -88,6 +95,10 @@ public class ReplacementFrame : Frame
         RestoreTransientState(newThing, transientState);
 
         Cleanup(worker);
+        if (!this.Destroyed)
+        {
+            this.Destroy(DestroyMode.Vanish);
+        }
     }
 
     public static void InitializeReplacement(Thing oldThing, Thing newThing, Pawn worker)
@@ -256,7 +267,8 @@ public class ReplacementFrame : Frame
 
         foreach (var thing in GenConstruct.GetAttachedBuildings(targetThing))
         {
-            thing.Destroy(DestroyMode.Vanish);
+            if (!thing.Destroyed)
+                thing.Destroy(DestroyMode.Vanish);
         }
 
         worker?.records.Increment(RecordDefOf.ThingsConstructed);
