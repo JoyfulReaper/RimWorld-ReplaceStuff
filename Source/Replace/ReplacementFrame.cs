@@ -53,17 +53,21 @@ public class ReplacementFrame : Frame
 
     public new void CompleteConstruction(Pawn worker)
     {
+        Map map = Map;
+
         if (targetThing is null || !targetThing.Spawned)
         {
-            resourceContainer.TryDropAll(Position, Map, ThingPlaceMode.Near);
+            resourceContainer.TryDropAll(Position, map, ThingPlaceMode.Near);
             Destroy(DestroyMode.Cancel);
             return;
         }
 
         var oldThing = targetThing;
-
         var transientState = ExtractTransientState();
+
         DeconstructDropStuff(oldThing);
+        oldThing.Destroy(DestroyMode.Vanish);
+
         var newThing = CreateReplacement();
 
         // Replacement order matters:
@@ -72,7 +76,7 @@ public class ReplacementFrame : Frame
         // before their saved state can be restored.
 
         // Some building state restoration expects the thing to be spawned.
-        SpawnReplacement(newThing);
+        SpawnReplacement(newThing, map);
         RSLog.Debug(
             $"AFTER SPAWN: Old Spawned={oldThing.Spawned} " +
             $"Old Destroyed={oldThing.Destroyed} " +
@@ -82,6 +86,7 @@ public class ReplacementFrame : Frame
         InitializeReplacement(oldThing, newThing, worker);
         ApplyPersistentState(newThing);
         RestoreTransientState(newThing, transientState);
+
         Cleanup(worker);
     }
 
@@ -197,14 +202,14 @@ public class ReplacementFrame : Frame
         }
     }
 
-    private void SpawnReplacement(Thing newThing)
+    private void SpawnReplacement(Thing newThing, Map map)
     {
         // IMPORTANT:
         // GenSpawn.Spawn(..., WipeMode.Vanish) immediately destroys the
         // existing building occupying the cell. Any state needed from
         // targetThing must be captured before spawning.
 
-        GenSpawn.Spawn(newThing, Position, targetThing.Map, targetThing.Rotation, WipeMode.Vanish);
+        GenSpawn.Spawn(newThing, Position, map, targetThing.Rotation, WipeMode.Vanish);
         RSLog.Debug(
             $"SpawnReplacement(): " +
             $"Spawned={newThing.Spawned} " +
@@ -215,9 +220,9 @@ public class ReplacementFrame : Frame
     private Thing CreateReplacement()
     {
         // MakeThing
-        RSLog.Debug($"BuildReplacement() START: Old Rot={targetThing.Rotation}");
+        RSLog.Debug($"CreateReplacement() START: Old Rot={targetThing.Rotation}");
         var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
-        RSLog.Debug($"BuildReplacement() AFTER MAKETHING: New Rot={newThing.Rotation}");
+        RSLog.Debug($"CreateReplacement() AFTER MAKETHING: New Rot={newThing.Rotation}");
 
         return newThing;
     }

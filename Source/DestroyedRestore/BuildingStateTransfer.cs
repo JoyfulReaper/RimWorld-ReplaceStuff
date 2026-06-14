@@ -41,7 +41,8 @@ public static class BuildingStateTransfer
         };
 
         // Quality
-        // TODO: Should the quality depend on the worker rebuilding the thing?
+        // TODO: We should consider if we want the old things quality or if we want the quality
+        // to depend on the worker building the replacement
         if (thing.TryGetComp<CompQuality>() is CompQuality qc)
             data.quality = qc.Quality;
 
@@ -120,7 +121,6 @@ public static class BuildingStateTransfer
 
             RSLog.Debug(
                 $"CAPTURE IstoreSettingsParent:" +
-                // $" StorageGroup={data.St" +
                 $" oldRot={data.rotation} " +
                 $" newRot={thing.Rotation} " +
                 $" settings={settings?.GetHashCode()} " +
@@ -190,18 +190,12 @@ public static class BuildingStateTransfer
         //    grower.SetPlantDefToGrow(data.plantDef);
         //}
 
-        ////if (data.bills != null && thing is Building_WorkTable table)
-        ////{
-        ////    foreach (Bill bill in data.bills)
-        ////        table.BillStack.AddBill(bill);
-        ////}
-
-        //// Bill stacks
-        //if (data.bills != null && thing is Building_WorkTable table && table.BillStack.Count == 0)
-        //{
-        //    foreach (Bill bill in data.bills)
-        //        table.BillStack.AddBill(bill);
-        //}
+        // Bill stacks
+        if (data.bills != null && thing is Building_WorkTable table && table.BillStack.Count == 0)
+        {
+            foreach (Bill bill in data.bills)
+                table.BillStack.AddBill(bill);
+        }
 
         // Storage restoration 
         if (thing is Building_Storage)

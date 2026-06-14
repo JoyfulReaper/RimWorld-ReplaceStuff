@@ -128,11 +128,22 @@ public static class ThingDefGenerator_ReplacementFrame
     /// Creates and configures a new <see cref="ThingDef"/> to serve as a replacement frame for the specified building.
     /// </summary>
     /// <param name="def">The source building Def to create a frame for.</param>
+    /// 
+
+
     public static ThingDef CreateReplacementFrameDef(ThingDef def)
     {
         var thingDef = CreateBaseReplacementFrameDef();
+
+        // Identity
         thingDef.defName = def.defName + "_ReplaceStuff";
         thingDef.label = def.label + "TD.ReplacingTag".Translate();
+
+        // Interaction: Zero out the offset to ensure we aren't inheriting 
+        // a valid cell from the building we are replacing.
+        thingDef.interactionCellOffset = IntVec3.Zero;
+
+        // Standard Properties
         thingDef.size = def.size;
         thingDef.SetStatBaseValue(StatDefOf.MaxHitPoints, (float)def.BaseMaxHitPoints * 0.25f);
         thingDef.SetStatBaseValue(StatDefOf.Beauty, -8f);
@@ -142,12 +153,16 @@ public static class ThingDefGenerator_ReplacementFrame
         thingDef.passability = def.passability;
         thingDef.selectable = def.selectable;
         thingDef.constructEffect = def.constructEffect;
+
+        // Building Properties
         thingDef.building.isEdifice = false;
+
         thingDef.constructionSkillPrerequisite = def.constructionSkillPrerequisite;
         thingDef.clearBuildingArea = false;
         thingDef.drawPlaceWorkersWhileSelected = def.drawPlaceWorkersWhileSelected;
         thingDef.stuffCategories = def.stuffCategories;
 
+        // Graphic Setup
         if (def.size.x <= 4 && def.size.z <= 4)
         {
             thingDef.drawerType = DrawerType.RealtimeOnly;
@@ -160,13 +175,16 @@ public static class ThingDefGenerator_ReplacementFrame
             thingDef.graphicData.color = DrawColor(thingDef);
         }
 
-        //Support QualityBuilder
+        // Support QualityBuilder
         if (QualityBuilderCompat.qualityBuilderPropsType is not null)
+        {
             if (def.HasComp(typeof(CompQuality)) && def.building != null)
                 thingDef.comps.Add((CompProperties)Activator.CreateInstance(QualityBuilderCompat.qualityBuilderPropsType));
+        }
 
         thingDef.entityDefToBuild = def;
         thingDef.modContentPack = LoadedModManager.GetMod<ReplaceStuffPerformance>().Content;
+
         return thingDef;
     }
 
