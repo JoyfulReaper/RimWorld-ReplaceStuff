@@ -16,6 +16,7 @@ using Replace_Stuff.Utilities;
 using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using Verse;
 
 namespace Replace_Stuff.DestroyedRestore;
@@ -211,35 +212,39 @@ public static class BuildingStateTransfer
             ApplyStorageFiltersAndPriority(data, thing);
         }
 
+        ApplyAttachements(data, thing);
+    }
 
-        //// Attachments (ex Wall Lamps)
-        //foreach (var attachment in data.attachedBuildings)
-        //{
-        //    RSLog.Debug($"RESTORING ATTACHMENT {attachment.def.defName} at {attachment.position}");
-        //    Thing newAttachment = ThingMaker.MakeThing(attachment.def, attachment.stuff);
+    public static void ApplyAttachements(ReplaceData data, Thing thing)
+    {
+        // Attachments (ex Wall Lamps)
+        foreach (var attachment in data.attachedBuildings)
+        {
+            RSLog.Debug($"RESTORING ATTACHMENT {attachment.def.defName} at {attachment.position}");
+            Thing newAttachment = ThingMaker.MakeThing(attachment.def, attachment.stuff);
 
-        //    GenSpawn.Spawn(
-        //        newAttachment,
-        //        attachment.position,
-        //        thing.Map,
-        //        attachment.rotation,
-        //        WipeMode.Vanish);
+            GenSpawn.Spawn(
+                newAttachment,
+                attachment.position,
+                thing.Map,
+                attachment.rotation,
+                WipeMode.Vanish);
 
-        //    newAttachment.SetFactionDirect(attachment.faction);
-        //    newAttachment.RemoveFromStatWorkerCaches();
-        //    newAttachment.Notify_ColorChanged();
-        //    newAttachment.HitPoints = Mathf.Min(attachment.hitPoints, newAttachment.MaxHitPoints);
+            newAttachment.SetFactionDirect(attachment.faction);
+            newAttachment.RemoveFromStatWorkerCaches();
+            newAttachment.Notify_ColorChanged();
+            newAttachment.HitPoints = Mathf.Min(attachment.hitPoints, newAttachment.MaxHitPoints);
 
-        //    if (attachment.quality.HasValue && newAttachment.TryGetComp<CompQuality>() is CompQuality aCq)
-        //    {
-        //        aCq.SetQuality(
-        //            attachment.quality.Value,
-        //            ArtGenerationContext.Colony);
-        //    }
+            if (attachment.quality.HasValue && newAttachment.TryGetComp<CompQuality>() is CompQuality aCq)
+            {
+                aCq.SetQuality(
+                    attachment.quality.Value,
+                    ArtGenerationContext.Colony);
+            }
 
-        //    if (attachment.state != null)
-        //        Apply(attachment.state, newAttachment);
-        //}
+            if (attachment.state != null)
+                Apply(attachment.state, newAttachment);
+        }
     }
 
     public static void ApplyStorageFiltersAndPriority(ReplaceData data, Thing thing)
