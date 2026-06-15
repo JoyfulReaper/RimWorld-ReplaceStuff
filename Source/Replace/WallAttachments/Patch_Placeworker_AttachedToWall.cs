@@ -28,7 +28,7 @@ namespace Replace_Stuff.Replace.WallAttachments;
 /// the placement as valid.
 /// </remarks>
 [HarmonyPatch(typeof(Placeworker_AttachedToWall), nameof(Placeworker_AttachedToWall.AllowsPlacing))]
-public static class AllowAttachedWallReplacement
+public static class Patch_Placeworker_AttachedToWall
 {
     /// <summary>
     /// Accepts placement when the existing wall attachment can
