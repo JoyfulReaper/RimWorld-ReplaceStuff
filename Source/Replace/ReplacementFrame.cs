@@ -70,17 +70,14 @@ public class ReplacementFrame : Frame
 
         var newThing = CreateReplacement();
 
-        // Replacement order matters:
-        // Spawn -> Apply persistent state -> Finalize -> Restore contents
-        // Some building components require the thing to be spawned
-        // before their saved state can be restored.
-
+#if DEBUG
         // Debug: What is the game seeing in that cell?
         var thingsInCell = map.thingGrid.ThingsListAt(Position);
         foreach (var t in thingsInCell)
         {
             RSLog.Debug($"Conflict Debug: Found {t.Label} at {t.Position} (Destroyed: {t.Destroyed})");
         }
+#endif
 
         // Some building state restoration expects the thing to be spawned.
         SpawnReplacement(newThing, map);
