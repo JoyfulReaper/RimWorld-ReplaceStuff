@@ -11,7 +11,6 @@
  * Licensed under the MIT License.
  */
 
-using HarmonyLib;
 using Replace_Stuff.Compatibility;
 using RimWorld;
 using System;
@@ -22,70 +21,30 @@ using Verse;
 namespace Replace_Stuff.Replace;
 
 /// <summary>
-/// Handles the dynamic generation of "Replacement Frames" that act as placeholders during building swaps.
+/// Generates replacement frame ThingDefs and maintains
+/// the mapping between buildings and their replacement frames.
 /// </summary>
-//[HarmonyPatch(typeof(DefGenerator), "GenerateImpliedDefs_PreResolve")]
-[StaticConstructorOnStartup]
-public static class ThingDefGenerator_ReplacementFrame
+internal static class ReplacementFrameDefGenerator
 {
-    /// <summary>Delegate for accessing the private ShortHashGiver.GiveShortHash method.</summary>
-    public delegate void GiveShortHashDelegate(Def d, Type t, HashSet<ushort> h);
+    private static readonly Dictionary<ThingDef, ThingDef> _buildingToFrameMap = [];
 
-    /// <summary>Bridge to the game's internal method for assigning short hashes to dynamic Defs.</summary>
-    public static readonly GiveShortHashDelegate GiveShortHash =
-        AccessTools.MethodDelegate<GiveShortHashDelegate>(AccessTools.Method(typeof(ShortHashGiver), "GiveShortHash"));
-
-    /// <summary>
-    /// Registers newly generated replacement frame Defs into the game's DefDatabase and tracking systems.
-    /// </summary>
-    /// <param name="addShortHash">When set to <c>true</c>, registers unique identity fingerprint keys inside short reference maps.</param>
-    public static void AddReplacementFrames(bool addShortHash = true)
-    {
-        Type type = typeof(ThingDef);
-
-        // Slow reflection since this is only once:
-        var takenHashes = ((Dictionary<Type, HashSet<ushort>>)AccessTools.Field(typeof(ShortHashGiver), "takenHashesPerDeftype").GetValue(null))[type];
-
-        foreach (ThingDef current in GetImpliedReplacementFrameDefs())
-        {
-            if (addShortHash)  //Wouldn't need this if other mods added defs earlier. Oh well.
-                GiveShortHash(current, type, takenHashes);
-
-            current.PostLoad();
-            DefDatabase<ThingDef>.Add(current);
-        }
-    }
-
-    public static Dictionary<ThingDef, ThingDef> BuildingToFrameMap;
+    public static IReadOnlyDictionary<ThingDef, ThingDef> BuildingToFrameMap
+     => _buildingToFrameMap;
 
     /// <summary>
     /// Retrieves the replacement frame Def associated with the given building Def.
     /// </summary>
-    public static ThingDef ReplacementFrameDefFor(ThingDef buildingDef)
+    public static ThingDef GetReplacementFrameDef(ThingDef buildingDef)
     {
-        if (BuildingToFrameMap != null && BuildingToFrameMap.TryGetValue(buildingDef, out ThingDef replaceFrame))
-        {
-            return replaceFrame;
-        }
-        return null;
-    }
-
-    /// <summary>Checks if the provided building Def has a registered replacement frame.</summary>
-    public static bool HasReplacementFrame(this ThingDef def)
-    {
-        if (def is null || BuildingToFrameMap is null)
-            return false;
-
-        return BuildingToFrameMap.ContainsKey(def);
+        _buildingToFrameMap.TryGetValue(buildingDef, out var result);
+        return result;
     }
 
     /// <summary>
     /// Scans for all artificial buildings that support "MadeFromStuff" and generates corresponding replacement frame Defs.
     /// </summary>
-    public static IEnumerable<ThingDef> GetImpliedReplacementFrameDefs()
+    public static IEnumerable<ThingDef> GenerateReplacementFrameDefs()
     {
-        BuildingToFrameMap = [];
-
         var allDefs = DefDatabase<ThingDef>.AllDefsListForReading;
 
         for (int i = 0; i < allDefs.Count; i++)
@@ -94,8 +53,8 @@ public static class ThingDefGenerator_ReplacementFrame
 
             if (candidateDef.designationCategory != null && candidateDef.IsBuildingArtificial && !candidateDef.IsFrame && candidateDef.MadeFromStuff)
             {
-                ThingDef replaceFrameDef = CreateReplacementFrameDef(candidateDef);
-                BuildingToFrameMap[candidateDef] = replaceFrameDef;
+                ThingDef replaceFrameDef = CreateForBuilding(candidateDef);
+                _buildingToFrameMap[candidateDef] = replaceFrameDef;
                 yield return replaceFrameDef;
             }
         }
@@ -129,11 +88,9 @@ public static class ThingDefGenerator_ReplacementFrame
     /// </summary>
     /// <param name="def">The source building Def to create a frame for.</param>
     /// 
-
-
-    public static ThingDef CreateReplacementFrameDef(ThingDef def)
+    public static ThingDef CreateForBuilding(ThingDef def)
     {
-        var thingDef = CreateBaseReplacementFrameDef();
+        var thingDef = CreateBaseFrameDef();
 
         // Identity
         thingDef.defName = def.defName + "_ReplaceStuff";
@@ -191,7 +148,7 @@ public static class ThingDefGenerator_ReplacementFrame
     /// <summary>
     /// Returns a base <see cref="ThingDef"/> initialized with standard structural defaults for a frame.
     /// </summary>
-    static ThingDef CreateBaseReplacementFrameDef()
+    static ThingDef CreateBaseFrameDef()
     {
         return new ThingDef
         {
@@ -204,15 +161,11 @@ public static class ThingDefGenerator_ReplacementFrame
             selectable = true,
             building = new BuildingProperties(),
             comps =
-                {
-                    new CompProperties_Forbiddable()
-                },
+            {
+                new CompProperties_Forbiddable()
+            },
             scatterableOnMapGen = false,
             leaveResourcesWhenKilled = true
         };
     }
-
-    /// <summary>Checks if a Def is a replacement frame.</summary>
-    public static bool IsReplacementFrame(this ThingDef def) =>
-        def.thingClass == typeof(ReplacementFrame);
 }

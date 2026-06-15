@@ -44,7 +44,7 @@ public static class ReplacementUtility
     public static ReplacementFrame SpawnReplacementFrame(Thing targetThing, ThingDef stuff)
     {
         var replacementFrameDef =
-            ThingDefGenerator_ReplacementFrame.ReplacementFrameDefFor(targetThing.def);
+            ReplacementFrameDefGenerator.GetReplacementFrameDef(targetThing.def);
 
         if (replacementFrameDef is null)
         {
