@@ -107,3 +107,19 @@ class Patch_Designator_Build
         return false;
     }
 }
+
+//public override AcceptanceReport CanDesignateCell(IntVec3 c)
+[HarmonyPatch(typeof(Designator_Build), "CanDesignateCell")]
+static class DesignatorContext
+{
+    public static bool designating;
+
+    public static void Prefix(Designator_Build __instance)
+    {
+        designating = true;
+    }
+    public static void Postfix()
+    {
+        designating = false;
+    }
+}
