@@ -32,6 +32,7 @@ public class ReplaceStuffPerformance : Verse.Mod
     public ReplaceStuffPerformance(ModContentPack content) : base(content)
     {
         settings = GetSettings<Settings>();
+
         _harmony = new Harmony("ReplaceStuff.Performance ");
         _harmony.PatchAll();
 
@@ -48,7 +49,7 @@ public class ReplaceStuffPerformance : Verse.Mod
     {
         static ModStartup()
         {
-            ReplacementFrameDefRegistrar.RegisterReplacementFrames();
+            ReplacementFrameDefRegistrar.Register();
             CoolersOverWalls.DesignatorBuildDropdownStuffFix.SanityCheck();
             ReplacementLoader.AddRulesFromXML();
             Patch_ReservationManager.Initialize(_harmony);
@@ -71,6 +72,7 @@ public class ReplaceStuffPerformance : Verse.Mod
         var result = "TD.ReplaceStuff".Translate();
         return $"{result} Performance Editon ({settings.Version})";
     }
+
 
 #if DEBUG
     public static void DebugPatchOrder()

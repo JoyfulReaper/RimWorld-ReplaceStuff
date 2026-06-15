@@ -21,6 +21,6 @@ static class DefGenerator_GenerateImpliedDefs_PreResolve_Patch
 {
     static void Postfix()
     {
-        ReplacementFrameDefRegistrar.RegisterReplacementFrames();
+        ReplacementFrameDefRegistrar.Register();
     }
 }

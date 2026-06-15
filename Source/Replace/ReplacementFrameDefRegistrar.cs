@@ -11,40 +11,30 @@
  * Licensed under the MIT License.
  */
 
-using HarmonyLib;
-using System;
-using System.Collections.Generic;
 using Verse;
 
 namespace Replace_Stuff.Replace;
 
 internal static class ReplacementFrameDefRegistrar
 {
-    /// <summary>Delegate for accessing the private ShortHashGiver.GiveShortHash method.</summary>
-    private delegate void GiveShortHashDelegate(Def d, Type t, HashSet<ushort> h);
+    private static bool _registered;
 
-    /// <summary>Bridge to the game's internal method for assigning short hashes to dynamic Defs.</summary>
-    private static readonly GiveShortHashDelegate GiveShortHash =
-        AccessTools.MethodDelegate<GiveShortHashDelegate>(AccessTools.Method(typeof(ShortHashGiver), "GiveShortHash"));
-
-    /// <summary>
-    /// Registers newly generated replacement frame Defs into the game's DefDatabase and tracking systems.
-    /// </summary>
-    /// <param name="addShortHash">When set to <c>true</c>, registers unique identity fingerprint keys inside short reference maps.</param>
-    public static void RegisterReplacementFrames(bool addShortHash = true)
+    public static void Register()
     {
-        Type type = typeof(ThingDef);
+        if (_registered)
+            return;
 
-        // Slow reflection since this is only once:
-        var takenHashes = ((Dictionary<Type, HashSet<ushort>>)AccessTools.Field(typeof(ShortHashGiver), "takenHashesPerDeftype").GetValue(null))[type];
+        _registered = true;
 
-        foreach (ThingDef current in ReplacementFrameDefGenerator.GenerateReplacementFrameDefs())
+        foreach (ThingDef def in ReplacementFrameDefGenerator.GenerateReplacementFrameDefs())
         {
-            if (addShortHash)  //Wouldn't need this if other mods added defs earlier. Oh well.
-                GiveShortHash(current, type, takenHashes);
-
-            current.PostLoad();
-            DefDatabase<ThingDef>.Add(current);
+            RegisterDef(def);
         }
+    }
+
+    private static void RegisterDef(ThingDef def)
+    {
+        def.PostLoad();
+        DefDatabase<ThingDef>.Add(def);
     }
 }
