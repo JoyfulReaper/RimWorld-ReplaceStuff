@@ -12,55 +12,99 @@
  */
 
 using HarmonyLib;
+using Replace_Stuff.OverMineable;
 using RimWorld;
 using Verse;
 
 namespace Replace_Stuff.Replace.Patches;
 
-/// <summary>
-/// Redirects reservation requests from replacement frames back to the
-/// original structures they represent.
-/// </summary>
-/// <remarks>
-/// <para>
-/// Vanilla RimWorld uses <see cref="GenConstruct.BlocksConstruction"/> to determine if a building 
-/// project is obstructed by other entities, which would normally prevent the placement or 
-/// construction of an item.
-/// </para> 
-/// <para>
-/// Since <see cref="ReplacementFrame"/> objects are designed to be placed directly atop existing, 
-/// functional structures, they would otherwise trigger this obstruction logic and prevent 
-/// the player from queuing replacements.
-/// </para>
-/// <para>
-/// This patch acts as a <see cref="HarmonyLib.HarmonyPatchType.Postfix"/> on the blocking logic, 
-/// forcing the result to <c>false</c> whenever the object being constructed is a 
-/// <see cref="ReplacementFrame"/>, effectively "ghosting" the frame so it does not collide with 
-/// its own placement validation.
-/// </para>
-/// </remarks>
+
+// TODO We are also blocking the user from even placing a blueprint at the UI
+// Level so I think this or at least parts of this might not even be needed.
 [HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
-class Patch_GenConstruct
+public static class GenConstruct_BlocksConstruction
 {
-    //public static bool BlocksConstruction(Thing constructible, Thing t)
+    public static bool Prefix(Thing constructible, Thing t, ref bool __result)
+    {
+        // We only care about Blueprints
+        if (constructible is Blueprint_Build bp)
+        {
+            // Wall over a Wall
+            if (bp.def.entityDefToBuild == ThingDefOf.Wall && t.def == ThingDefOf.Wall)
+            {
+                // materials are same
+                if (bp.stuffToUse == t.Stuff)
+                {
+                    __result = true; // block
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    [HarmonyPriority(Priority.Last)]
     public static void Postfix(Thing constructible, Thing t, ref bool __result)
     {
-        if (!__result || constructible is Blueprint_Install)
-            return;
-
-        if (constructible is ReplacementFrame)
+        // Frame override
+        if (__result && t is Frame)
         {
             __result = false;
             return;
         }
 
-        if (constructible is Blueprint_Build blueprint)
+        // Mineables
+        if (!__result && t.IsBlockingRock(constructible))
         {
-            BuildableDef entDef = blueprint.def.entityDefToBuild;
-            if (entDef is not null && RimWorld.GenConstruct.CanReplace(entDef, t.def, blueprint.stuffToUse, t.Stuff))
+            __result = true;
+            return;
+        }
+
+        // Cooler/Wall
+        if (__result)
+        {
+            BuildableDef cDef = constructible.def.entityDefToBuild ?? constructible.def;
+            BuildableDef tDef = t.def.entityDefToBuild ?? t.def;
+            if ((cDef.IsWall() && tDef.IsOverWall()) || (tDef.IsWall() && cDef.IsOverWall()))
             {
                 __result = false;
+                return;
             }
         }
+
+        // Replacement
+        if (constructible is Blueprint_Build bp)
+        {
+            BuildableDef entDef = bp.def.entityDefToBuild;
+            if (entDef == null) return;
+
+            if (RimWorld.GenConstruct.CanReplace(entDef, t.def, bp.stuffToUse, t.Stuff))
+            {
+                __result = false;
+                return;
+            }
+        }
+    }
+}
+
+[HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.CanPlaceBlueprintOver))]
+public static class GenConstruct_CanPlaceBlueprintOnver
+{
+    // Can place new over old?
+    public static bool Prefix(BuildableDef newDef, ThingDef oldDef, ThingDef newStuff, ThingDef oldStuff, ref bool __result)
+    {
+        // Walls
+        if (newDef != ThingDefOf.Wall || oldDef != ThingDefOf.Wall)
+            return true;
+
+        // If the materials are the same, return false/blocked
+        if (newStuff == oldStuff)
+        {
+            __result = false;
+            return false;
+        }
+
+        // materials are different, let the original logic run
+        return true;
     }
 }

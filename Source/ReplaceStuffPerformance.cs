@@ -52,6 +52,10 @@ public class ReplaceStuffPerformance : Verse.Mod
             CoolersOverWalls.DesignatorBuildDropdownStuffFix.SanityCheck();
             ReplacementLoader.AddRulesFromXML();
             Patch_ReservationManager.Initialize(_harmony);
+
+#if DEBUG
+            DebugPatchOrder();
+#endif
         }
     }
 
@@ -67,4 +71,28 @@ public class ReplaceStuffPerformance : Verse.Mod
         var result = "TD.ReplaceStuff".Translate();
         return $"{result} Performance Editon ({settings.Version})";
     }
+
+#if DEBUG
+    public static void DebugPatchOrder()
+    {
+        var method = AccessTools.Method(typeof(GenConstruct), "BlocksConstruction");
+        var patchInfo = Harmony.GetPatchInfo(method);
+
+        if (patchInfo == null)
+        {
+            Log.Message("No patches found for BlocksConstruction.");
+            return;
+        }
+
+        Log.Message($"--- PATCH INFO FOR {method.Name} ---");
+
+        Log.Message("Prefixes:");
+        foreach (var p in patchInfo.Prefixes)
+            Log.Message($"  -> {p.PatchMethod.DeclaringType.FullName} (Priority: {p.priority})");
+
+        Log.Message("Postfixes:");
+        foreach (var p in patchInfo.Postfixes)
+            Log.Message($"  -> {p.PatchMethod.DeclaringType.FullName} (Priority: {p.priority})");
+    }
+#endif
 }

@@ -13,9 +13,6 @@
 
 using HarmonyLib;
 using RimWorld;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Reflection.Emit;
 using Verse;
 
 namespace Replace_Stuff.Replace;
@@ -40,57 +37,45 @@ static class DesignatorContext
 [HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.CanReplace))]
 public static class CanReplaceAnyStuff
 {
-    // Normal stuff replacement only here.
-    // public static bool CanReplace(BuildableDef placing, BuildableDef existing, ThingDef placingStuff = null, ThingDef existingStuff = null)
-    public static void Postfix(ref bool __result, BuildableDef placing, BuildableDef existing, ThingDef placingStuff = null, ThingDef existingStuff = null)
+    public static void Postfix(
+        ref bool __result,
+        BuildableDef placing,
+        BuildableDef existing,
+        ThingDef placingStuff = null,
+        ThingDef existingStuff = null)
     {
-        if (__result || placingStuff == existingStuff) return; // Fast fail if already true or same material
+        // If it's already allowed by vanilla or another patch, leave it alone.
+        if (__result)
+            return;
 
-        if (placing is ThingDef placingDef && existing is ThingDef existingDef && placingDef.MadeFromStuff)
-        {
-            // Calculate base definitions once
-            var placingBuiltDef = placingDef.entityDefToBuild ?? placingDef;
-            var existingBuiltDef = existingDef.entityDefToBuild ?? existingDef;
+        if (placing is not ThingDef placingDef || existing is not ThingDef existingDef)
+            return;
 
-            if (placingBuiltDef == existingBuiltDef && placingBuiltDef.MadeFromStuff)
-            {
-                __result = true;
-            }
-        }
-    }
-}
+        if (!placingDef.MadeFromStuff)
+            return;
 
+        var placingBuilt = placingDef.entityDefToBuild ?? placingDef;
+        var existingBuilt = existingDef.entityDefToBuild ?? existingDef;
 
-[HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.CanPlaceBlueprintAt))]
-public static class CanPlaceBlueprintRotDoesntMatter
-{
-    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-    {
-        MethodInfo RotationEquals = AccessTools.Method(typeof(Rot4), "op_Equality");
-        MethodInfo OrRotDoesntMatter = AccessTools.Method(typeof(CanPlaceBlueprintRotDoesntMatter), nameof(OrRotDoesntMatter));
+        // Ensure we are replacing the exact same logical building type
+        if (placingBuilt != existingBuilt)
+            return;
 
-        foreach (CodeInstruction i in instructions)
-        {
-            yield return i;
-            if (i.Calls(RotationEquals))
-            {
-                yield return new CodeInstruction(OpCodes.Ldarg_0);//BuildableDef entDef
-                yield return new CodeInstruction(OpCodes.Call, OrRotDoesntMatter);
-            }
-        }
-    }
+        // Handle missing material context
+        // If the call site didn't provide the material context, we cannot safely 
+        // determine if this is a valid material upgrade. Do not force true.
+        if (placingStuff == null || existingStuff == null)
+            return;
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public static bool OrRotDoesntMatter(bool result, BuildableDef entDef)
-    {
-        return result || PlacingRotationDoesntMatter(entDef);
-    }
+        // Enforce strict material differences
+        if (placingStuff == existingStuff)
+            return;
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public static bool PlacingRotationDoesntMatter(BuildableDef entDef)
-    {
-        return entDef is ThingDef def &&
-            (!def.rotatable ||
-            typeof(Building_Door).IsAssignableFrom(def.thingClass));
+        // At this stage:
+        // - It's the same logical building
+        // - It's made of stuff
+        // - We know exactly what stuff both use
+        // - The materials are definitively different
+        __result = true;
     }
 }
