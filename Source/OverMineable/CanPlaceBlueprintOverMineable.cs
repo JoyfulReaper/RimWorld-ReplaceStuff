@@ -12,7 +12,7 @@
  */
 
 using HarmonyLib;
-using Replace_Stuff.Replace;
+using Replace_Stuff.Replace.Patches;
 using RimWorld;
 using Verse;
 
@@ -47,7 +47,7 @@ namespace Replace_Stuff.OverMineable
             if (!OverMineable.PlaySettings_BlueprintOverRockToggle.blueprintOverRock)
                 return;
 
-            if (!DesignatorContext.designating) return;
+            if (!DesignatorContext.DesignatorBuildContext) return;
 
             if (newDef.GetStatValueAbstract(StatDefOf.WorkToBuild) > 0f)
                 __result |= oldDef.IsMineableRock();

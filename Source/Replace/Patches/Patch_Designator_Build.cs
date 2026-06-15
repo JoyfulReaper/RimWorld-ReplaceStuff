@@ -31,7 +31,7 @@ namespace Replace_Stuff.Replace.Patches;
 /// logic is skipped.
 /// </remarks>
 [HarmonyPatch(typeof(Designator_Build), nameof(RimWorld.Designator_Build.DesignateSingleCell))]
-class Patch_Designator_Build
+internal class Patch_Designator_Build
 {
     /// <summary>
     /// Intercepts the build command to check for existing structures that can be replaced.
@@ -110,16 +110,16 @@ class Patch_Designator_Build
 
 //public override AcceptanceReport CanDesignateCell(IntVec3 c)
 [HarmonyPatch(typeof(Designator_Build), "CanDesignateCell")]
-static class DesignatorContext
+internal static class DesignatorContext
 {
-    public static bool designating;
+    public static bool DesignatorBuildContext;
 
     public static void Prefix(Designator_Build __instance)
     {
-        designating = true;
+        DesignatorBuildContext = true;
     }
     public static void Postfix()
     {
-        designating = false;
+        DesignatorBuildContext = false;
     }
 }

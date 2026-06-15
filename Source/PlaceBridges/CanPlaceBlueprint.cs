@@ -24,7 +24,7 @@ SOFTWARE.
 
 
 using HarmonyLib;
-using Replace_Stuff.Replace;
+using Replace_Stuff.Replace.Patches;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System.Collections.Generic;
@@ -111,7 +111,7 @@ namespace Replace_Stuff.PlaceBridges
 
             //Player not choosing to build and bridges possible: ok (elsewhere in code will place blueprints)
             TerrainDef tDef = map.terrainGrid.TerrainAt(pos);
-            if (DesignatorContext.designating && BridgelikeTerrain.FindBridgeFor(tDef, neededDef, map) != null)
+            if (DesignatorContext.DesignatorBuildContext && BridgelikeTerrain.FindBridgeFor(tDef, neededDef, map) != null)
                 return true;
 
             return false;

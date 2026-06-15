@@ -12,7 +12,7 @@
  */
 
 using HarmonyLib;
-using Replace_Stuff.Replace;
+using Replace_Stuff.Replace.Patches;
 using RimWorld;
 using Verse;
 
@@ -23,7 +23,7 @@ public static class ForceAllowInteractionSpot_Patch
 {
     public static bool Prefix(ref AcceptanceReport __result)
     {
-        if (DesignatorContext.designating)
+        if (DesignatorContext.DesignatorBuildContext)
         {
             __result = true;
 

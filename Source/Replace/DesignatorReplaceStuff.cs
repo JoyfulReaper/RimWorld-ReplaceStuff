@@ -12,6 +12,7 @@
  */
 
 using Replace_Stuff.NewThing;
+using Replace_Stuff.Replace.Patches;
 using RimWorld;
 using System.Collections.Generic;
 using UnityEngine;
@@ -217,7 +218,7 @@ public class Designator_ReplaceStuff : Designator
     /// </remarks>
     public override AcceptanceReport CanDesignateCell(IntVec3 cell)
     {
-        DesignatorContext.designating = true;
+        DesignatorContext.DesignatorBuildContext = true;
         try
         {
             if (!ReplacementValidator.IsReplacable(selectedStuffDef, cell, Map))
@@ -234,7 +235,7 @@ public class Designator_ReplaceStuff : Designator
         }
         finally
         {
-            DesignatorContext.designating = false;
+            DesignatorContext.DesignatorBuildContext = false;
         }
     }
 
