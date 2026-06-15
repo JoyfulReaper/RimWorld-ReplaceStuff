@@ -47,7 +47,7 @@ namespace Replace_Stuff.OverMineable
             if (!OverMineable.PlaySettings_BlueprintOverRockToggle.blueprintOverRock)
                 return;
 
-            if (!DesignatorContext.DesignatorBuildContext) return;
+            if (!DesignatorContext.IsInBuildDesignation) return;
 
             if (newDef.GetStatValueAbstract(StatDefOf.WorkToBuild) > 0f)
                 __result |= oldDef.IsMineableRock();

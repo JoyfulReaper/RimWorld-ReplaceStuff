@@ -13,6 +13,7 @@
 
 using HarmonyLib;
 using RimWorld;
+using System;
 using Verse;
 
 namespace Replace_Stuff.Replace.Patches;
@@ -46,12 +47,14 @@ internal class Patch_Designator_Build
     /// </returns>
     public static bool Prefix(Designator_Build __instance, IntVec3 c, BuildableDef ___entDef, Rot4 ___placingRot)
     {
-#if DEBUG
-        System.Diagnostics.Debugger.Break();
-#endif
-
         if (__instance is null || ___entDef is null)
             return true;
+
+        // Optimized search for replaceable items
+        var replaceables = c.GetThingList(__instance.Map);
+        if (replaceables.Count == 0)
+            return true;
+
 
         if (___entDef is not ThingDef thingDef)
             return true;
@@ -69,21 +72,17 @@ internal class Patch_Designator_Build
         if (typeof(Building_Door).IsAssignableFrom(thingDef.thingClass))
             ___placingRot = DoorUtility.DoorRotationAt(c, __instance.Map, thingDef.building.preferConnectingToFences);
 
-        // Optimized search for replaceable items
-        var replaceables = c.GetThingList(__instance.Map);
-        if (replaceables.Count == 0)
-            return true;
 
         Thing thingToReplace = null;
-
+        var stuff = __instance.StuffDef;
         for (int i = 0; i < replaceables.Count; i++)
         {
             var replaceable = replaceables[i];
 
-            if (replaceable.Rotation != ___placingRot)
+            if (!Designator_ReplaceStuff.CanReplaceThingWithStuff(stuff, replaceable, thingDef))
                 continue;
 
-            if (!Designator_ReplaceStuff.CanReplaceThingWithStuff(__instance.StuffDef, replaceable, thingDef))
+            if (replaceable.Rotation != ___placingRot)
                 continue;
 
             // Priority: Blueprints and Frames
@@ -103,23 +102,31 @@ internal class Patch_Designator_Build
         if (thingToReplace == null)
             return true;
 
-        ReplacementHandler.ExecuteReplacement(thingToReplace, __instance.StuffDef);
+        ReplacementHandler.ExecuteReplacement(thingToReplace, stuff);
         return false;
     }
 }
 
-//public override AcceptanceReport CanDesignateCell(IntVec3 c)
-[HarmonyPatch(typeof(Designator_Build), "CanDesignateCell")]
+
 internal static class DesignatorContext
 {
-    public static bool DesignatorBuildContext;
+    private static int _depth;
 
-    public static void Prefix(Designator_Build __instance)
-    {
-        DesignatorBuildContext = true;
-    }
-    public static void Postfix()
-    {
-        DesignatorBuildContext = false;
-    }
+    public static bool IsInBuildDesignation => _depth > 0;
+
+    public static void Enter() => _depth++;
+    public static void Exit() => _depth = Math.Max(0, _depth - 1);
+}
+
+//public override AcceptanceReport CanDesignateCell(IntVec3 c)
+[HarmonyPatch(typeof(Designator_Build), "CanDesignateCell")]
+internal static class Patch_DesignatorContext
+{
+    public static void Prefix() =>
+        DesignatorContext.Enter();
+
+
+    public static void Postfix() =>
+        DesignatorContext.Exit();
+
 }

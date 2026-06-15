@@ -218,7 +218,7 @@ public class Designator_ReplaceStuff : Designator
     /// </remarks>
     public override AcceptanceReport CanDesignateCell(IntVec3 cell)
     {
-        DesignatorContext.DesignatorBuildContext = true;
+        DesignatorContext.Enter();
         try
         {
             if (!ReplacementValidator.IsReplacable(selectedStuffDef, cell, Map))
@@ -235,7 +235,7 @@ public class Designator_ReplaceStuff : Designator
         }
         finally
         {
-            DesignatorContext.DesignatorBuildContext = false;
+            DesignatorContext.Enter();
         }
     }
 

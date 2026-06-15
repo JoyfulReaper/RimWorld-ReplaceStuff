@@ -23,7 +23,7 @@ public static class ForceAllowInteractionSpot_Patch
 {
     public static bool Prefix(ref AcceptanceReport __result)
     {
-        if (DesignatorContext.DesignatorBuildContext)
+        if (DesignatorContext.IsInBuildDesignation)
         {
             __result = true;
 

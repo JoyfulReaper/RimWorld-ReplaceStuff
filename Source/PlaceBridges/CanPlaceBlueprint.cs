@@ -111,7 +111,7 @@ namespace Replace_Stuff.PlaceBridges
 
             //Player not choosing to build and bridges possible: ok (elsewhere in code will place blueprints)
             TerrainDef tDef = map.terrainGrid.TerrainAt(pos);
-            if (DesignatorContext.DesignatorBuildContext && BridgelikeTerrain.FindBridgeFor(tDef, neededDef, map) != null)
+            if (DesignatorContext.IsInBuildDesignation && BridgelikeTerrain.FindBridgeFor(tDef, neededDef, map) != null)
                 return true;
 
             return false;

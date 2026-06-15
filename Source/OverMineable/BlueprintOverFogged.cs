@@ -185,14 +185,14 @@ namespace Replace_Stuff.OverMineable
             Map map = ___map;
             if (c.GetThingList(map).FirstOrDefault(t => t.def.IsBlueprint) is Thing blueprint && !blueprint.IsUnderFog())
             {
-                DesignatorContext.DesignatorBuildContext = true; // as good as designating.
+                DesignatorContext.Enter(); // as good as designating.
 
                 if (!GenConstruct.CanPlaceBlueprintAt(blueprint.def.entityDefToBuild, blueprint.Position, blueprint.Rotation, map, false, blueprint).Accepted)
                     blueprint.Destroy();
                 else
                     blueprint.Notify_ColorChanged();//does the job, haha.
 
-                DesignatorContext.DesignatorBuildContext = false;
+                DesignatorContext.Exit();
             }
         }
     }

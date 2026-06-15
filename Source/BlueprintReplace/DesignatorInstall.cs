@@ -55,11 +55,11 @@ namespace Replace_Stuff.BlueprintReplace
 
         public static void Prefix()
         {
-            DesignatorContext.DesignatorBuildContext = true;
+            DesignatorContext.Enter();
         }
         public static void Postfix()
         {
-            DesignatorContext.DesignatorBuildContext = false;
+            DesignatorContext.Enter();
         }
     }
 }

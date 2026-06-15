@@ -18,7 +18,7 @@ namespace Replace_Stuff.NewThing
         public static void Postfix(ref bool __result, BuildableDef placing, BuildableDef existing)
         {
             // The player isn't actively placing a blueprint
-            if (!DesignatorContext.DesignatorBuildContext)
+            if (!DesignatorContext.IsInBuildDesignation)
                 return;
 
             if (((placing as ThingDef)?.IsNonDeconstructibleAttackableBuilding ?? false) ||
