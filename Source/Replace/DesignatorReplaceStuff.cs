@@ -11,13 +11,11 @@
  * Licensed under the MIT License.
  */
 
-using Replace_Stuff.NewThing;
 using Replace_Stuff.Replace.Patches;
 using RimWorld;
 using System.Collections.Generic;
 using UnityEngine;
 using Verse;
-using static Replace_Stuff.NewThing.NewThingReplacement;
 
 namespace Replace_Stuff.Replace;
 
@@ -38,12 +36,6 @@ public class Designator_ReplaceStuff : Designator
 
     private ThingDef selectedStuffDef;
     private static readonly Vector2 DragPriceDrawOffset = new Vector2(19f, 17f);
-
-    /// <summary>
-    /// Caches the allowed construction materials for each
-    /// buildable definition to avoid repeated enumeration.
-    /// </summary>
-    private static readonly Dictionary<BuildableDef, HashSet<ThingDef>> _allowedStuffCache = new();
 
     // Cache the localized warning suffix string to prevent GC string generation inside the UI loop
     private static string _cachedNotEnoughStoredString;
@@ -106,7 +98,7 @@ public class Designator_ReplaceStuff : Designator
             {
                 var thing = thingsInCell[t];
 
-                if (thing is not ReplacementFrame && CanReplaceThingWithStuff(selectedStuffDef, thing))
+                if (thing is not ReplacementFrame && ReplacementValidator.IsValidReplacement(selectedStuffDef, thing))
                 {
                     if (GenConstruct.BuiltDefOf(thing.def) is ThingDef builtDef)
                     {
@@ -239,86 +231,6 @@ public class Designator_ReplaceStuff : Designator
         }
     }
 
-    /// <summary>
-    /// Determines whether the specified <see cref="Thing"/> can be
-    /// replaced using the supplied construction material.
-    /// </summary>
-    /// <param name="replacementStuff">
-    /// The material that will be used for the replacement.
-    /// </param>
-    /// <param name="thing">
-    /// The existing blueprint, frame, or completed structure
-    /// being evaluated.
-    /// </param>
-    /// <param name="matchDef">
-    /// Optional buildable definition that the replacement target
-    /// must match. If specified, only Things that resolve to this
-    /// buildable definition are considered valid.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> if the Thing is a valid replacement
-    /// candidate for the specified material; otherwise,
-    /// <see langword="false"/>.
-    /// </returns>
-    /// <remarks>
-    /// Validation includes:
-    /// <list type="bullet">
-    /// <item><description>The Thing belongs to the player.</description></item>
-    /// <item><description>The Thing represents a replaceable blueprint, frame, or structure.</description></item>
-    /// <item><description>The replacement would actually change the construction material.</description></item>
-    /// <item><description>The underlying buildable definition matches <paramref name="matchDef"/>, if supplied.</description></item>
-    /// <item><description>The replacement can legally exist on the current terrain.</description></item>
-    /// <item><description>The Thing is not already being replaced.</description></item>
-    /// <item><description>The selected material is allowed for the target buildable definition.</description></item>
-    /// </list>
-    /// Allowed stuff definitions are cached to avoid repeated
-    /// enumeration of <see cref="GenStuff.AllowedStuffsFor(BuildableDef)"/>.
-    /// </remarks>
-    public static bool CanReplaceThingWithStuff(ThingDef replacementStuff, Thing thing, ThingDef matchDef = null)
-    {
-        // Can't replace enemy items
-        if (thing.Faction != Faction.OfPlayer && thing.Faction != null)
-            return false;
-
-        if (thing is Blueprint bp)
-        {
-            if (bp.EntityToBuildStuff() == replacementStuff)
-                return false;
-        }
-        else if (thing is Frame frame)
-        {
-            if (frame.EntityToBuildStuff() == replacementStuff)
-                return false;
-        }
-        else if (thing.def.HasReplacementFrame())
-        {
-            if (thing.Stuff == replacementStuff)
-                return false;
-        }
-        else
-        {
-            return false; // Not a replaceable structure type
-        }
-
-        BuildableDef buildableDef = GenConstruct.BuiltDefOf(thing.def);
-        if (matchDef != null && buildableDef != matchDef)
-            return false;
-
-        if (!GenConstruct.CanBuildOnTerrain(buildableDef, thing.Position, thing.Map, thing.Rotation, thing, replacementStuff))
-            return false;
-
-        if (thing.BeingReplacedByNewThing() != null)
-            return false;
-
-        if (!_allowedStuffCache.TryGetValue(buildableDef, out var allowedStuffSet))
-        {
-            allowedStuffSet = new HashSet<ThingDef>(GenStuff.AllowedStuffsFor(buildableDef));
-            _allowedStuffCache[buildableDef] = allowedStuffSet;
-        }
-
-        return allowedStuffSet.Contains(replacementStuff);
-    }
-
     public override void DesignateSingleCell(IntVec3 cell)
     {
         ReplaceFirstEligibleThing(Map, cell, selectedStuffDef);
@@ -360,7 +272,7 @@ public class Designator_ReplaceStuff : Designator
         for (int i = 0; i < count; i++)
         {
             var replaceable = replaceables[i];
-            if (!CanReplaceThingWithStuff(stuffDef, replaceable))
+            if (!ReplacementValidator.IsValidReplacement(stuffDef, replaceable))
                 continue;
 
             firstReplaceable ??= replaceable;

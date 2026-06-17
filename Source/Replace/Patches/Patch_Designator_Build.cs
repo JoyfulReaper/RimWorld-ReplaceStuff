@@ -79,7 +79,7 @@ internal class Patch_Designator_Build
         {
             var replaceable = replaceables[i];
 
-            if (!Designator_ReplaceStuff.CanReplaceThingWithStuff(stuff, replaceable, thingDef))
+            if (!ReplacementValidator.IsValidReplacement(stuff, replaceable, thingDef))
                 continue;
 
             if (replaceable.Rotation != ___placingRot)

@@ -381,14 +381,4 @@ public static class NewThingReplacement
     {
         return newThing.def.CanReplace(oldThing.def);
     }
-
-    public static Thing BeingReplacedByNewThing(this Thing oldThing)
-    {
-        foreach (IntVec3 checkPos in GenAdj.OccupiedRect(oldThing.Position, oldThing.Rotation, oldThing.def.size))
-            foreach (Thing newThing in checkPos.GetThingList(oldThing.Map))
-                if (newThing.CanReplace(oldThing))
-                    return newThing;
-
-        return null;
-    }
 }
