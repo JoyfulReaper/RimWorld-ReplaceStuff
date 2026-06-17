@@ -33,6 +33,13 @@ namespace Replace_Stuff.Replace;
 /// </remarks>
 public class ReplacementFrame : Frame
 {
+    private const float MAX_DECONSTRUCTION_WORK = 3000f;
+    private const float LARGE_CONSTRUCTION_THRESHOLD = 1400f;
+    private static readonly Dictionary<ReplaceFrameKey, List<ThingDefCountClass>> _cachedReplaceCosts = new();
+    private static Difficulty _cachedDifficulty;
+
+    public delegate Func<int, int> GetBuildingResourcesLeaveCalculatorDel(Thing oldThing, DestroyMode mode);
+
     /// <summary>The building targeted for replacement.</summary>
     public Thing TargetThing;
 
@@ -41,13 +48,6 @@ public class ReplacementFrame : Frame
 
     /// <summary>Encapsulated state data transferred from the target structure to the new one.</summary>
     public ReplaceData ReplaceData;
-
-    private const float MAX_DECONSTRUCTION_WORK = 3000f;
-    private static readonly Dictionary<ReplaceFrameKey, List<ThingDefCountClass>> _cachedReplaceCosts = new();
-    private const float LARGE_CONSTRUCTION_THRESHOLD = 1400f;
-    private static Difficulty _cachedDifficulty;
-
-    public delegate Func<int, int> GetBuildingResourcesLeaveCalculatorDel(Thing oldThing, DestroyMode mode);
 
 
     /// <summary>
@@ -104,7 +104,7 @@ public class ReplacementFrame : Frame
             .Append(" / ")
             .AppendLine(GetRequiredMaterialCount()
             .ToString());
-            
+
         stringBuilder.Append("WorkLeft".Translate())
             .Append(": ")
             .Append(this.WorkLeft.ToStringWorkAmount());

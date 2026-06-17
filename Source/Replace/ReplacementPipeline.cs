@@ -20,6 +20,11 @@ using Replace_Stuff.DestroyedRestore;
 
 internal static class ReplacementPipeline
 {
+    /// <summary>
+    /// The Replacement Pipeline: Where it all Happens!
+    /// </summary>
+    /// <param name="replacementFrame"></param>
+    /// <param name="worker"></param>
     internal static void ExecuteReplacementPipeline(ReplacementFrame replacementFrame, Pawn worker)
     {
         if (replacementFrame.TargetThing is null || !replacementFrame.TargetThing.Spawned)
@@ -31,7 +36,7 @@ internal static class ReplacementPipeline
         }
 
         var oldThing = replacementFrame.TargetThing;
-        var transientState = ExtractTransientState(oldThing);
+        var transientState = StorageReplacementEngine.ExtractStoredItems(oldThing);
         DeconstructDropStuff(oldThing);
 
         oldThing.Destroy(DestroyMode.Vanish);
@@ -40,7 +45,7 @@ internal static class ReplacementPipeline
         SpawnReplacement(newThing, replacementFrame);
         InitializeReplacement(oldThing, newThing, worker);
         ApplyPersistentState(newThing, replacementFrame.ReplaceData);
-        RestoreTransientState(newThing, transientState);
+        StorageReplacementEngine.RestoreStoredItems(newThing, transientState);
         Cleanup(oldThing, worker, replacementFrame.resourceContainer);
     }
 
@@ -60,7 +65,6 @@ internal static class ReplacementPipeline
         worker?.records.Increment(RecordDefOf.ThingsConstructed);
         worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
     }
-
 
     internal static void InitializeReplacement(Thing oldThing, Thing newThing, Pawn worker)
     {
@@ -82,16 +86,6 @@ internal static class ReplacementPipeline
         BuildingStateTransfer.Apply(replaceData, newThing);
     }
 
-    private static void RestoreTransientState(Thing newThing, List<Thing> storedThings)
-
-    {
-        if (storedThings is not null &&
-            newThing is Building_Storage storage)
-        {
-            ReplacementUtility.RestoreStoredThings(storage, storedThings);
-        }
-    }
-
      private static void ApplyConstructionQuality(Thing newThing, Pawn worker)
     {
         if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
@@ -100,14 +94,6 @@ internal static class ReplacementPipeline
             compQuality.SetQuality(qualityCreatedByPawn, ArtGenerationContext.Colony);
             QualityUtility.SendCraftNotification(newThing, worker);
         }
-    }
-
-    private static List<Thing> ExtractTransientState(Thing targetThing)
-    {
-        if (targetThing is Building_Storage storage)
-            return ReplacementUtility.ExtractStoredThings(storage);
-
-        return null;
     }
 
     /// <summary>
