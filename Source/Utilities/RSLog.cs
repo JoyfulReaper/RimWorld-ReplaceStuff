@@ -28,7 +28,7 @@ static class RSLog
     /// <summary>
     /// Log a message to Verse.Log.Messages if built in debug mode
     /// </summary>
-    /// <param name="x"></param>
+    /// <param name="message"></param>
     [Conditional("DEBUG")]
     public static void Debug(string message)
     {
@@ -38,7 +38,7 @@ static class RSLog
     /// <summary>
     /// Log a message to Verse.Log.Messages regardless of debug mode
     /// </summary>
-    /// <param name="x"></param>
+    /// <param name="message"></param>
     public static void Info(string message)
     {
         Verse.Log.Message($"{PrefixColored}: {message}");
@@ -47,7 +47,7 @@ static class RSLog
     /// <summary>
     /// Log a message to Verse.Log.Warning
     /// </summary>
-    /// <param name="x"></param>
+    /// <param name="message"></param>
     public static void Warning(string message)
     {
         Verse.Log.Warning($"{LoggingPrefix}: {message}");
@@ -56,7 +56,7 @@ static class RSLog
     /// <summary>
     /// Log a message to Verse.Log.Error
     /// </summary>
-    /// <param name="x"></param>
+    /// <param name="message"></param>
     public static void Error(string message)
     {
         Verse.Log.Error($"{LoggingPrefix}: {message}");
