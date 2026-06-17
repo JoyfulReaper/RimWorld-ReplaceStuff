@@ -22,7 +22,7 @@ namespace Replace_Stuff.Replace
     /// </summary>
     /// <remarks>
     /// This class acts as the central logic gate for determining how to transition from an existing 
-    /// <see cref="Thing"/> (or <see cref="Frame"/>/<see cref="Blueprint"/>) to a replacement structure.
+    /// <see cref="Thing"/> (or <see cref="Frame"/><see cref="Blueprint"/>) to a replacement structure.
     /// It manages bridge requirements, state preservation, and the spawning of new construction tasks.
     /// </remarks>
     internal static class ReplacementHandler
@@ -41,7 +41,7 @@ namespace Replace_Stuff.Replace
         /// Depending on the target object, this method may:
         /// <list type="bullet">
         /// <item><description>Create required bridge support.</description></item>
-        /// <item><description>Replace existing blueprints.</description></item>
+        /// <item><description>Replace existing blueprints material definition.</description></item>
         /// <item><description>Upgrade replacement frames.</description></item>
         /// <item><description>Perform instant replacement in God Mode.</description></item>
         /// <item><description>Create a new replacement frame.</description></item>
@@ -71,14 +71,14 @@ namespace Replace_Stuff.Replace
             {
                 if (DebugSettings.godMode)
                 {
-                    ReplacementUtility.InstantReplace(oldRF.targetThing, stuffDef);
+                    ReplacementUtility.InstantReplace(oldRF.TargetThing, stuffDef);
                     oldRF.Destroy(DestroyMode.Cancel);
                     return;
                 }
-                if (oldRF.targetStuff != stuffDef)
+                if (oldRF.TargetStuff != stuffDef)
                 {
                     //replacement frame should keep deconstruction work amount
-                    var newFrame = ReplacementUtility.SpawnReplacementFrame(oldRF.targetThing, stuffDef);
+                    var newFrame = ReplacementUtility.SpawnReplacementFrame(oldRF.TargetThing, stuffDef);
                     if (newFrame != null)
                     {
                         newFrame.workDone = Mathf.Min(oldRF.workDone, oldRF.WorkToDeconstruct);

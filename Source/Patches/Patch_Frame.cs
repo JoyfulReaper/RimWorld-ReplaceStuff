@@ -36,7 +36,7 @@ internal static class Frame_TotalMaterialCost_Patch
 }
 
 /// <summary>
-/// Redirects construction completion to <see cref="ReplacementFrame.CompleteConstruction"/>,
+/// Redirects construction completion to <see cref="ReplacementFrame.BeginConstruction"/>,
 /// handling the destruction of the old object and spawning of the new one.
 /// </summary>
 [HarmonyPatch(typeof(Frame), nameof(Frame.CompleteConstruction))]
@@ -50,7 +50,7 @@ internal static class Frame_CompleteConstruction_Patch
 
         if (__instance is ReplacementFrame rf)
         {
-            rf.CompleteConstruction(worker);
+            rf.BeginConstruction(worker);
             return false;
         }
         return true;
@@ -68,7 +68,7 @@ internal static class Frame_FailConstruction_Patch
     {
         if (__instance is ReplacementFrame rf)
         {
-            rf.FailConstruction(worker);
+            rf.FailReplacement(worker);
             return false;
         }
         return true;

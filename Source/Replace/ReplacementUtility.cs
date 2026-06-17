@@ -54,10 +54,10 @@ public static class ReplacementUtility
 
         var replaceFrame = (ReplacementFrame)ThingMaker.MakeThing(replacementFrameDef, stuff);
 
-        replaceFrame.replaceData = BuildingStateTransfer.Capture(targetThing, new HashSet<int>());
+        replaceFrame.ReplaceData = BuildingStateTransfer.Capture(targetThing, new HashSet<int>());
         replaceFrame.SetFactionDirect(Faction.OfPlayer);
-        replaceFrame.targetThing = targetThing;
-        replaceFrame.targetStuff = targetThing.Stuff;
+        replaceFrame.TargetThing = targetThing;
+        replaceFrame.TargetStuff = targetThing.Stuff;
 
 
         RSLog.Debug(
@@ -238,7 +238,7 @@ public static class ReplacementUtility
             var newThing = ThingMaker.MakeThing(oldThing.def, newStuff);
 
             GenSpawn.Spawn(newThing, oldThing.Position, oldThing.Map, oldThing.Rotation, WipeMode.Vanish);
-            ReplacementFrame.InitializeReplacement(oldThing, newThing, worker);
+            ReplacementPipeline.InitializeReplacement(oldThing, newThing, worker);
             BuildingStateTransfer.Apply(data, newThing);
 
             return newThing;
@@ -292,7 +292,7 @@ public static class ReplacementUtility
 
             if (tileThing is ReplacementFrame rf &&
                 rf.workDone > 0 &&
-                rf.targetThing == thing)
+                rf.TargetThing == thing)
             {
                 return true;
             }

@@ -12,7 +12,6 @@
  */
 
 using HarmonyLib;
-using Replace_Stuff.DestroyedRestore;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
@@ -35,102 +34,38 @@ namespace Replace_Stuff.Replace;
 public class ReplacementFrame : Frame
 {
     /// <summary>The building targeted for replacement.</summary>
-    public Thing targetThing;
+    public Thing TargetThing;
 
     /// <summary>The material definition of the original structure, used for resource recovery calculations.</summary>
-    public ThingDef targetStuff;
+    public ThingDef TargetStuff;
 
     /// <summary>Encapsulated state data transferred from the target structure to the new one.</summary>
-    public ReplaceData replaceData;
+    public ReplaceData ReplaceData;
 
-    private const float MaxDeconstructWork = 3000f;
+    private const float MAX_DECONSTRUCTION_WORK = 3000f;
     private static readonly Dictionary<ReplaceFrameKey, List<ThingDefCountClass>> _cachedReplaceCosts = new();
-    private const float LargeConstructionThreshold = 1400f;
+    private const float LARGE_CONSTRUCTION_THRESHOLD = 1400f;
     private static Difficulty _cachedDifficulty;
 
     public delegate Func<int, int> GetBuildingResourcesLeaveCalculatorDel(Thing oldThing, DestroyMode mode);
 
 
-    public new void CompleteConstruction(Pawn worker)
+    /// <summary>
+    /// Start the replacement pipeline for this ReplacementFrame.
+    /// </summary>
+    /// <param name="worker"></param>
+    public void BeginConstruction(Pawn worker)
     {
-        Map map = Map;
-
-        if (targetThing is null || !targetThing.Spawned)
-        {
-            resourceContainer.TryDropAll(Position, map, ThingPlaceMode.Near);
-            Destroy(DestroyMode.Cancel);
-            return;
-        }
-
-        var oldThing = targetThing;
-        var transientState = ExtractTransientState();
-
-        DeconstructDropStuff(oldThing);
-        oldThing.Destroy(DestroyMode.Vanish);
-
-        var newThing = CreateReplacement();
-
-#if DEBUG
-        // Debug: What is the game seeing in that cell?
-        var thingsInCell = map.thingGrid.ThingsListAt(Position);
-        foreach (var t in thingsInCell)
-        {
-            RSLog.Debug($"Conflict Debug: Found {t.Label} at {t.Position} (Destroyed: {t.Destroyed})");
-        }
-#endif
-
-        // Some building state restoration expects the thing to be spawned.
-        SpawnReplacement(newThing, map);
-        RSLog.Debug(
-            $"AFTER SPAWN: Old Spawned={oldThing.Spawned} " +
-            $"Old Destroyed={oldThing.Destroyed} " +
-            $"New Spawned={newThing.Spawned} " +
-            $"Spawned={targetThing.Spawned}");
-
-        InitializeReplacement(oldThing, newThing, worker);
-        ApplyPersistentState(newThing);
-        RestoreTransientState(newThing, transientState);
-
-        Cleanup(worker);
-        if (!this.Destroyed)
-        {
-            this.Destroy(DestroyMode.Vanish);
-        }
-    }
-
-    public static void InitializeReplacement(Thing oldThing, Thing newThing, Pawn worker)
-    {
-        // Current design: New buildings spawn at full health.
-        // Future consideration: Add an option to calculate HitPoints based on the 
-        // old building's percentage of MaxHitPoints. TODO
-        // newThing.HitPoints = Mathf.RoundToInt(oldThing.HitPoints * ((float)newThing.MaxHitPoints / oldThing.MaxHitPoints)); // For keeping hit points if we decide to
-        newThing.SetFactionDirect(oldThing.Faction);
-        newThing.RemoveFromStatWorkerCaches();
-
-        newThing.HitPoints = newThing.MaxHitPoints;
-        newThing.Notify_ColorChanged();
-
-        ApplyConstructionQuality(newThing, worker);
-
-    }
-
-    private static void ApplyConstructionQuality(Thing newThing, Pawn worker)
-    {
-        if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
-        {
-            QualityCategory qualityCreatedByPawn = QualityUtility.GenerateQualityCreatedByPawn(worker, SkillDefOf.Construction);
-            compQuality.SetQuality(qualityCreatedByPawn, ArtGenerationContext.Colony);
-            QualityUtility.SendCraftNotification(newThing, worker);
-        }
+        ReplacementPipeline.ExecuteReplacementPipeline(this, worker);
     }
 
     /// <summary>
     /// Handles the cleanup and feedback when a replacement task fails (e.g., pawn interrupted or material deficit).
     /// </summary>
     /// <param name="worker">The pawn who was attempting the work.</param>
-    public new void FailConstruction(Pawn worker)
+    public void FailReplacement(Pawn worker)
     {
-        RSLog.Debug($"Failed replace frame! work was {workDone}, Decon is {WorkToDeconstructDef(def, targetStuff)}, total is {WorkToBuild}");
+        RSLog.Debug($"Failed replace frame! work was {workDone}, Decon is {WorkToDeconstructDef(def, TargetStuff)}, total is {WorkToBuild}");
 
         // Cap workDone at the cost of deconstruction. 
         // If they hadn't even finished deconstruction, they shouldn't get progress credit 
@@ -143,96 +78,11 @@ public class ReplacementFrame : Frame
         GenLeaving.DoLeavingsFor(this, Map, DestroyMode.FailConstruction);
         MoteMaker.ThrowText(DrawPos, Map, "TextMote_ConstructionFail".Translate());
 
-        if (Faction == Faction.OfPlayer && WorkToReplace > LargeConstructionThreshold)
+        if (Faction == Faction.OfPlayer && WorkToReplace > LARGE_CONSTRUCTION_THRESHOLD)
         {
             Messages.Message("MessageConstructionFailed".Translate(LabelEntityToBuild, worker.LabelShort, worker.Named("WORKER")),
                 new TargetInfo(Position, Map), MessageTypeDefOf.NegativeEvent);
         }
-    }
-
-    /// <summary>
-    /// Calculate resources to drop for the old thing before destroying it
-    /// </summary>
-    /// <param name="oldThing">Thing to drop resource for</param>
-    /// 
-    public static void DeconstructDropStuff(Thing oldThing)
-    {
-        if (oldThing is null || !oldThing.Spawned || oldThing.Map is null)
-            return;
-
-#if DEBUG
-        // nothing
-#else
-        if (Current.ProgramState != ProgramState.Playing)
-            return;
-#endif
-        var oldDef = oldThing.def;
-        var stuffDef = oldThing.Stuff;
-
-        if (stuffDef == null)
-            return;
-
-        // We use our own calculator here instead of standard GenLeaving.DoLeavingsFor 
-        // because we only want to drop the 'stuff' (material) used in construction,
-        // rather than all items (like components/steel) usually dropped by deconstruction.
-        if (GenLeaving.CanBuildingLeaveResources(oldThing, DestroyMode.Deconstruct))
-        {
-            var count = GetRequiredMaterialCount(oldDef, stuffDef);
-            var leaveCount = GetBuildingResourcesLeaveCalculator(oldThing, DestroyMode.Deconstruct)(count);
-            if (leaveCount > 0)
-            {
-                var leftThing = ThingMaker.MakeThing(stuffDef);
-                leftThing.stackCount = leaveCount;
-                GenDrop.TryDropSpawn(leftThing, oldThing.Position, oldThing.Map, ThingPlaceMode.Near, out _);
-            }
-        }
-    }
-
-    private List<Thing> ExtractTransientState()
-    {
-        if (targetThing is Building_Storage storage)
-            return ReplacementUtility.ExtractStoredThings(storage);
-
-        return null;
-    }
-
-    private void ApplyPersistentState(Thing newThing)
-    {
-        BuildingStateTransfer.Apply(replaceData, newThing);
-    }
-
-    private void RestoreTransientState(Thing newThing, List<Thing> storedThings)
-    {
-        if (storedThings is not null &&
-            newThing is Building_Storage storage)
-        {
-            ReplacementUtility.RestoreStoredThings(storage, storedThings);
-        }
-    }
-
-    private void SpawnReplacement(Thing newThing, Map map)
-    {
-        // IMPORTANT:
-        // GenSpawn.Spawn(..., WipeMode.Vanish) immediately destroys the
-        // existing building occupying the cell. Any state needed from
-        // targetThing must be captured before spawning.
-
-        GenSpawn.Spawn(newThing, Position, map, targetThing.Rotation, WipeMode.Vanish);
-        RSLog.Debug(
-            $"SpawnReplacement(): " +
-            $"Spawned={newThing.Spawned} " +
-            $"Pos={newThing.Position} " +
-            $"Rot={newThing.Rotation}");
-    }
-
-    private Thing CreateReplacement()
-    {
-        // MakeThing
-        RSLog.Debug($"CreateReplacement() START: Old Rot={targetThing.Rotation}");
-        var newThing = ThingMaker.MakeThing((ThingDef)def.entityDefToBuild, Stuff);
-        RSLog.Debug($"CreateReplacement() AFTER MAKETHING: New Rot={newThing.Rotation}");
-
-        return newThing;
     }
 
     /// <summary>
@@ -249,29 +99,18 @@ public class ReplacementFrame : Frame
         stringBuilder.AppendLine("ContainedResources".Translate() + ":");
 
         // Optimized to clear out array allocations from string.Concat during UI redraw ticks
-        stringBuilder.Append(Stuff.LabelCap).Append(": ").Append(CountStuffHas()).Append(" / ").AppendLine(GetRequiredMaterialCount().ToString());
-        stringBuilder.Append("WorkLeft".Translate()).Append(": ").Append(this.WorkLeft.ToStringWorkAmount());
+        stringBuilder.Append(Stuff.LabelCap).Append(": ")
+            .Append(CountStuffHas())
+            .Append(" / ")
+            .AppendLine(GetRequiredMaterialCount()
+            .ToString());
+            
+        stringBuilder.Append("WorkLeft".Translate())
+            .Append(": ")
+            .Append(this.WorkLeft.ToStringWorkAmount());
 
         return stringBuilder.ToString();
     }
-
-    private void Cleanup(Pawn worker)
-    {
-        resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
-
-        RSLog.Debug(
-            $"Cleanup: old Spawned={targetThing.Spawned} Destroyed={targetThing.Destroyed}");
-
-        foreach (var thing in GenConstruct.GetAttachedBuildings(targetThing))
-        {
-            if (!thing.Destroyed)
-                thing.Destroy(DestroyMode.Vanish);
-        }
-
-        worker?.records.Increment(RecordDefOf.ThingsConstructed);
-        worker?.records.Increment(RecordDefOf.ThingsDeconstructed);
-    }
-
 
     /// <summary>
     /// Dynamically generates the UI label for the frame, appending a "Replacing" tag 
@@ -297,7 +136,7 @@ public class ReplacementFrame : Frame
     /// Calculates the labor required to deconstruct the <see cref="TargetStructure"/>.
     /// </summary>
     public float WorkToDeconstruct =>
-        WorkToDeconstructDef(def, targetStuff);
+        WorkToDeconstructDef(def, TargetStuff);
 
     /// <summary>
     /// Returns the sum of labor for deconstruction and construction.
@@ -314,14 +153,14 @@ public class ReplacementFrame : Frame
 
     /// <summary>
     /// Calculates the labor required to deconstruct a specific building definition, 
-    /// clamped by <see cref="MaxDeconstructWork"/> to prevent excessive replacement times.
+    /// clamped by <see cref="MAX_DECONSTRUCTION_WORK"/> to prevent excessive replacement times.
     /// </summary>
     public static float WorkToDeconstructDef(ThingDef def, ThingDef oldStuff = null)
     {
         var deWork = (def.entityDefToBuild as ThingDef ?? def)
             .GetStatValueAbstract(StatDefOf.WorkToBuild, oldStuff);
 
-        return Mathf.Min(deWork, MaxDeconstructWork);
+        return Mathf.Min(deWork, MAX_DECONSTRUCTION_WORK);
     }
 
     public int GetRequiredMaterialCount()
@@ -390,8 +229,8 @@ public class ReplacementFrame : Frame
     {
         base.ExposeData();
 
-        Scribe_References.Look(ref targetThing, "oldThing");
-        Scribe_Defs.Look(ref targetStuff, "oldStuff");
-        Scribe_Deep.Look(ref replaceData, "replaceData");
+        Scribe_References.Look(ref TargetThing, "oldThing");
+        Scribe_Defs.Look(ref TargetStuff, "oldStuff");
+        Scribe_Deep.Look(ref ReplaceData, "replaceData");
     }
 }
