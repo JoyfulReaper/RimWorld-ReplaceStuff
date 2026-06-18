@@ -11,6 +11,7 @@
  * Licensed under the MIT License.
  */
 
+using Replace_Stuff.PlaceBridges;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -54,7 +55,7 @@ namespace Replace_Stuff.Replace
             var map = thing.Map;
 
             //In case you're replacing with a stuff that needs a higher affordance that bridges can handle.
-            PlaceBridges.EnsureBridge.PlaceBridgeIfNeeded(thing.def, pos, map, rot, Faction.OfPlayer, stuffDef);
+            BridgeUtility.PlaceBridgeIfNeeded(thing.def, pos, map, rot, Faction.OfPlayer, stuffDef);
 
             // Validation has already confirmed that the target
             // material differs from the current one. At this
