@@ -227,7 +227,7 @@ public class Designator_ReplaceStuff : Designator
         }
         finally
         {
-            DesignatorContext.Enter();
+            DesignatorContext.Exit();
         }
     }
 

@@ -41,7 +41,8 @@ namespace Replace_Stuff.Compatibility
 
         internal static void AddInterchangeableList(List<ThingDef> items)
         {
-            if (items.Count < 2) return;
+            if (items.Count < 2)
+                return;
             ReplacementValidator.AddRule(ListContainsThingDef(new HashSet<ThingDef>(items)));
         }
 
