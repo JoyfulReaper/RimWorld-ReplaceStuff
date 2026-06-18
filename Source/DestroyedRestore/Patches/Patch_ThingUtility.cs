@@ -13,12 +13,10 @@
 
 
 using HarmonyLib;
-using Replace_Stuff.DestroyedRestore;
 using RimWorld;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 using Verse;
 
+namespace Replace_Stuff.DestroyedRestore.Patches;
 
 [HarmonyPatch(typeof(ThingUtility), nameof(ThingUtility.CheckAutoRebuildOnDestroyed))]
 static class Patch_ThingUtility
@@ -30,7 +28,7 @@ static class Patch_ThingUtility
         // Only run our logic if a blueprint was actually placed
         if (__result != null)
         {
-            DestroyedBuildingStore.SaveBuilding(thing, map);
+            ReplacementStateStore.SaveBuilding(thing, map);
         }
     }
 }

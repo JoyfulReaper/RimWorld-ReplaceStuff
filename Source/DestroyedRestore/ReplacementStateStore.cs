@@ -23,7 +23,7 @@ namespace Replace_Stuff.DestroyedRestore;
 /// Map component responsible for storing, serializing, and recovering metadata 
 /// from buildings that were destroyed and scheduled for automatic rebuilding.
 /// </summary>
-public class DestroyedBuildingStore : MapComponent
+public class ReplacementStateStore : MapComponent
 {
     /// <summary>
     /// Tracks captured building metadata, indexed by the cell coordinates where the destruction occurred.
@@ -32,10 +32,10 @@ public class DestroyedBuildingStore : MapComponent
     //Actually want this to be deep-ref since it's despawned!
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DestroyedBuildingStore"/> component for a specific map.
+    /// Initializes a new instance of the <see cref="ReplacementStateStore"/> component for a specific map.
     /// </summary>
     /// <param name="map">The map this component tracks.</param>
-    public DestroyedBuildingStore(Map map) : base(map)
+    public ReplacementStateStore(Map map) : base(map)
     {
         destroyedBuildings = new Dictionary<IntVec3, ReplaceData>();
     }
@@ -49,7 +49,7 @@ public class DestroyedBuildingStore : MapComponent
     public static void SaveBuilding(Thing thing, Map map)
     {
         var data = BuildingStateTransfer.Capture(thing, new HashSet<int>());
-        var comp = map.GetComponent<DestroyedBuildingStore>();
+        var comp = map.GetComponent<ReplacementStateStore>();
         comp.destroyedBuildings[thing.Position] = data;
         thing.ForceSetStateToUnspawned();
     }
@@ -62,7 +62,7 @@ public class DestroyedBuildingStore : MapComponent
     /// <param name="map">The map where revival is occurring.</param>
     public static void ReviveBuilding(Thing newBuilding, IntVec3 pos, Map map)
     {
-        var comp = map.GetComponent<DestroyedBuildingStore>();
+        var comp = map.GetComponent<ReplacementStateStore>();
 
         if (comp.destroyedBuildings.TryGetValue(pos, out ReplaceData data))
         {
@@ -78,7 +78,7 @@ public class DestroyedBuildingStore : MapComponent
     /// <param name="map">The map containing the cell.</param>
     public static void RemoveAt(IntVec3 pos, Map map)
     {
-        var comp = map.GetComponent<DestroyedBuildingStore>();
+        var comp = map.GetComponent<ReplacementStateStore>();
 
         if (comp.destroyedBuildings.Remove(pos))
         {
