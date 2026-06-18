@@ -20,14 +20,14 @@
 		<altitudeLayer>BuildingOnTop</altitudeLayer>
 		<passability>PassThroughOnly</passability>
 		<blockWind>false</blockWind>
-		<fillPercent>1</fillPercent>
+		<fillPercent>.6</fillPercent>
 		<passability>Impassable</passability>
 		<coversFloor>false</coversFloor>
 		<blockLight>false</blockLight>
 		<staticSunShadowHeight>.6</staticSunShadowHeight>
 		<building>
 			<canPlaceOverWall>true</canPlaceOverWall>
-			<isEdifice>true</isEdifice>
+			<isEdifice>false</isEdifice>
 			<canExchangeVacuum>false</canExchangeVacuum>
 			<isAirtight>true</isAirtight>
 		</building>
@@ -59,7 +59,7 @@
 		<building>
 			<canPlaceOverWall>false</canPlaceOverWall>
 			<canExchangeVacuum>true</canExchangeVacuum>
-			<isAirtight>true</isAirtight>
+			<isAirtight>false</isAirtight>
 		</building>
 		<designationHotKey>Misc7</designationHotKey>
 	</ThingDef>
