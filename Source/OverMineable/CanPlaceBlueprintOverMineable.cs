@@ -16,79 +16,78 @@ using Replace_Stuff.Replace.Patches;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.OverMineable
+namespace Replace_Stuff.OverMineable;
+
+static class RockCheck
 {
-    static class RockCheck
+    public static bool IsMineableRock(this Thing t) =>
+        IsMineableRock(t.def);
+
+    public static bool IsMineableRock(this ThingDef td)
     {
-        public static bool IsMineableRock(this Thing t) =>
-            IsMineableRock(t.def);
-
-        public static bool IsMineableRock(this ThingDef td)
-        {
-            return td.mineable && !td.IsSmoothed;
-        }
-
-        public static bool IsBlockingRock(this Thing t, Thing placedThing)
-            => IsBlockingRock(t.def, placedThing.def);
-
-        public static bool IsBlockingRock(this ThingDef td, BuildableDef placingDef)
-        {
-            //This checks ForceAllow, but not AllowsPlacing, since AllowsPlacing defaults to true, and PlaceWorks like ShowFacilites would be true.
-            return td.IsMineableRock() && !placingDef.ForceAllowPlaceOver(td);
-        }
+        return td.mineable && !td.IsSmoothed;
     }
 
-    [HarmonyPatch(typeof(GenConstruct), "CanPlaceBlueprintOver")]
-    class CanPlaceBlueprintOverMineable
+    public static bool IsBlockingRock(this Thing t, Thing placedThing)
+        => IsBlockingRock(t.def, placedThing.def);
+
+    public static bool IsBlockingRock(this ThingDef td, BuildableDef placingDef)
     {
-        //public static bool CanPlaceBlueprintOver(BuildableDef newDef, ThingDef oldDef)
-        public static void Postfix(BuildableDef newDef, ThingDef oldDef, ref bool __result)
-        {
-            if (!OverMineable.PlaySettings_BlueprintOverRockToggle.blueprintOverRock)
-                return;
-
-            if (!DesignatorContext.IsInBuildDesignation) return;
-
-            if (newDef.GetStatValueAbstract(StatDefOf.WorkToBuild) > 0f)
-                __result |= oldDef.IsMineableRock();
-        }
+        //This checks ForceAllow, but not AllowsPlacing, since AllowsPlacing defaults to true, and PlaceWorks like ShowFacilites would be true.
+        return td.IsMineableRock() && !placingDef.ForceAllowPlaceOver(td);
     }
+}
 
-    [DefOf]
-    public static class ConceptDefOf
+[HarmonyPatch(typeof(GenConstruct), "CanPlaceBlueprintOver")]
+class CanPlaceBlueprintOverMineable
+{
+    //public static bool CanPlaceBlueprintOver(BuildableDef newDef, ThingDef oldDef)
+    public static void Postfix(BuildableDef newDef, ThingDef oldDef, ref bool __result)
     {
-        public static ConceptDef BuildersTryMine;
+        if (!OverMineable.BluePrintUtility.IsEnabledBlueprintOverRock)
+            return;
+
+        if (!DesignatorContext.IsInBuildDesignation) return;
+
+        if (newDef.GetStatValueAbstract(StatDefOf.WorkToBuild) > 0f)
+            __result |= oldDef.IsMineableRock();
     }
+}
 
-    //TODO: This should technically go inside Designator_Build.DesignateSingleCell, but this is easier.
-    [HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.PlaceBlueprintForBuild))]
-    class InterceptBlueprintOverMinable
+[DefOf]
+public static class ConceptDefOf
+{
+    public static ConceptDef BuildersTryMine;
+}
+
+//TODO: This should technically go inside Designator_Build.DesignateSingleCell, but this is easier.
+[HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.PlaceBlueprintForBuild))]
+class InterceptBlueprintOverMinable
+{
+    //public static Blueprint_Build PlaceBlueprintForBuild(BuildableDef sourceDef, IntVec3 center, Map map, Rot4 rotation, Faction faction, ThingDef stuff)
+    public static void Prefix(BuildableDef sourceDef, IntVec3 center, Map map, Rot4 rotation, Faction faction)
     {
-        //public static Blueprint_Build PlaceBlueprintForBuild(BuildableDef sourceDef, IntVec3 center, Map map, Rot4 rotation, Faction faction, ThingDef stuff)
-        public static void Prefix(BuildableDef sourceDef, IntVec3 center, Map map, Rot4 rotation, Faction faction)
+        if (faction != Faction.OfPlayer)
+            return;
+
+        if (sourceDef is not ThingDef thingDef)
+            return;
+
+        foreach (IntVec3 cell in GenAdj.CellsOccupiedBy(center, rotation, sourceDef.Size))
         {
-            if (faction != Faction.OfPlayer)
-                return;
+            if (map.designationManager.DesignationAt(cell, DesignationDefOf.Mine) != null)
+                continue;
 
-            if (sourceDef is not ThingDef thingDef)
-                return;
-
-            foreach (IntVec3 cell in GenAdj.CellsOccupiedBy(center, rotation, sourceDef.Size))
+            var thingsAtCell = map.thingGrid.ThingsAt(cell);
+            foreach (Thing mineThing in thingsAtCell)
             {
-                if (map.designationManager.DesignationAt(cell, DesignationDefOf.Mine) != null)
-                    continue;
+                if (!mineThing.def.IsBlockingRock(sourceDef)) continue;
+                if (DontMineSmoothingRock.ToBeSmoothed(mineThing, thingDef)) continue;
 
-                var thingsAtCell = map.thingGrid.ThingsAt(cell);
-                foreach (Thing mineThing in thingsAtCell)
-                {
-                    if (!mineThing.def.IsBlockingRock(sourceDef)) continue;
-                    if (DontMineSmoothingRock.ToBeSmoothed(mineThing, thingDef)) continue;
+                map.designationManager.AddDesignation(new Designation(mineThing, DesignationDefOf.Mine));
 
-                    map.designationManager.AddDesignation(new Designation(mineThing, DesignationDefOf.Mine));
-
-                    if (mineThing.def.building?.mineableYieldWasteable ?? false)
-                        TutorUtility.DoModalDialogIfNotKnown(ConceptDefOf.BuildersTryMine);
-                }
+                if (mineThing.def.building?.mineableYieldWasteable ?? false)
+                    TutorUtility.DoModalDialogIfNotKnown(ConceptDefOf.BuildersTryMine);
             }
         }
     }
