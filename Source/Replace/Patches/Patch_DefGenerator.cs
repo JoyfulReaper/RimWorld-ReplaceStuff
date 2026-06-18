@@ -17,7 +17,7 @@ using RimWorld;
 namespace Replace_Stuff.Replace.Patches;
 
 [HarmonyPatch(typeof(DefGenerator), nameof(DefGenerator.GenerateImpliedDefs_PreResolve))]
-static class DefGenerator_GenerateImpliedDefs_PreResolve_Patch
+static class Patch_DefGenerator
 {
     static void Postfix()
     {

@@ -26,7 +26,7 @@ namespace Replace_Stuff.Replace.WallAttachments;
 /// another when the replacement rules allow it.
 /// </remarks>
 [HarmonyPatch(typeof(GenSpawn), nameof(GenSpawn.SpawningWipes))]
-public static class AttachmentsCanWipeReplacementTargets
+public static class Patch_GenSpawn
 {
     /// <summary>
     /// Marks compatible attachment replacements as valid wipe operations.

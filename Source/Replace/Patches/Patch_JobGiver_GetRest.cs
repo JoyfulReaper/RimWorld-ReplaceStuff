@@ -18,8 +18,8 @@ namespace Replace_Stuff.Replace.Patches;
 [HarmonyPatch(typeof(JobGiver_GetRest), "TryGiveJob")]
 public static class Patch_JobGiver_GetRest
 {
-    private static MethodInfo FindBedForInfo = AccessTools.Method(typeof(RestUtility), "FindBedFor", new Type[] { typeof(Pawn) });
-    private static MethodInfo NullifyReplacingBedInfo = AccessTools.Method(typeof(Patch_JobGiver_GetRest), nameof(Patch_JobGiver_GetRest.NullifyBed));
+    private static MethodInfo _findBedForInfo = AccessTools.Method(typeof(RestUtility), "FindBedFor", new Type[] { typeof(Pawn) });
+    private static MethodInfo _nullifyReplacingBedInfo = AccessTools.Method(typeof(Patch_JobGiver_GetRest), nameof(Patch_JobGiver_GetRest.NullifyBed));
 
     //protected override Job TryGiveJob(Pawn pawn)
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -28,12 +28,12 @@ public static class Patch_JobGiver_GetRest
         {
             yield return i;
 
-            if (i.Calls(FindBedForInfo))
+            if (i.Calls(_findBedForInfo))
             {
                 //Ideally filter out the bed in IsValidBedFor,
                 //but then FindBedFor would skip your owned bed, find another bed and claim it
                 //so this is simplest, just sleep on the ground for tonight if your bed is being worked on
-                yield return new CodeInstruction(OpCodes.Call, NullifyReplacingBedInfo);
+                yield return new CodeInstruction(OpCodes.Call, _nullifyReplacingBedInfo);
             }
         }
     }

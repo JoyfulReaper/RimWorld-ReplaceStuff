@@ -23,52 +23,35 @@ using Verse.AI;
 namespace Replace_Stuff.Replace.Patches;
 
 /// <summary>
-/// Patches <see cref="ReservationManager"/> so replacement frames and their
-/// underlying buildings share a single reservation target.
+/// Patches <see cref="ReservationManager"/> so replacement frames and
+/// the structures they replace are treated as the same reservation target.
 /// </summary>
 /// <remarks>
-/// <para>
-/// Replace Stuff allows a building to remain in place while a
-/// <see cref="ReplacementFrame"/> occupies the same location during
-/// construction. From the game's perspective these are two separate
-/// <see cref="Thing"/> instances.
-/// </para>
-/// <para>
-/// RimWorld's reservation system operates on individual Things. Without
-/// intervention, one pawn could reserve the replacement frame while
-/// another reserves the original building, causing inconsistent AI
-/// behaviour and job conflicts.
-/// </para>
-/// <para>
-/// Rather than patching individual reservation methods, this class
-/// automatically patches every <see cref="ReservationManager"/> method
-/// that accepts a <see cref="LocalTargetInfo"/> parameter. Whenever a
-/// reservation request targets a replacement frame, the target is
-/// redirected to the original building before vanilla reservation logic
-/// executes.
-/// </para>
-/// <para>
-/// This effectively makes replacement frames transparent to the
-/// reservation system while preserving vanilla reservation behaviour.
-/// </para>
+/// Replace Stuff allows a replacement frame to coexist with the original
+/// building during construction. Since RimWorld reserves individual
+/// <see cref="Thing"/> instances, pawns could otherwise reserve the frame
+/// and building independently, resulting in conflicting jobs.
+///
+/// This patch redirects reservation requests targeting replacement
+/// frames back to the original structure before vanilla reservation
+/// logic executes.
 /// </remarks>
 
 public static class Patch_ReservationManager
 {
     /// <summary>
-    /// Registers prefix patches for every ReservationManager method that
-    /// operates on a <see cref="LocalTargetInfo"/>.
+    /// Applies reservation-target redirection patches to
+    /// <see cref="ReservationManager"/> methods that operate on
+    /// <see cref="LocalTargetInfo"/>.
     /// </summary>
-    /// <remarks>
-    /// Generic ReservationManager methods cannot be patched directly.
-    /// Harmony requires a concrete generic instantiation, so
-    /// <see cref="JobDriver_TakeToBed"/> is used as an arbitrary
-    /// <see cref="JobDriver"/> specialization to construct a valid
-    /// runtime method for patching.
-    /// </remarks>
     /// <param name="harmony">
-    /// The Harmony instance responsible for applying the patches.
+    /// The Harmony instance used to apply the patches.
     /// </param>
+    /// <remarks>
+    /// Generic methods are patched using a concrete
+    /// <see cref="JobDriver"/> specialization because Harmony cannot
+    /// patch open generic methods directly.
+    /// </remarks>
     public static void Initialize(Harmony harmony)
     {
         // Generic ReservationManager methods cannot be patched directly.
@@ -94,20 +77,18 @@ public static class Patch_ReservationManager
 
 
     /// <summary>
-    /// Redirects reservation targets from replacement frames back to the
-    /// original building before ReservationManager performs its checks.
+    /// Redirects replacement-frame reservation targets to the structure
+    /// being replaced.
     /// </summary>
-    /// <remarks>
-    /// ReservationManager consistently passes the target through a
-    /// <see cref="LocalTargetInfo"/> parameter. By modifying that
-    /// parameter by reference, every patched reservation method
-    /// transparently operates on the original building instead of the
-    /// temporary replacement frame.
-    /// </remarks>
     /// <param name="target">
     /// The reservation target being evaluated.
     /// </param>
-
+    /// <remarks>
+    /// If the target is a <see cref="ReplacementFrame"/> or a replacement
+    /// frame created through the new-thing replacement system, the target
+    /// is replaced with the original structure before reservation checks
+    /// occur.
+    /// </remarks>
     // public bool CanReserve(Pawn claimant, LocalTargetInfo target, int maxPawns = 1, int stackCount = -1, ReservationLayerDef layer = null, bool ignoreOtherReservations = false)
     public static void Prefix(ref LocalTargetInfo target)
     {

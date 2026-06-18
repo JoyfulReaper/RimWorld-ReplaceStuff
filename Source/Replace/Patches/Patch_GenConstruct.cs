@@ -18,9 +18,6 @@ using Verse;
 
 namespace Replace_Stuff.Replace.Patches;
 
-
-// TODO We are also blocking the user from even placing a blueprint at the UI
-// Level so I think this or at least parts of this might not even be needed.
 [HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
 public static class GenConstruct_BlocksConstruction
 {
@@ -63,8 +60,8 @@ public static class GenConstruct_BlocksConstruction
         // Cooler/Wall
         if (__result)
         {
-            BuildableDef cDef = constructible.def.entityDefToBuild ?? constructible.def;
-            BuildableDef tDef = t.def.entityDefToBuild ?? t.def;
+            var cDef = constructible.def.entityDefToBuild ?? constructible.def;
+            var tDef = t.def.entityDefToBuild ?? t.def;
             if ((cDef.IsWall() && tDef.IsOverWall()) || (tDef.IsWall() && cDef.IsOverWall()))
             {
                 __result = false;
@@ -75,7 +72,7 @@ public static class GenConstruct_BlocksConstruction
         // Replacement
         if (constructible is Blueprint_Build bp)
         {
-            BuildableDef entDef = bp.def.entityDefToBuild;
+            var entDef = bp.def.entityDefToBuild;
             if (entDef == null) return;
 
             if (RimWorld.GenConstruct.CanReplace(entDef, t.def, bp.stuffToUse, t.Stuff))
@@ -110,7 +107,7 @@ public static class GenConstruct_CanPlaceBlueprintOnver
 }
 
 [HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.CanReplace))]
-public static class CanReplaceAnyStuff
+public static class GenConstruct_CanReplace
 {
     public static void Postfix(
         ref bool __result,

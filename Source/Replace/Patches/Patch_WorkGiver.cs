@@ -20,22 +20,31 @@ using Verse;
 namespace Replace_Stuff.Replace.Patches;
 
 /// <summary>
-/// Suppresses the dedicated blueprint deconstruction work giver introduced in RimWorld 1.6.
+/// Disables the dedicated blueprint deconstruction work giver introduced
+/// in RimWorld 1.6.
 /// </summary>
 /// <remarks>
-/// RimWorld 1.6 added a dedicated job via <see cref="WorkGiver_DeconstructForBlueprint"/> to handle 
-/// deconstruction before blueprint placement. However, because <see cref="WorkGiver_ConstructDeliverResourcesToBlueprints"/> 
-/// already naturally processes these requirements, this dedicated check introduces redundant scanning overhead.
-/// Short-circuiting this global look-up saves precious tick time in heavily populated or complex colony grids.
+/// RimWorld 1.6 added <see cref="WorkGiver_DeconstructForBlueprint"/> to
+/// generate deconstruction jobs for objects blocking blueprint placement.
+///
+/// This patch prevents the work giver from producing any work targets,
+/// allowing blueprint-related deconstruction to be handled through the
+/// existing construction workflow instead.
 /// </remarks>
 [HarmonyPatch(typeof(WorkGiver_DeconstructForBlueprint), nameof(WorkGiver_DeconstructForBlueprint.PotentialWorkThingsGlobal))]
 public static class Patch_WorkGiver
 {
     /// <summary>
-    /// Forces the global potential work pool to return empty, effectively disabling this specific work scanner.
+    /// Replaces the global work target list with an empty collection and
+    /// skips execution of the original method.
     /// </summary>
-    /// <param name="__result">The intercepted collection of potential target structures.</param>
-    /// <returns>Always returns <c>false</c> to entirely skip the vanilla global scanning logic.</returns>
+    /// <param name="__result">
+    /// Receives an empty sequence of potential work targets.
+    /// </param>
+    /// <returns>
+    /// <see langword="false"/> to prevent the original method from
+    /// executing.
+    /// </returns>
     // public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
     public static bool Prefix(ref IEnumerable<Thing> __result)
     {
