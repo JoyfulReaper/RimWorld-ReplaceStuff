@@ -18,8 +18,76 @@ using System.Collections.Generic;
 using System;
 using System.Reflection.Emit;
 using Replace_Stuff.Replace.Patches;
+using System.Reflection;
 
 namespace Replace_Stuff.OverMineable.Patches;
+
+//It did create a problem! Frames counting as edifices meant they blocked blueprints
+//So frames are edifices for blueprint consideration... that shouldn't create a problem, right?
+[HarmonyPatch(typeof(GenConstruct), "CanPlaceBlueprintOver")]
+public static class FramesAreEdificesInSomeCases
+{
+    //public static bool CanPlaceBlueprintOver(BuildableDef newDef, ThingDef oldDef)
+    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+    {
+        return Transpilers.MethodReplacer(instructions,
+            AccessTools.Method(typeof(EdificeUtility), "IsEdifice"),
+            AccessTools.Method(typeof(FramesAreEdificesInSomeCases), "IsEdificeOrFrame"));
+    }
+
+    public static bool IsEdificeOrFrame(BuildableDef def)
+    {
+        return def.IsEdifice() || (def is ThingDef thingDef && thingDef.IsFrame);
+    }
+}
+
+[HarmonyPatch(typeof(GenConstruct))]//, "CanPlaceBlueprintOver.IsEdificeOverNonEdifice")]
+public static class FramesAreEdificesInSomeCasesAndAlsoInTheCompilerGeneratedMethod
+{
+    public static MethodInfo TargetMethod() =>
+        // "IsEdificeOverNonEdifice" Isn't compiled away? Okay I'll use that
+        AccessTools.FirstMethod(typeof(GenConstruct), method => method.Name.Contains("IsEdificeOverNonEdifice"));
+
+    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) => 
+        FramesAreEdificesInSomeCases.Transpiler(instructions);
+}
+
+
+// In CanConstruct, skip FirstBlockingThing if it's just a haul job
+[HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.CanConstruct), [typeof(Thing), typeof(Pawn), typeof(bool), typeof(bool), typeof(JobDef)])]
+public static class Patch_GenConstruct_CanConstruct
+{
+    //public static bool CanConstruct(Thing t, Pawn p, bool checkSkills = true, bool forced = false, JobDef jobForReservation = null)
+    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+    {
+        //Replace
+        MethodInfo FirstBlockingThingInfo = AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.FirstBlockingThing));
+        //With
+        MethodInfo FirstBlockingThingNotHaulInfo = AccessTools.Method(typeof(Patch_GenConstruct_CanConstruct), nameof(FirstBlockingThingNotHaul));
+
+        foreach (var inst in instructions)
+        {
+            if(inst.Calls(FirstBlockingThingInfo))
+            {
+                //yield return new CodeInstruction(OpCodes.Ldarg_S, 4);//JobDef jobForReservation
+                yield return CodeInstruction.LoadArgument(4);
+                yield return new CodeInstruction(OpCodes.Call, FirstBlockingThingNotHaulInfo);//JobDef jobForReservation
+            }
+            else
+            //JobDef jobForReservation
+                yield return inst;
+        }
+    }
+    
+    //public static Thing FirstBlockingThing(Thing constructible, Pawn pawnToIgnore)
+    public static Thing FirstBlockingThingNotHaul(Thing constructible, Pawn pawnToIgnore, JobDef jobForReservation)
+    {
+        if (jobForReservation == JobDefOf.HaulToContainer)
+            return null;
+
+        return GenConstruct.FirstBlockingThing(constructible, pawnToIgnore);
+    }
+}
 
 
 //TODO: This should technically go inside Designator_Build.DesignateSingleCell, but this is easier.
