@@ -42,12 +42,7 @@ namespace Replace_Stuff.Compatibility
         internal static void AddInterchangeableList(List<ThingDef> items)
         {
             if (items.Count < 2) return;
-
-            ReplacementValidator.replacements.Add(
-                new ReplacementValidator.ReplacementRule(
-                    ListContainsThingDef(new HashSet<ThingDef>(items))
-                )
-            );
+            ReplacementValidator.AddRule(ListContainsThingDef(new HashSet<ThingDef>(items)));
         }
 
         static Predicate<ThingDef> ListContainsThingDef(HashSet<ThingDef> list) =>

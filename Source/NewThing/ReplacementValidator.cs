@@ -57,13 +57,13 @@ public static class FridgeCompat
 [StaticConstructorOnStartup]
 public static class ReplacementValidator
 {
-    public static List<ReplacementRule> replacements;
+    private static readonly List<ReplacementRule> _replacements = new();
 
     [Unsaved]
     private static readonly Dictionary<(ThingDef, ThingDef), bool> _replacementCache = new();
 
     [Unsaved]
-    private static readonly Dictionary<int, Thing> thingReplacementCache = new Dictionary<int, Thing>();
+    private static readonly Dictionary<int, Thing> _thingReplacementCache = new Dictionary<int, Thing>();
 
     /// <summary>
     /// Defines specific replacement matching behaviors for various building categories.
@@ -72,112 +72,45 @@ public static class ReplacementValidator
     /// State transfer logic (bills, temperatures, ownership) has been migrated to 
     /// the ReplacementPipeline and BuildingStateTransfer systems.
     /// </summary>
-    static ReplacementValidator()
+static ReplacementValidator()
     {
-        replacements = new List<ReplacementRule>();
+        // Walls/Fences
+        AddRule(d => d.IsWall() || (d.building?.isFence ?? false),
+                o => o.IsWall() || (o.building?.isFence ?? false));
 
-        // Only allow material replacement for buildings that actually need it
-        // Walls, Fences, and similar structural elements
-        replacements.Add(new ReplacementRule(
-            d => d.IsWall() || (d.building?.isFence ?? false),
-            o => o.IsWall() || (o.building?.isFence ?? false)
-        ));
+        // Doors
+        AddRule(d => d.IsWall() || typeof(Building_Door).IsAssignableFrom(d.thingClass));
 
-        //----------------------VALID REPLACEMENTS-----------------------
+        // Coolers
+        AddRule(d => typeof(Building_Cooler).IsAssignableFrom(d.thingClass));
 
-        // walls/fences/door
-        replacements.Add(new ReplacementRule(d => d.IsWall() ||
-            (d.building?.isPlaceOverableWall ?? false) ||
-            (d.building?.isFence ?? false) ||
-            typeof(Building_Door).IsAssignableFrom(d.thingClass)));
+        // Beds
+        AddRule(d => typeof(Building_Bed).IsAssignableFrom(d.thingClass) && d.GetStatValueAbstract(StatDefOf.WorkToBuild) > 0f);
 
-        // coolers
-        replacements.Add(new ReplacementRule(d => typeof(Building_Cooler).IsAssignableFrom(d.thingClass)));
-        //replacements.Add(new Replacement(d => typeof(Building_Cooler).IsAssignableFrom(d.thingClass),
-        //    postAction: (n, o) =>
-        //    {
-        //        Building_Cooler newCooler = n as Building_Cooler;
-        //        Building_Cooler oldCooler = o as Building_Cooler;
-        //        //newCooler.compPowerTrader.PowerOn = oldCooler.compPowerTrader.PowerOn;	//should be flickable
-        //        newCooler.compTempControl.targetTemperature = oldCooler.compTempControl.targetTemperature;
-        //    }
-        //    ));
-
-        // beds
-        static bool isBed(ThingDef d)
-        {
-            return typeof(Building_Bed).IsAssignableFrom(d.thingClass);
-
-        }
-        replacements.Add(new ReplacementRule(
-            d => isBed(d) && d.GetStatValueAbstract(StatDefOf.WorkToBuild) > 0f,
-            isBed
-        ));
-        //replacements.Add(new Replacement(
-        //    d => isBed(d) && d.GetStatValueAbstract(StatDefOf.WorkToBuild) > 0f,
-        //    isBed,
-        //    preAction: (n, o) =>
-        //    {
-        //        Building_Bed newBed = n as Building_Bed;
-        //        Building_Bed oldBed = o as Building_Bed;
-        //        newBed.ForPrisoners = oldBed.ForPrisoners;
-        //        newBed.Medical = oldBed.Medical;
-        //        oldBed.OwnersForReading.ListFullCopy().ForEach(p => p.ownership.ClaimBedIfNonMedical(newBed));
-        //    }
-        //    ));
-
-        // fences as a category (a mod)
+        // Fences
         DesignationCategoryDef fencesDef = DefDatabase<DesignationCategoryDef>.GetNamed("Fences", false);
         if (fencesDef != null)
-            replacements.Add(new ReplacementRule(d => d.designationCategory == fencesDef));
+            AddRule(d => d.designationCategory == fencesDef);
 
-        // Just tables.
-        replacements.Add(new ReplacementRule(d => d.IsTable));
+        // Tables
+        AddRule(d => d.IsTable);
 
-        // Fridges from a mod
-        replacements.Add(new ReplacementRule(d => d.thingClass == FridgeCompat.fridgeType));
-        //replacements.Add(new Replacement(d => d.thingClass == FridgeCompat.fridgeType,
-        //    postAction: (n, o) =>
-        //    {
-        //        FridgeCompat.DesiredTempInfo.SetValue(n, FridgeCompat.DesiredTempInfo.GetValue(o));
-        //    }));
+        // Fridges
+        AddRule(d => d.thingClass == FridgeCompat.fridgeType);
 
-        // Allow all "plant growable items" to replace each other, and when they do attempt to set the growing plant type
-        replacements.Add(new ReplacementRule(
-            building => typeof(IPlantToGrowSettable).IsAssignableFrom(building.thingClass)));
-        //replacements.Add(new Replacement(
-        //    building => typeof(IPlantToGrowSettable).IsAssignableFrom(building.thingClass),
-        //    postAction: (newItem, oldItem) =>
-        //    {
-        //        ((IPlantToGrowSettable)newItem).SetPlantDefToGrow(((IPlantToGrowSettable)oldItem).GetPlantDefToGrow());
-        //    }));
+        // Growers
+        AddRule(d => typeof(IPlantToGrowSettable).IsAssignableFrom(d.thingClass));
 
-        replacements.Add(new ReplacementRule(
-            building => typeof(Building_Battery).IsAssignableFrom(building.thingClass)));
+        // Power
+        AddRule(d => typeof(Building_Battery).IsAssignableFrom(d.thingClass));
+        AddRule(d => d.placeWorkers?.Any(w => w == typeof(PlaceWorker_WatermillGenerator)) ?? false);
+        AddRule(d => d.placeWorkers?.Any(w => w == typeof(PlaceWorker_WindTurbine)) ?? false);
+        AddRule(d => d.placeWorkers?.Any(w => w == typeof(PlaceWorker_OnSteamGeyser)) ?? false);
+    }
 
-        // We can use placeWorkers and comps to check what kind of power is being generated so that we don't have to worry
-        // about each item individually
-        replacements.Add(new ReplacementRule(
-            building => building.placeWorkers?.Any(placeWorker =>
-                placeWorker == typeof(PlaceWorker_WatermillGenerator)) ?? false));
-        replacements.Add(new ReplacementRule(
-            building => building.placeWorkers?.Any(placeWorker =>
-                placeWorker == typeof(PlaceWorker_WindTurbine)) ?? false));
-        replacements.Add(new ReplacementRule(
-            building => building.placeWorkers?.Any(placeWorker =>
-                placeWorker == typeof(PlaceWorker_OnSteamGeyser)) ?? false));
-
-        /* 1.6 added these as replaceTags (handled in CanReplace):
-			replacements.Add(new Replacement(d => d.building?.isSittable ?? false));
-
-			// Also requires PlaceWorker changes to match this
-			replacements.Add(new Replacement(d =>
-				(d.building?.isPowerConduit ?? false)
-				|| typeof(Building_PowerSwitch).IsAssignableFrom(d.thingClass),
-				o => o.building?.isPowerConduit ?? false));
-			*/
-
-        //---------------------------------------------
+    public static void AddRule(Predicate<ThingDef> newCheck, Predicate<ThingDef> oldCheck = null)
+    {
+        _replacements.Add(new ReplacementRule(newCheck, oldCheck ?? newCheck));
     }
 
     // Holds predicates and execution hooks
@@ -233,7 +166,7 @@ public static class ReplacementValidator
             Debugger.Break();
         }
 
-        foreach (var r in replacements)
+        foreach (var r in _replacements)
         {
             if (!r.Matches(newDef, oldDef))
                 continue;
@@ -246,72 +179,6 @@ public static class ReplacementValidator
         return false;
     }
 
-    //public static void FinalizeNewThingReplace(this Thing newThing, Thing oldThing)
-    //{
-    //    // TODO: We transfer bills in the replacement pipeleine now. Verify and remove code
-    //    //if (_replacementCache.TryGetValue((newThing.def, oldThing.def), out var result) && result)
-    //    //{
-    //    //    if (newThing is Building_WorkTable && oldThing is Building_WorkTable)
-    //    //    {
-    //    //        TransferBills(newThing, oldThing);
-    //    //    }
-    //    //    if (newThing is Building_Storage && oldThing is Building_Storage)
-    //    //    {
-    //    //        TransferStorageSettings(newThing, oldThing);
-    //    //    }
-    //    //}
-
-    //    // FIXME
-    //    for (int i = 0; i < replacements.Count; i++)
-    //    {
-    //        Replacement r = replacements[i];
-    //        if (r.Matches(newThing.def, oldThing.def))
-    //            r.Replace(newThing, oldThing);
-    //    }
-    //}
-
-    //public static void PreFinalizeNewThingReplace(this Thing newThing, Thing oldThing)
-    //{
-    //    // FIXME
-    //    for (int i = 0; i < replacements.Count; i++)
-    //    {
-    //        Replacement r = replacements[i];
-    //        if (r.Matches(newThing.def, oldThing.def))
-    //        {
-    //            r.PreReplace(newThing, oldThing);
-    //        }
-    //    }
-    //}
-
-    // TODO: Verify this is handled correctly in the
-    // replacement pipeline or storage engine now
-    //private static void TransferBills(Thing n, Thing o)
-    //{
-    //    if (n is Building_WorkTable newTable && o is Building_WorkTable oldTable)
-    //    {
-    //        foreach (Bill bill in oldTable.BillStack)
-    //        {
-    //            newTable.BillStack.AddBill(bill);
-    //        }
-    //    }
-    //}
-
-    // TODO: Verify this is handled correctly in the
-    // replacement pipeline or storage engine now
-    ///// <summary>
-    ///// Transfer Storage Settings between Things
-    ///// </summary>
-    ///// <param name="n">new store</param>
-    ///// <param name="o">old store</param>
-    //private static void TransferStorageSettings(Thing n, Thing o)
-    //{
-    //    if (n is not Building_Storage newStore || o is not Building_Storage oldStore)
-    //        return;
-
-    //    // Leverages vanilla's built-in event runner to execute after spawning loops finish
-    //    LongEventHandler.ExecuteWhenFinished(() => newStore.settings.CopyFrom(oldStore.settings));
-    //}
-
     public static bool TryFindTarget(this Thing newThing, out Thing oldThing)
     {
         oldThing = null;
@@ -321,13 +188,13 @@ public static class ReplacementValidator
 
         int thingID = newThing.thingIDNumber;
 
-        if (thingReplacementCache.TryGetValue(thingID, out oldThing))
+        if (_thingReplacementCache.TryGetValue(thingID, out oldThing))
             return oldThing != null && !oldThing.Destroyed;
 
-        if (thingReplacementCache.Count > 500)
-            thingReplacementCache.Clear();
+        if (_thingReplacementCache.Count > 500)
+            _thingReplacementCache.Clear();
 
-        bool result = newThing.def.IsNewThingReplacement(newThing.Position, newThing.Rotation, newThing.Map, out oldThing);
+        bool result = newThing.def.TryFindTarget(newThing.Position, newThing.Rotation, newThing.Map, out oldThing);
         if (result && oldThing != null)
         {
             if (newThing.def == oldThing.def && newThing.Stuff == oldThing.Stuff)
@@ -337,12 +204,12 @@ public static class ReplacementValidator
             }
         }
 
-        thingReplacementCache[thingID] = result ? oldThing : null;
+        _thingReplacementCache[thingID] = result ? oldThing : null;
 
         return result;
     }
 
-    public static bool IsNewThingReplacement(this ThingDef newDef, IntVec3 pos, Rot4 rotation, Map map, out Thing oldThing)
+    public static bool TryFindTarget(this ThingDef newDef, IntVec3 pos, Rot4 rotation, Map map, out Thing oldThing)
     {
         if (map == null)
         {

@@ -44,7 +44,7 @@ public static class OverrideInteractionSpotOverlap_Main
 
         if (entDef is ThingDef newDef)
         {
-            bool isReplacement = newDef.IsNewThingReplacement(center, rot, map, out Thing foundThing);
+            bool isReplacement = newDef.TryFindTarget(center, rot, map, out Thing foundThing);
 
             if (isReplacement)
             {
