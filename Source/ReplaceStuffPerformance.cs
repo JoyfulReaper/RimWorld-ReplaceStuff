@@ -11,6 +11,8 @@
  * Licensed under the MIT License.
  */
 
+// TODO: Verify accesibility. I think a lot of things are public still that should be internal.
+
 using HarmonyLib;
 using Replace_Stuff.Compatibility;
 using Replace_Stuff.Replace;

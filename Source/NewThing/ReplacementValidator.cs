@@ -63,7 +63,12 @@ public static class ReplacementValidator
     private static readonly Dictionary<(ThingDef, ThingDef), bool> _replacementCache = new();
 
     [Unsaved]
-    private static readonly Dictionary<int, Thing> _thingReplacementCache = new Dictionary<int, Thing>();
+    private static readonly Dictionary<int, System.WeakReference<Thing>> _thingReplacementCache = new();
+
+    [Unsaved]
+    private static readonly Queue<int> _cacheOrder = new();
+
+    private const int MAX_CACHE_SIZE = 500;
 
     /// <summary>
     /// Defines specific replacement matching behaviors for various building categories.
@@ -72,7 +77,7 @@ public static class ReplacementValidator
     /// State transfer logic (bills, temperatures, ownership) has been migrated to 
     /// the ReplacementPipeline and BuildingStateTransfer systems.
     /// </summary>
-static ReplacementValidator()
+    static ReplacementValidator()
     {
         // Walls/Fences
         AddRule(d => d.IsWall() || (d.building?.isFence ?? false),
@@ -186,25 +191,41 @@ static ReplacementValidator()
         if (!newThing.Spawned)
             return false;
 
-        int thingID = newThing.thingIDNumber;
+        var thingID = newThing.thingIDNumber;
 
-        if (_thingReplacementCache.TryGetValue(thingID, out oldThing))
-            return oldThing != null && !oldThing.Destroyed;
+        if (_thingReplacementCache.TryGetValue(thingID, out var weakRef))
+        {
+            // Check if the cached thing is valid
+            if (weakRef.TryGetTarget(out oldThing) && !oldThing.Destroyed)
+                return true;
 
-        if (_thingReplacementCache.Count > 500)
-            _thingReplacementCache.Clear();
+            // If it was destroyed/null, clean it up
+            _thingReplacementCache.Remove(thingID);
+        }
 
-        bool result = newThing.def.TryFindTarget(newThing.Position, newThing.Rotation, newThing.Map, out oldThing);
+        // Perform the expensive search
+        var result = newThing.def.TryFindTarget(newThing.Position, newThing.Rotation, newThing.Map, out oldThing);
+
+        // Only cache positive results
         if (result && oldThing != null)
         {
+            // Don't cache identical replacements
             if (newThing.def == oldThing.def && newThing.Stuff == oldThing.Stuff)
             {
                 oldThing = null;
-                result = false;
+                return false;
             }
-        }
 
-        _thingReplacementCache[thingID] = result ? oldThing : null;
+            // Cache Management: Evict oldest if full
+            if (_thingReplacementCache.Count >= MAX_CACHE_SIZE)
+            {
+                int oldestID = _cacheOrder.Dequeue();
+                _thingReplacementCache.Remove(oldestID);
+            }
+
+            _thingReplacementCache[thingID] = new System.WeakReference<Thing>(oldThing);
+            _cacheOrder.Enqueue(thingID);
+        }
 
         return result;
     }

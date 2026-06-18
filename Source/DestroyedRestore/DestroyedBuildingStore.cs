@@ -19,7 +19,6 @@ using Verse;
 
 namespace Replace_Stuff.DestroyedRestore;
 
-
 /// <summary>
 /// Map component responsible for storing, serializing, and recovering metadata 
 /// from buildings that were destroyed and scheduled for automatic rebuilding.
@@ -31,7 +30,6 @@ public class DestroyedBuildingStore : MapComponent
     /// </summary>
     public Dictionary<IntVec3, ReplaceData> destroyedBuildings;
     //Actually want this to be deep-ref since it's despawned!
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DestroyedBuildingStore"/> component for a specific map.
