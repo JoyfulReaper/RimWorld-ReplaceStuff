@@ -1,18 +1,32 @@
-﻿using System;
+﻿/*
+ * REPLACE STUFF: Performance Edition
+ * 
+ * 
+ * Part of this code is based on Replace Stuff
+ * Copyright (c) 2025 Alex Tearse-Doyle
+ * Licensed under the MIT License.
+ *
+ * Modified by Kyle Givler
+ * Copyright (c) 2026 Kyle Givler
+ * Licensed under the MIT License.
+ */
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Linq;
 using HarmonyLib;
 using RimWorld;
 using Verse;
+using Replace_Stuff.Utilities;
 
 namespace Replace_Stuff.CoolersOverWalls
 {
 	[HarmonyPatch]
-	static class WideVentLocationGhost
+	static class Patch_DrawGhost
 	{
+		private static readonly MethodInfo ExpandCoordinatesInfo = AccessTools.Method(typeof(Patch_DrawGhost), nameof(ExpandCoordinates));
+
 		static IEnumerable<MethodBase> TargetMethods()
 		{
 			yield return AccessTools.Method(typeof(PlaceWorker_Cooler), nameof(PlaceWorker_Cooler.DrawGhost));
@@ -21,21 +35,29 @@ namespace Replace_Stuff.CoolersOverWalls
 
 		public static IEnumerable<CodeInstruction> TranspileNorthWith(IEnumerable<CodeInstruction> instructions, OpCode paramCode)
 		{
+			var codes = instructions.ToList();
 			FieldInfo NorthInfo = AccessTools.Field(typeof(IntVec3), nameof(IntVec3.North));
-
-			MethodInfo DoubleItInfo = AccessTools.Method(typeof(WideVentLocationGhost), nameof(WideVentLocationGhost.DoubleIt));
-
-			foreach (CodeInstruction i in instructions)
+			
+			var found = false;
+			foreach (CodeInstruction i in codes)
 			{
-				yield return i;
-				//IL_0019: call         valuetype Verse.IntVec3 Verse.IntVec3::get_North()
 				if (i.LoadsField(NorthInfo))
 				{
-					yield return new CodeInstruction(paramCode);//def or thing
-					yield return new CodeInstruction(OpCodes.Call, DoubleItInfo);
+					found = true;
+					yield return i; // Load North
+					yield return new CodeInstruction(paramCode); // Load def
+					yield return new CodeInstruction(OpCodes.Call, ExpandCoordinatesInfo);
+				}
+				else
+				{
+					yield return i;
 				}
 			}
-		}
+			if (!found)
+			{
+				RSLog.Error("Failed to patch DrawGhost: IntVec3.North not found!");
+			}
+}
 		
 		//public override void DrawGhost(ThingDef def, IntVec3 center, Rot4 rot, Color ghostCol)
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -43,7 +65,7 @@ namespace Replace_Stuff.CoolersOverWalls
 			return TranspileNorthWith(instructions, OpCodes.Ldarg_1);
 		}
 
-		public static IntVec3 DoubleIt(IntVec3 v, object o)
+		public static IntVec3 ExpandCoordinates(IntVec3 v, object o)
 		{
 			ThingDef thingDef = o as ThingDef ?? (o as Thing)?.def;
 
@@ -58,21 +80,12 @@ namespace Replace_Stuff.CoolersOverWalls
 	}
 
 	[HarmonyPatch(typeof(Building_Cooler), "TickRare")]
-	static class WideVentLocationTemp
+	static class Patch_Building_Cooler
 	{
 		//public override void TickRare()
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
 		{
-			return WideVentLocationGhost.TranspileNorthWith(instructions, OpCodes.Ldarg_0);
-		}
-	}
-
-	[HarmonyPatch(typeof(Designator_Dropdown), MethodType.Constructor)]
-	static class DropdownInOrder
-	{
-		public static void Postfix(Designator_Dropdown __instance)
-		{
-			__instance.Order = 20f;
+			return Patch_DrawGhost.TranspileNorthWith(instructions, OpCodes.Ldarg_0);
 		}
 	}
 }

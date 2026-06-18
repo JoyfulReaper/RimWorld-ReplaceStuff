@@ -12,6 +12,7 @@
  */
 
 using HarmonyLib;
+using Replace_Stuff.CoolersOverWalls;
 using RimWorld;
 using System;
 using System.Collections.Generic;

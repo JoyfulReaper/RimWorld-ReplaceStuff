@@ -17,6 +17,7 @@ using HarmonyLib;
 using Replace_Stuff.Compatibility;
 using Replace_Stuff.Replace;
 using Replace_Stuff.Replace.Patches;
+using Replace_Stuff.CoolersOverWalls;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -52,7 +53,7 @@ public class ReplaceStuffPerformance : Verse.Mod
         static ModStartup()
         {
             ReplacementFrameDefRegistrar.Register();
-            CoolersOverWalls.DesignatorBuildDropdownStuffFix.SanityCheck();
+            DesignationMenuFixer.SanityCheck(); // TODO UPDATE REF
             ReplacementLoader.AddRulesFromXML();
             Patch_ReservationManager.Initialize(_harmony);
 

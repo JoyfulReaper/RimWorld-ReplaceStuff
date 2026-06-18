@@ -12,6 +12,7 @@
  */
 
 using HarmonyLib;
+using Replace_Stuff.CoolersOverWalls;
 using Replace_Stuff.OverMineable;
 using RimWorld;
 using Verse;
