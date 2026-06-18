@@ -20,8 +20,6 @@ namespace Replace_Stuff.Interfaces;
 /// actions during the replacement process, such as transferring
 /// storage contents or preserving custom data.
 /// </summary>
-
-// Better name than IReplacementComp
 public interface IReplacementHandler
 {
     // Runs before old thing is destroyed
