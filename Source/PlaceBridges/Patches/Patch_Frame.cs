@@ -23,6 +23,6 @@ public static class CancelFrame
     //publicpublic override void Destroy(DestroyMode mode = DestroyMode.Vanish)
     public static void Prefix(Frame __instance, DestroyMode mode)
     {
-        CancelAboveBridges.CancelAbove(__instance.def.entityDefToBuild, mode, __instance.Map, __instance.Position);
+        BridgeConflictUtility.HandleBlueprintConflict(__instance.def.entityDefToBuild, mode, __instance.Map, __instance.Position);
     }
 }

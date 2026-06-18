@@ -23,6 +23,6 @@ public static class CancelBlueprint
     //public override void DeSpawn(DestroyMode mode = DestroyMode.Vanish)
     public static void Prefix(Blueprint __instance, DestroyMode mode)
     {
-        CancelAboveBridges.CancelAbove(__instance.def.entityDefToBuild, mode, __instance.Map, __instance.Position);
+        BridgeConflictUtility.HandleBlueprintConflict(__instance.def.entityDefToBuild, mode, __instance.Map, __instance.Position);
     }
 }

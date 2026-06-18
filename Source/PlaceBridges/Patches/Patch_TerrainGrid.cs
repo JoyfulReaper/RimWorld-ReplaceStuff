@@ -23,6 +23,6 @@ public static class DestroyedTerrain
     //public void RemoveTopLayer(IntVec3 c, bool doLeavings = true)
     public static void Prefix(TerrainGrid __instance, IntVec3 c, Map ___map)
     {
-        CancelAboveBridges.CancelAbove(__instance.TerrainAt(c), DestroyMode.KillFinalize, ___map, c);
+        BridgeConflictUtility.HandleBlueprintConflict(__instance.TerrainAt(c), DestroyMode.KillFinalize, ___map, c);
     }
 }
