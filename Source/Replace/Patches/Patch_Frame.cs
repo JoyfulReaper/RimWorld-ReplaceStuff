@@ -11,12 +11,11 @@
 
 using HarmonyLib;
 using Replace_Stuff.Replace;
-using Replace_Stuff.PlaceBridges;
 using RimWorld;
 using System.Collections.Generic;
 using Verse;
 
-namespace Replace_Stuff.Patches;
+namespace Replace_Stuff.Replace.Patches;
 
 /// <summary>
 /// Intercepts requests for material costs to ensure the game uses 
@@ -40,6 +39,9 @@ internal static class Frame_TotalMaterialCost_Patch
 /// Redirects construction completion to <see cref="ReplacementFrame.BeginConstruction"/>,
 /// handling the destruction of the old object and spawning of the new one.
 /// </summary>
+/// <remarks>
+/// If you are tracing the replacement pipeline flow, here is a good place to start tracing execution.
+/// </remarks>
 [HarmonyPatch(typeof(Frame), nameof(Frame.CompleteConstruction))]
 internal static class Frame_CompleteConstruction_Patch
 {
