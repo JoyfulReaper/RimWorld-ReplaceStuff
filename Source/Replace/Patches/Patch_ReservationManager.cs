@@ -97,7 +97,7 @@ public static class Patch_ReservationManager
 
         if (target.Thing is ReplacementFrame replaceFrame)
             target = replaceFrame.TargetThing;
-        else if (target.Thing is Frame frame && frame.IsNewThingReplacement(out Thing oldThing))
+        else if (target.Thing is Frame frame && frame.TryFindTarget(out Thing oldThing))
             target = oldThing;
     }
 }

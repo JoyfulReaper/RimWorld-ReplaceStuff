@@ -15,7 +15,6 @@ using Replace_Stuff.Interfaces;
 using Replace_Stuff.NewThing;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Verse;
 
 namespace Replace_Stuff.Compatibility
@@ -35,32 +34,18 @@ namespace Replace_Stuff.Compatibility
 
         internal static void AddInterchangeableItems(ReplaceList items)
         {
-            List<string> comps = new();
-
-            if (items.comps.Any())
-            {
-                comps.AddRange(items.comps
-                    .Where(compName => _handlerRegistry.ContainsKey(compName))
-                );
-            }
-
-            AddInterchangeableList(
-                items.items,
-                preAction: (newThing, oldThing) => { comps.ForEach(comp => _handlerRegistry[comp].PreAction(newThing, oldThing)); },
-                postAction: (newThing, oldThing) => { comps.ForEach(comp => _handlerRegistry[comp].PostAction(newThing, oldThing)); }
-            );
+            // The pipeline now handles state transfer execution. 
+            // Here, we strictly register the validation rule for the UI/Blueprints.
+            AddInterchangeableList(items.items);
         }
 
-        internal static void AddInterchangeableList(List<ThingDef> items, Action<Thing, Thing> preAction = null,
-            Action<Thing, Thing> postAction = null)
+        internal static void AddInterchangeableList(List<ThingDef> items)
         {
             if (items.Count < 2) return;
 
-            NewThingReplacement.replacements.Add(
-                new NewThingReplacement.Replacement(
-                    ListContainsThingDef(new HashSet<ThingDef>(items)),
-                    preAction: preAction,
-                    postAction: postAction
+            ReplacementValidator.replacements.Add(
+                new ReplacementValidator.ReplacementRule(
+                    ListContainsThingDef(new HashSet<ThingDef>(items))
                 )
             );
         }

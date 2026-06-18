@@ -1,4 +1,4 @@
-﻿/*
+/*
  * REPLACE STUFF: Performance Edition
  * 
  * 
@@ -13,27 +13,16 @@
 
 
 using HarmonyLib;
-using RimWorld;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
 
-namespace Replace_Stuff.NewThing;
-
-[HarmonyPatch(typeof(Frame), "CompleteConstruction")]
-//public void CompleteConstruction(Pawn worker)
-public static class RememberWasNewThing
-{
-    public static void Prefix(Frame __instance)
-    {
-        RefundDeconstruct.IsReplacementInProgress = __instance.IsNewThingReplacement(out Thing replacement);
-    }
-}
+namespace Replace_Stuff.NewThing.Patches;
 
 [HarmonyPatch(typeof(GenSpawn), nameof(GenSpawn.Refund))]
 //public static void Refund(Thing thing, Map map, CellRect avoidThisRect)
-public static class RefundDeconstruct
+public static class Patch_GenSpawn
 {
     public static bool IsReplacementInProgress = false;
 
@@ -45,9 +34,8 @@ public static class RefundDeconstruct
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         MethodInfo MinifiableInfo = AccessTools.Property(typeof(ThingDef), "Minifiable").GetGetMethod();
-
-        MethodInfo DecideDestroyModeInfo = AccessTools.Method(typeof(RefundDeconstruct), nameof(RefundDeconstruct.DecideDestroyMode));
-        MethodInfo NevermindAboutMinifiableInfo = AccessTools.Method(typeof(RefundDeconstruct), nameof(RefundDeconstruct.NevermindAboutMinifiable));
+        MethodInfo DecideDestroyModeInfo = AccessTools.Method(typeof(Patch_GenSpawn), nameof(Patch_GenSpawn.DecideDestroyMode));
+        MethodInfo NevermindAboutMinifiableInfo = AccessTools.Method(typeof(Patch_GenSpawn), nameof(Patch_GenSpawn.NevermindAboutMinifiable));
 
         foreach (CodeInstruction i in instructions)
         {
