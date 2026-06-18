@@ -16,7 +16,7 @@ using Replace_Stuff.NewThing;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.Replace.WallAttachments;
+namespace Replace_Stuff.Replace.Patches.WallAttachments;
 
 /// <summary>
 /// Allows wall-mounted buildings to be replaced in-place.

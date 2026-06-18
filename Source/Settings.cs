@@ -48,7 +48,7 @@ public class Settings : ModSettings
         listing.CheckboxLabeled("TD.SettingsNoNormalCoolers".Translate(), ref hideNormalCoolers);
 
         // Can't re-order a list if there is only one item
-        if (BridgelikeTerrain.allBridgeTerrains.Count > 1)
+        if (BridgelikeTerrain.AllBridgeTerrains.Count > 1)
             DoBridgeList(listing);
 
         listing.End();
@@ -69,9 +69,9 @@ public class Settings : ModSettings
 
         const float rowHeight = 28f;
 
-        for (int i = 0; i < BridgelikeTerrain.allBridgeTerrains.Count; i++)
+        for (int i = 0; i < BridgelikeTerrain.AllBridgeTerrains.Count; i++)
         {
-            var bridge = BridgelikeTerrain.allBridgeTerrains[i];
+            var bridge = BridgelikeTerrain.AllBridgeTerrains[i];
 
             var row = options.GetRect(rowHeight);
 
@@ -85,19 +85,19 @@ public class Settings : ModSettings
             GUI.enabled = i > 0;
             if (Widgets.ButtonText(upRect, "▲"))
             {
-                var temp = BridgelikeTerrain.allBridgeTerrains[i - 1];
-                BridgelikeTerrain.allBridgeTerrains[i - 1] = bridge;
-                BridgelikeTerrain.allBridgeTerrains[i] = temp;
+                var temp = BridgelikeTerrain.AllBridgeTerrains[i - 1];
+                BridgelikeTerrain.AllBridgeTerrains[i - 1] = bridge;
+                BridgelikeTerrain.AllBridgeTerrains[i] = temp;
                 break;
             }
 
             // Down button always occupies the right slot.
-            GUI.enabled = i < BridgelikeTerrain.allBridgeTerrains.Count - 1;
+            GUI.enabled = i < BridgelikeTerrain.AllBridgeTerrains.Count - 1;
             if (Widgets.ButtonText(downRect, "▼"))
             {
-                var temp = BridgelikeTerrain.allBridgeTerrains[i + 1];
-                BridgelikeTerrain.allBridgeTerrains[i + 1] = bridge;
-                BridgelikeTerrain.allBridgeTerrains[i] = temp;
+                var temp = BridgelikeTerrain.AllBridgeTerrains[i + 1];
+                BridgelikeTerrain.AllBridgeTerrains[i + 1] = bridge;
+                BridgelikeTerrain.AllBridgeTerrains[i] = temp;
                 break;
             }
 
@@ -118,7 +118,7 @@ public class Settings : ModSettings
         if (Scribe.mode == LoadSaveMode.Saving)
         {
             _preferredBridgeOrder =
-                BridgelikeTerrain.allBridgeTerrains
+                BridgelikeTerrain.AllBridgeTerrains
                 .ConvertAll(x => x.defName);
         }
 
@@ -142,10 +142,10 @@ public class Settings : ModSettings
             if (def is null)
                 continue;
 
-            if (!BridgelikeTerrain.allBridgeTerrains.Remove(def))
+            if (!BridgelikeTerrain.AllBridgeTerrains.Remove(def))
                 continue;
 
-            BridgelikeTerrain.allBridgeTerrains.Insert(0, def);
+            BridgelikeTerrain.AllBridgeTerrains.Insert(0, def);
         }
     }
 }

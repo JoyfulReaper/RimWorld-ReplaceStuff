@@ -16,7 +16,7 @@ using RimWorld;
 using System.Collections.Generic;
 using Verse;
 
-namespace Replace_Stuff.Replace.WallAttachments;
+namespace Replace_Stuff.Replace.Patches.WallAttachments;
 
 [HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.GetWallAttachedTo), [typeof(IntVec3), typeof(Rot4), typeof(Map)])]
 public static class Patch_GenConstruct_GetWallAttachedTo

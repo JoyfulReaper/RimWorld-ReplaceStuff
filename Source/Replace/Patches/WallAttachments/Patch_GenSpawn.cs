@@ -15,7 +15,7 @@ using HarmonyLib;
 using Replace_Stuff.NewThing;
 using Verse;
 
-namespace Replace_Stuff.Replace.WallAttachments;
+namespace Replace_Stuff.Replace.Patches.WallAttachments;
 
 /// <summary>
 /// Allows compatible wall attachments to wipe their replacement targets.

@@ -13,8 +13,9 @@ namespace Replace_Stuff.PlaceBridges
 	{
 		//If you have TerrainDef and need Affordance, you can build bridge from from TerrainDefs to get that affordance
 		//TODO: group terrains by affordances. eg different water types all have the same set of bridges that would work but are all handled separately
-		private static Dictionary<(TerrainDef, TerrainAffordanceDef), HashSet<TerrainDef>> bridgesForTerrain;
-		public static List<TerrainDef> allBridgeTerrains;
+		private static Dictionary<(TerrainDef, TerrainAffordanceDef), HashSet<TerrainDef>> _bridgesForTerrain;
+
+		public static List<TerrainDef> AllBridgeTerrains;
 
 		private static bool IsFloorBase(this TerrainDef def)
 		{
@@ -69,8 +70,8 @@ namespace Replace_Stuff.PlaceBridges
 				}
 			}
 
-			bridgesForTerrain = new Dictionary<(TerrainDef, TerrainAffordanceDef), HashSet<TerrainDef>>();
-			allBridgeTerrains = new List<TerrainDef>();
+			_bridgesForTerrain = new Dictionary<(TerrainDef, TerrainAffordanceDef), HashSet<TerrainDef>>();
+			AllBridgeTerrains = new List<TerrainDef>();
 
 			//Check for Affordances are actually neeeded by any buildind
 			HashSet<TerrainAffordanceDef> actuallyRequiredAffordances = new HashSet<TerrainAffordanceDef>();
@@ -81,7 +82,7 @@ namespace Replace_Stuff.PlaceBridges
 					actuallyRequiredAffordances.Add(aff);
 			}
 
-			//Log.Message($"All affordances: {DefDatabase<TerrainAffordanceDef>.AllDefs.ToStringSafeEnumerable()}");
+			//RSLog.Debug($"All affordances: {DefDatabase<TerrainAffordanceDef>.AllDefs.ToStringSafeEnumerable()}");
 			RSLog.Debug($"Affordances worth bridging: {actuallyRequiredAffordances.ToStringSafeEnumerable()}");
 
 			foreach (TerrainAffordanceDef needDef in actuallyRequiredAffordances)
@@ -97,10 +98,10 @@ namespace Replace_Stuff.PlaceBridges
 					{
 						if (affordanceBridges.TryGetValue((affDef, needDef), out List<TerrainDef> bridgeTerrains))
 						{
-							if (possibleBridges == null && !bridgesForTerrain.TryGetValue((terDef, needDef), out possibleBridges))
+							if (possibleBridges == null && !_bridgesForTerrain.TryGetValue((terDef, needDef), out possibleBridges))
 							{
 								possibleBridges = new HashSet<TerrainDef>();
-								bridgesForTerrain[(terDef, needDef)] = possibleBridges;
+								_bridgesForTerrain[(terDef, needDef)] = possibleBridges;
 							}
 							//Log.Message($"Adding {terDef} => {bridgeTerrains.ToStringSafeEnumerable()} for {affDef} => {needDef}");
 							if(ModsConfig.OdysseyActive)
@@ -110,40 +111,42 @@ namespace Replace_Stuff.PlaceBridges
 					}
 					if (possibleBridges != null)
 					{
-						allBridgeTerrains.AddRange(possibleBridges);
+						AllBridgeTerrains.AddRange(possibleBridges);
 					}
 					//else
 						//Log.Message($"There is no bridge for {terDef} => {needDef}");
 				}
 			}
-			allBridgeTerrains.RemoveDuplicates();
-			RSLog.Debug($"Bridges: {allBridgeTerrains.ToStringSafeEnumerable()}");
+			AllBridgeTerrains.RemoveDuplicates();
+			RSLog.Debug($"Bridges: {AllBridgeTerrains.ToStringSafeEnumerable()}");
 		}
 
-		public static bool IsBridgelike(this BuildableDef tdef) => allBridgeTerrains.Contains(tdef);
+		public static bool IsBridgelike(this BuildableDef tdef) =>
+		 AllBridgeTerrains.Contains(tdef);
 
 		public static TerrainDef FindBridgeFor(TerrainDef tDef, TerrainAffordanceDef needed, Map map)
 		{
 			TerrainDef bestBridge = null;
 			TerrainDef backupBridge = null;
-			if (bridgesForTerrain.TryGetValue((tDef, needed), out var bridges))
+			if (_bridgesForTerrain.TryGetValue((tDef, needed), out var bridges))
 			{
-				foreach (TerrainDef bridge in allBridgeTerrains.Where(x => x.IsResearchFinished))
+				foreach (TerrainDef bridge in AllBridgeTerrains.Where(x => x.IsResearchFinished))
 					if (bridges.Contains(bridge))
 					{
-						if (backupBridge == null) backupBridge = bridge;  //First possible option
+						if (backupBridge is null) 
+							backupBridge = bridge;  //First possible option
 
 						ThingDefCount cost = bridge.CostList?.FirstOrDefault();
-						if (cost.ThingDef == null) //Free bridge? Okay. Or some mod's error. Not my fault.
+						if (cost.ThingDef is null) //Free bridge? Okay. Or some mod's error. Not my fault.
 							return bridge;
 
 						int resourceCount = map.resourceCounter.GetCount(cost.ThingDef);
 
 						if (resourceCount > cost.Count * 10)
-							return bridge;//Plently. Use this.
+							return bridge; //Plently. Use this.
 
 						if (resourceCount > 0)
-							bestBridge = bridge;//Not enough but at least this will work.
+							bestBridge = bridge; //Not enough but at least this will work.
 					}
 			}
 			return bestBridge ?? backupBridge;
@@ -154,8 +157,8 @@ namespace Replace_Stuff.PlaceBridges
 		{
 			if (terIndex == newIndex)	return;
 
-			allBridgeTerrains.Insert(newIndex, allBridgeTerrains[terIndex]);
-			allBridgeTerrains.RemoveAt((terIndex < newIndex) ? terIndex : (terIndex + 1));
+			AllBridgeTerrains.Insert(newIndex, AllBridgeTerrains[terIndex]);
+			AllBridgeTerrains.RemoveAt((terIndex < newIndex) ? terIndex : (terIndex + 1));
 		}
 	}
 }
