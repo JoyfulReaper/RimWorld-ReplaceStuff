@@ -11,10 +11,6 @@
  * Licensed under the MIT License.
  */
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
 using RimWorld;
 using Verse;
 using HarmonyLib;
@@ -30,5 +26,16 @@ public static class FramesArentEdifices
     public static void Postfix(ThingDef __result)
     {
         __result.building.isEdifice = false;
+    }
+}
+
+//Can't do BaseBlueprintDef since NewBlueprintDef_Thing overwrites drawerType
+[HarmonyPatch(typeof(ThingDefGenerator_Buildings), "NewBlueprintDef_Thing")]
+public static class RenderBlueprintOverFog
+{
+    public static void Postfix(ThingDef __result)
+    {
+        __result.graphicData.renderQueue = ShowGhostOverFog.queueOverFog;
+        __result.graphicData.linkFlags &= ~LinkFlags.Rock;//Prevent blueprint walls from showing links with rocks
     }
 }
