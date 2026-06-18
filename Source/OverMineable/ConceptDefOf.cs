@@ -11,9 +11,10 @@
  * Licensed under the MIT License.
  */
 
-namespace Replace_Stuff.OverMineable;
+using RimWorld;
 
-internal static class BlueprintUtility
+[DefOf]
+public static class ConceptDefOf
 {
-    internal static bool IsEnabledBlueprintOverRock = true;
+    public static ConceptDef BuildersTryMine;
 }

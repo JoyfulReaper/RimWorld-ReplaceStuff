@@ -30,7 +30,7 @@ public static class Patch_PlaySettings_DoPlaySettingsGlobalControls
 		if (worldView) 
 			return;
 
-		row.ToggleableIcon(ref BluePrintUtility.IsEnabledBlueprintOverRock, _icon, "TD.ToggleBlueprintOverRock".Translate());
+		row.ToggleableIcon(ref BlueprintUtility.IsEnabledBlueprintOverRock, _icon, "TD.ToggleBlueprintOverRock".Translate());
 	}
 }
 
@@ -40,6 +40,6 @@ public static class Patch_PlaySettings_ExposeData
 {
 	public static void Prefix()
 	{
-		Scribe_Values.Look(ref BluePrintUtility.IsEnabledBlueprintOverRock, "blueprintOverRock", true);
+		Scribe_Values.Look(ref BlueprintUtility.IsEnabledBlueprintOverRock, "blueprintOverRock", true);
 	}
 }
