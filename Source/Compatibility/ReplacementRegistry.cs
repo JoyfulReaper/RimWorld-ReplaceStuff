@@ -32,6 +32,15 @@ namespace Replace_Stuff.Compatibility
                 _handlerRegistry.Add(name, handler);
         }
 
+        internal static string GetKeyForComp(ThingComp comp)
+        {
+            if (comp is null)
+                return null;
+
+            var type = comp.GetType();
+            return _handlerRegistry.ContainsKey(type.FullName) ? type.FullName : null;
+        }
+
         internal static void AddInterchangeableItems(ReplaceList items)
         {
             // The pipeline now handles state transfer execution. 

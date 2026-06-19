@@ -30,6 +30,11 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Comps\**" />
+    <EmbeddedResource Remove="Comps\**" />
+    <None Remove="Comps\**" />
+  </ItemGroup>
 
   <!-- Assembly references -->
   <ItemGroup>
@@ -68,7 +73,6 @@
     <Publicize Include="Assembly-CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Comps\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 

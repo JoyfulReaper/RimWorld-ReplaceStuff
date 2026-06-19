@@ -11,6 +11,7 @@
  * Licensed under the MIT License.
  */
 
+using Replace_Stuff.Compatibility;
 using Replace_Stuff.Replace;
 using Replace_Stuff.Utilities;
 using RimWorld;
@@ -37,6 +38,20 @@ public static class BuildingStateTransfer
             faction = thing.Faction,
             rotation = thing.Rotation
         };
+
+        // POPULATE COMP HANDLERS
+        // Iterate through all comps, check if we have a handler for them
+        if (thing is ThingWithComps thingWithComps)
+        {
+            foreach (var comp in thingWithComps.AllComps)
+            {
+                string handlerKey = ReplacementRegistry.GetKeyForComp(comp);
+                if (!string.IsNullOrEmpty(handlerKey))
+                {
+                    data.compHandlers.Add(handlerKey);
+                }
+            }
+        }
 
         // Quality
         // TODO: We should consider if we want the old things quality or if we want the quality
@@ -111,8 +126,7 @@ public static class BuildingStateTransfer
             $"APPLY CALLED " +
             $"Thing={thing} " +
             $"Rot={thing.Rotation} " +
-            $"Priority={data.storagePriority} " +
-            $"Defs={data.storageFilter?.AllowedDefCount}");
+            $"Priority={data.storagePriority} ");
 
         if (data is null)
             return;
@@ -122,7 +136,8 @@ public static class BuildingStateTransfer
         {
             cq.SetQuality(data.quality.Value, ArtGenerationContext.Colony);
         }
-        //// Target temperature
+
+        //// Target temperature - TODO Restore 
         //if (data.targetTemperature.HasValue)
         //{
         //    if (thing is Building_Cooler cooler)
@@ -134,7 +149,7 @@ public static class BuildingStateTransfer
         //            data.targetTemperature.Value;
         //}
 
-        //// Growers
+        //// Growers - TODO Restore 
         //if (data.plantDef != null && thing is Building_PlantGrower grower)
         //{
         //    grower.SetPlantDefToGrow(data.plantDef);
@@ -194,16 +209,10 @@ public static class BuildingStateTransfer
 
     public static void ApplyStorageFiltersAndPriority(ReplaceData data, Thing thing)
     {
-        // Storage filters/priority
-        if (thing is IStoreSettingsParent storageParent)
+        if (thing is IStoreSettingsParent storageParent && data.storageSettings != null)
         {
             var settings = storageParent.GetStoreSettings();
-
-            if (data.storageFilter != null)
-                settings.filter.CopyAllowancesFrom(data.storageFilter);
-
-            if (data.storagePriority.HasValue)
-                settings.Priority = data.storagePriority.Value;
+            settings.CopyFrom(data.storageSettings);
 
             if (thing is Building_Storage concreteStorage)
             {
