@@ -69,11 +69,9 @@ internal class ReplacementLoader
 
     public static void RegisterCodeBasedHandlers()
     {
-        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
         var allCandidates = new List<(Type type, int priority, string targetName)>();
 
-        // candidates
-        foreach (var type in assembly.GetTypes())
+        foreach (var type in GenTypes.AllTypesWithAttribute<ReplacementHandlerAttribute>())
         {
             var attribute = (ReplacementHandlerAttribute)Attribute.GetCustomAttribute(type, typeof(ReplacementHandlerAttribute));
             if (attribute != null)
@@ -98,7 +96,7 @@ internal class ReplacementLoader
             if (ReplacementRegistry.IsRegistered(compType.FullName))
             {
                 RSLog.Warning($"Skipping {candidate.type.Name} for {compType.FullName}: A higher or equal priority handler is already registered.");
-                continue; // Another already registered
+                continue;
             }
 
             try

@@ -54,11 +54,12 @@ public static class ReplacementMatcher
     static ReplacementMatcher()
     {
         // Scan for auto-registered rules
-        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
         var foundRules = new List<(MethodInfo method, int priority)>();
 
-        foreach (var type in assembly.GetTypes())
+        // Sweeps loaded assemblies for classes containing rules
+        foreach (var type in GenTypes.AllTypes)
         {
+            // Keeping your original method scan inside the types
             foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
             {
                 var attr = (ReplacementRuleAttribute)Attribute.GetCustomAttribute(method, typeof(ReplacementRuleAttribute));
