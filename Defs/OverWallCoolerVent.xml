@@ -14,9 +14,10 @@
         <designatorDropdown>OverWallCooler</designatorDropdown>
         <graphicData>
             <texPath>Cooler_Over</texPath>
+            <graphicClass>Graphic_Multi</graphicClass>
         </graphicData>
         <altitudeLayer>BuildingOnTop</altitudeLayer>
-        <passability>Impassable</passability> <blockWind>false</blockWind>
+        <passability>PassThroughOnly</passability> <blockWind>false</blockWind>
         <fillPercent>.6</fillPercent>
         <coversFloor>false</coversFloor>
         <blockLight>false</blockLight>
@@ -25,7 +26,7 @@
             <canPlaceOverWall>true</canPlaceOverWall>
             <isEdifice>false</isEdifice>
             <canExchangeVacuum>false</canExchangeVacuum>
-            <isAirtight>true</isAirtight>
+            <isAirtight>false</isAirtight>
         </building>
         <designationHotKey>Misc6</designationHotKey>
     </ThingDef>
@@ -35,36 +36,43 @@
         <label>over-wall cooler (wide)</label>
         <graphicData>
             <texPath>Cooler_Over2W</texPath>
+            <graphicClass>Graphic_Multi</graphicClass>
             <drawSize>(1,2)</drawSize>
         </graphicData>
         <size>(1,2)</size>
     </ThingDef>
 
-    <ThingDef ParentName="Vent_Over">
-        <defName>Vent_Over</defName>
-        <label>over-wall vent</label>
-        <designatorDropdown>OverWallVent</designatorDropdown>
-        <graphicData>
-            <texPath>Vent_Over</texPath>
-        </graphicData>
+    <ThingDef Name="VentBase_Over" Abstract="True">
+        <category>Building</category>
+        <thingClass>Building_Vent</thingClass>
         <altitudeLayer>BuildingOnTop</altitudeLayer>
         <passability>PassThroughOnly</passability>
         <coversFloor>true</coversFloor>
         <blockLight>false</blockLight>
         <castEdgeShadows>false</castEdgeShadows>
         <building>
-            <canPlaceOverWall>true</canPlaceOverWall> <canExchangeVacuum>true</canExchangeVacuum>
+            <canPlaceOverWall>true</canPlaceOverWall>
+            <canExchangeVacuum>true</canExchangeVacuum>
             <isAirtight>false</isAirtight>
         </building>
+    </ThingDef>
+
+    <ThingDef ParentName="VentBase_Over">
+        <defName>Vent_Over</defName>
+        <label>over-wall vent</label>
+        <designatorDropdown>OverWallVent</designatorDropdown>
+        <graphicData>
+            <texPath>Vent_Over</texPath>
+            <graphicClass>Graphic_Multi</graphicClass> </graphicData>
         <designationHotKey>Misc7</designationHotKey>
     </ThingDef>
-    
-    <ThingDef ParentName="Vent_Over">
+        
+    <ThingDef ParentName="VentBase_Over">
         <defName>Vent_Over2W</defName>
         <label>over-wall vent (wide)</label>
         <graphicData>
             <texPath>Vent_Over2W</texPath>
-            <drawSize>(1,2)</drawSize>
+            <graphicClass>Graphic_Multi</graphicClass> <drawSize>(1,2)</drawSize>
         </graphicData>
         <size>(1,2)</size>
     </ThingDef>
