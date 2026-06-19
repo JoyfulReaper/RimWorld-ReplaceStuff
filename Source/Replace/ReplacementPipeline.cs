@@ -56,7 +56,7 @@ internal static class ReplacementPipeline
         StorageReplacementEngine.RestoreStoredItems(newThing, transientState);
 
         // Post-Action: Run after newThing is spawned
-        RunHandlers(activeComps, h => h.PostAction(newThing, oldThing));
+        RunHandlers(activeComps, h => h.PostAction(replacementFrame.ReplaceData, newThing));
 
         Cleanup(oldThing, worker, replacementFrame.resourceContainer);
     }

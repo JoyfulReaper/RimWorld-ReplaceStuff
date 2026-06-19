@@ -44,7 +44,7 @@ public static class QualityBuilderCompat
         }
         catch (System.Reflection.ReflectionTypeLoadException)
         {
-            Verse.Log.Warning("Replace Stuff Performance Edition failed to resolve reflection types for Quality Builder integration.");
+            Verse.Log.Warning("Failed to resolve reflection types for Quality Builder integration.");
         }
     }
 }

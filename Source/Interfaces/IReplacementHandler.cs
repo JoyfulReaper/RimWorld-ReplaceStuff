@@ -12,6 +12,7 @@
  */
 
 using Verse;
+using Replace_Stuff.Replace;
 
 namespace Replace_Stuff.Interfaces;
 
@@ -23,8 +24,8 @@ namespace Replace_Stuff.Interfaces;
 public interface IReplacementHandler
 {
     // Runs before old thing is destroyed
-    void PreAction(Thing newThing, Thing oldThing);
+    void PreAction(ReplaceData data, Thing oldThing);
 
     // Runs after the new thing is spawned
-    void PostAction(Thing newThing, Thing oldThing);
+    void PostAction(ReplaceData data, Thing newThing);
 }

@@ -22,6 +22,9 @@ public class ReplaceData : IExposable
     public Rot4 rotation;
     public List<AttachedBuildingData> attachedBuildings = new();
 
+    // Dynamic storage for third-party mod handlers
+    public Dictionary<string, string> modData = new();
+
     // Storage
     public string storageLabel;
     public StoragePriority? storagePriority;
@@ -82,9 +85,15 @@ public class ReplaceData : IExposable
         Scribe_Defs.Look(ref plantDef, "plantDef");
         Scribe_Collections.Look(ref bills, "bills", LookMode.Deep);
         Scribe_Collections.Look(ref compHandlers, "compHandlers", LookMode.Value);
+        Scribe_Collections.Look(ref modData, "modData", LookMode.Value, LookMode.Value);
         Scribe_Deep.Look(ref storageSettings, "settings");
         Scribe_Values.Look(ref storagePriority, "storagePriority");
         Scribe_Collections.Look(ref attachedBuildings, "attachedBuildings", LookMode.Deep);
         Scribe_Values.Look(ref belongedToGroup, "belongedToGroup");
+
+        if (Scribe.mode == LoadSaveMode.PostLoadInit)
+        {
+            modData ??= new Dictionary<string, string>();
+        }
     }
 }

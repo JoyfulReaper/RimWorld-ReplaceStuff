@@ -11,8 +11,8 @@
  * Licensed under the MIT License.
  */
 
-using Replace_Stuff.Interfaces;
 using System;
+using Verse;
 
 // Do not change this namespace needed for compatibility: namespace Replace_Stuff;
 namespace Replace_Stuff;
@@ -25,8 +25,8 @@ namespace Replace_Stuff;
 
 // Bad name, kept for compatability
 [Obsolete("IReplacementComp is deprecated. Use IReplacementHandler instead.")]
-public interface IReplacementComp : IReplacementHandler
+public interface IReplacementComp
 {
-    // By inheriting, anything that used to implement IReplacementComp 
-    // still technically implements IReplacementHandler.
+    void PreAction(Thing newThing, Thing oldThing);
+    void PostAction(Thing newThing, Thing oldThing);
 }
