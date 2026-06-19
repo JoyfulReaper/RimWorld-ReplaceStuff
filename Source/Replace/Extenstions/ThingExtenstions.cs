@@ -11,7 +11,7 @@
  * Licensed under the MIT License.
  */
 
-using Replace_Stuff.NewThing;
+using Replace_Stuff.Core;
 using Verse;
 
 namespace Replace_Stuff.Replace.Extenstions

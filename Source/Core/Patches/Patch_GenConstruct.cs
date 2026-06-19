@@ -3,7 +3,7 @@ using Replace_Stuff.Replace.Patches;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.NewThing;
+namespace Replace_Stuff.Core.Patches;
 
 /// <summary>
 /// Extends vanilla replacement logic to allow custom building replacements.

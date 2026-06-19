@@ -11,8 +11,8 @@
  * Licensed under the MIT License.
  */
 
+using Replace_Stuff.Core;
 using Replace_Stuff.Data;
-using Replace_Stuff.NewThing;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System;

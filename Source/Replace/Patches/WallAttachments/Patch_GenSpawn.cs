@@ -12,7 +12,7 @@
  */
 
 using HarmonyLib;
-using Replace_Stuff.NewThing;
+using Replace_Stuff.Core;
 using Verse;
 
 namespace Replace_Stuff.Replace.Patches.WallAttachments;

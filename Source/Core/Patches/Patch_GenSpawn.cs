@@ -18,7 +18,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
 
-namespace Replace_Stuff.NewThing.Patches;
+namespace Replace_Stuff.Core.Patches;
 
 [HarmonyPatch(typeof(GenSpawn), nameof(GenSpawn.Refund))]
 //public static void Refund(Thing thing, Map map, CellRect avoidThisRect)

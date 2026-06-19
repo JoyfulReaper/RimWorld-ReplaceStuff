@@ -1,9 +1,9 @@
-using Verse;
-using RimWorld;
 using HarmonyLib;
 using Replace_Stuff.Replace;
+using RimWorld;
+using Verse;
 
-namespace Replace_Stuff.NewThing.Patches;
+namespace Replace_Stuff.Core.Patches;
 
 /// <summary>
 /// Extends the work calculation for build blueprints to include deconstruction effort.

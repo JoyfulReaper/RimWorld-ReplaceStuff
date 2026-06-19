@@ -13,11 +13,11 @@
 
 
 using HarmonyLib;
+using Replace_Stuff.Replace;
 using RimWorld;
 using Verse;
-using Replace_Stuff.Replace;
 
-namespace Replace_Stuff.NewThing.Patches;
+namespace Replace_Stuff.Core.Patches;
 
 [HarmonyPatch(typeof(Frame), nameof(Frame.CompleteConstruction))]
 //public void CompleteConstruction(Pawn worker)

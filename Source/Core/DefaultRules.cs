@@ -30,7 +30,7 @@ using Verse;
 //}
 // using Replace_Stuff.Compatibility.ThirdParty; DO NOT IMPORT THIS HERE
 
-namespace Replace_Stuff.NewThing.Rules;
+namespace Replace_Stuff.Core;
 
 public static class DefaultRules
 {

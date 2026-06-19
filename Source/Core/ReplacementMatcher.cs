@@ -21,7 +21,7 @@ using System.Linq;
 using System.Reflection;
 using Verse;
 
-namespace Replace_Stuff.NewThing;
+namespace Replace_Stuff.Core;
 
 /// <summary>
 /// The central registry and logic engine for structure replacements. 

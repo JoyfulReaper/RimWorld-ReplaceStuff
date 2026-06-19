@@ -16,7 +16,7 @@ using Replace_Stuff.Replace.Patches;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.NewThing.Patches;
+namespace Replace_Stuff.Core.Patches;
 
 [HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.NotBlockingAnyInteractionCells))]
 public static class ForceAllowInteractionSpot_Patch

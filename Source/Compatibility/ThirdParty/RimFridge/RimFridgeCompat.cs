@@ -12,7 +12,7 @@
  */
 
 using HarmonyLib;
-using Replace_Stuff.NewThing;
+using Replace_Stuff.Core;
 using Replace_Stuff.Utilities;
 using System;
 using System.Reflection;

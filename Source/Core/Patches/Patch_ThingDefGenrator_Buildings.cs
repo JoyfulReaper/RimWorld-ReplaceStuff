@@ -15,7 +15,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.NewThing.Patches;
+namespace Replace_Stuff.Core.Patches;
 
 /// <summary>
 /// Adjusts the rendering altitude of construction frames.
