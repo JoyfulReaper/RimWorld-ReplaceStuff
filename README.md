@@ -30,6 +30,9 @@ The goal is the same: **upgrade buildings in place** without the usual deconstru
 
 ---
 
+## Documentation for Modders:
+It's on the **[Replace Stuff: Performance Edition Wiki](https://github.com/JoyfulReaper/RimWorld-ReplaceStuff/wiki)**!
+
 ## Technical Notes
 
 The internal codebase has been reorganized around a centralized replacement flow:
