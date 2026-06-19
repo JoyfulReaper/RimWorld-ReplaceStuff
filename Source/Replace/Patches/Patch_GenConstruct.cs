@@ -12,30 +12,24 @@
  */
 
 using HarmonyLib;
-using Replace_Stuff.OverWallCoolers;
-using Replace_Stuff.Terrain;
+using Replace_Stuff.Utilities;
 using RimWorld;
 using Verse;
 
 namespace Replace_Stuff.Replace.Patches;
 
-[HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
+[HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction))]
 public static class GenConstruct_BlocksConstruction
 {
     public static bool Prefix(Thing constructible, Thing t, ref bool __result)
     {
-        // We only care about Blueprints
         if (constructible is Blueprint_Build bp)
         {
-            // Wall over a Wall
-            if (bp.def.entityDefToBuild == ThingDefOf.Wall && t.def == ThingDefOf.Wall)
+            var targetDef = t.def.entityDefToBuild ?? t.def;
+            if (bp.def.entityDefToBuild == targetDef && bp.stuffToUse == t.Stuff)
             {
-                // materials are same
-                if (bp.stuffToUse == t.Stuff)
-                {
-                    __result = true; // block
-                    return false;
-                }
+                __result = true;
+                return false;
             }
         }
         return true;
@@ -44,48 +38,25 @@ public static class GenConstruct_BlocksConstruction
     [HarmonyPriority(Priority.Last)]
     public static void Postfix(Thing constructible, Thing t, ref bool __result)
     {
-        // Frame override
-        if (__result && t is Frame)
-        {
-            __result = false;
+        if (!__result)
             return;
-        }
 
-        // Replacement frames intentionally coexist with the building they are
-        // replacing until construction completes.
-        if (__result && constructible is ReplacementFrame rf && t == rf.TargetThing)
+        if (constructible is ReplacementFrame frame)
         {
-            __result = false;
-            return;
-        }
-
-        // Mineables
-        if (!__result && t.IsBlockingRock(constructible))
-        {
-            __result = true;
-            return;
-        }
-
-        // Cooler/Wall
-        if (__result)
-        {
-            var cDef = constructible.def.entityDefToBuild ?? constructible.def;
-            var tDef = t.def.entityDefToBuild ?? t.def;
-            if ((cDef.IsWall() && tDef.IsOverWall()) || (tDef.IsWall() && cDef.IsOverWall()))
+            if (frame.TargetThing == t)
             {
+                RSLog.Debug($"BlocksConstruction: Allowing Frame over target {t.Label}");
                 __result = false;
                 return;
             }
         }
 
-        // Replacement
         if (constructible is Blueprint_Build bp)
         {
-            var entDef = bp.def.entityDefToBuild;
-            if (entDef == null) return;
-
-            if (RimWorld.GenConstruct.CanReplace(entDef, t.def, bp.stuffToUse, t.Stuff))
+            var builtDef = bp.def.entityDefToBuild as ThingDef;
+            if (ReplacementCandidateChecker.IsValidReplacement(bp.stuffToUse, t, builtDef))
             {
+                RSLog.Debug($"BlocksConstruction: Allowing Blueprint over target {t.Label}");
                 __result = false;
                 return;
             }
@@ -197,20 +168,24 @@ public static class GenConstruct_PlaceBlueprintForBuild_Replace
         if (target == null)
             return true;
 
-        ReplacementHandler.ExecuteReplacement(target, stuff);
+        var frame = ReplacementUtility.SpawnReplacementFrame(target, stuff);
+        if (frame == null)
+        {
+            RSLog.Warning("ReplacementUtility failed to spawn frame, falling back to vanilla.");
+            return true;
+        }
 
-        // dummy to satisfy the return type
+        // dummy blueprint for game engine
         var placeholder = (Blueprint_Build)ThingMaker.MakeThing(sourceDef.blueprintDef);
         placeholder.stuffToUse = stuff;
         placeholder.SetFactionDirect(faction);
 
-        // Fire the Quest Signal manually since we skipped the original method
         if (faction != null && sendBPSpawnedSignal)
         {
             QuestUtility.SendQuestTargetSignals(faction.questTags, "PlacedBlueprint", placeholder.Named("SUBJECT"));
         }
 
         __result = placeholder;
-        return false; // Replacement executed, skip vanilla placement
+        return false;
     }
 }

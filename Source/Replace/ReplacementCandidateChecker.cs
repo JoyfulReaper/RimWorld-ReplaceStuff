@@ -12,6 +12,7 @@
  */
 
 using Replace_Stuff.Replace.Extenstions;
+using Replace_Stuff.Utilities;
 using RimWorld;
 using System.Collections.Generic;
 using Verse;
@@ -107,8 +108,11 @@ internal static class ReplacementCandidateChecker
             return false;
 
         // Can't replace enemy items
-        if (thing.Faction != Faction.OfPlayer && thing.Faction != null)
+        if (thing.Faction != Faction.OfPlayer && thing.Faction is not null)
+        {
+            RSLog.Debug($"Rejecting {thing.Label} - Wrong Faction");
             return false;
+        }
 
         if (thing is Blueprint bp)
         {
@@ -141,7 +145,10 @@ internal static class ReplacementCandidateChecker
         }
 
         if (!allowedStuffSet.Contains(replacementStuff))
+        {
+            RSLog.Debug($"Rejecting {thing.Label} - Material {replacementStuff.label} not allowed for {thing.def.label}");
             return false;
+        }
 
         if (!GenConstruct.CanBuildOnTerrain(buildableDef, thing.Position, thing.Map, thing.Rotation, thing, replacementStuff))
             return false;

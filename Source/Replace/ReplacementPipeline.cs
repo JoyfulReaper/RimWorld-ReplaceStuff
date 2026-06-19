@@ -36,7 +36,7 @@ internal static class ReplacementPipeline
         {
             replacementFrame.resourceContainer.TryDropAll(replacementFrame.Position, replacementFrame.Map, ThingPlaceMode.Near);
             replacementFrame.Destroy(DestroyMode.Cancel);
-            
+
             return;
         }
 
@@ -49,13 +49,17 @@ internal static class ReplacementPipeline
         foreach (var h in handlers)
             h.PreAction(replacementFrame.ReplaceData, oldThing, newThing);
 
+        // Extract storage stage
         var transientState = StorageReplacementEngine.ExtractStoredItems(oldThing);
+
         DeconstructDropStuff(oldThing);
 
         // oldThing loses its Map and Spawned status here
-        oldThing.Destroy(DestroyMode.Vanish);
+        oldThing.Destroy(DestroyMode.Vanish); // TODO Do we need this? SpawningWipes destroyes it I think. verify
 
         SpawnReplacement(newThing, replacementFrame);
+
+        // Apply state to newThing
         InitializeReplacement(oldThing, newThing, worker);
         ApplyPersistentState(newThing, replacementFrame.ReplaceData);
         StorageReplacementEngine.RestoreStoredItems(newThing, transientState);
@@ -173,12 +177,15 @@ internal static class ReplacementPipeline
 
     private static void SpawnReplacement(Thing newThing, ReplacementFrame replacementFrame)
     {
-        // IMPORTANT:
         // GenSpawn.Spawn(..., WipeMode.Vanish) immediately destroys the
         // existing building occupying the cell. Any state needed from
         // targetThing must be captured before spawning.
         newThing.Rotation = replacementFrame.Rotation;
-        GenSpawn.Spawn(newThing, replacementFrame.Position, replacementFrame.Map, replacementFrame.Rotation, WipeMode.Vanish);
+        GenSpawn.Spawn(newThing,
+            replacementFrame.Position,
+            replacementFrame.Map,
+            replacementFrame.Rotation,
+            WipeMode.Vanish);
 
         RSLog.Debug(
             $"SpawnReplacement(): " +
