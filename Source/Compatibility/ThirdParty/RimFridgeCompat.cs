@@ -13,6 +13,7 @@
 
 using HarmonyLib;
 using Replace_Stuff.NewThing;
+using Replace_Stuff.Utilities;
 using System;
 using System.Reflection;
 using Verse;
@@ -41,7 +42,7 @@ public static class RimFridgeCompat
         }
         catch (System.Reflection.ReflectionTypeLoadException) //Aeh, this happens to people, should not happen, meh.
         {
-            Verse.Log.Warning("Failed to check for RimFridges");
+            RSLog.Warning("Failed to check for RimFridges");
         }
     }
 
