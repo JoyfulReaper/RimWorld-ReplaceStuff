@@ -1,6 +1,8 @@
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Verse;
 
 namespace Replace_Stuff.Replace;
@@ -57,7 +59,7 @@ internal static class StorageReplacementEngine
                 $" oldRot={data.rotation} " +
                 $" newRot={thing.Rotation} " +
                 $" settings={settings?.GetHashCode()} " +
-                $" priorityBefore={settings.Priority}");
+                $" priorityBefore={settings?.Priority.ToString() ?? "NULL"}");
         }
     }
 
@@ -106,7 +108,7 @@ internal static class StorageReplacementEngine
                 else
                 {
                     // Group disbanded. Locate the orphaned companion to safely forge a valid 2-member group.
-                    var companion = FindOrphanedCompanion(storage.Map, storage.GroupingLabel, storage.Position, storage.def);
+                    var companion = FindOrphanedCompanion(storage.Map, data.storageLabel, storage.GroupingLabel, storage.Position, storage.Rotation, storage.def);
                     if (companion is not null)
                     {
                         var newGroup = storage.Map.storageGroups.NewGroup(data.storageLabel);
@@ -121,7 +123,7 @@ internal static class StorageReplacementEngine
                         SetStorageGroup(storage, newGroup);
 
                         // Use the unified settings object
-                        if (data.storageSettings != null)
+                        if (data.storageSettings is not null)
                         {
                             newGroup.GetStoreSettings().CopyFrom(data.storageSettings);
                         }
@@ -134,7 +136,7 @@ internal static class StorageReplacementEngine
                         var settings = storage.GetStoreSettings();
 
                         // Use the unified settings object
-                        if (data.storageSettings != null)
+                        if (data.storageSettings is not null)
                         {
                             settings.CopyFrom(data.storageSettings);
                         }
@@ -145,7 +147,7 @@ internal static class StorageReplacementEngine
         }
     }
 
-    private static Building_Storage FindOrphanedCompanion(Map map, string groupLabel, IntVec3 currentLoc, ThingDef storageDef)
+    private static Building_Storage FindOrphanedCompanion(Map map, string expectedLabel, string groupLabel, IntVec3 currentLoc, Rot4 rotation, ThingDef storageDef)
     {
         if (map == null) return null;
 
@@ -153,7 +155,9 @@ internal static class StorageReplacementEngine
         {
             if (building.def == storageDef &&
                 GetStorageGroup(building) == null &&
-                building.Position.DistanceToSquared(currentLoc) <= 25)
+                building.Rotation == rotation &&
+                building.Position.DistanceToSquared(currentLoc) <= 25 &&
+                LabelsMatch(expectedLabel, groupLabel, GetGroupingLabel(building)))
             {
                 return building;
             }
@@ -186,6 +190,25 @@ internal static class StorageReplacementEngine
 
         var field = member.GetType().GetField("storageGroup", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         field?.SetValue(member, group);
+    }
+
+    private static string GetGroupingLabel(Building_Storage storage)
+    {
+        var prop = storage.GetType().GetProperty("GroupingLabel", BindingFlags.Public | BindingFlags.Instance);
+        if (prop != null)
+            return prop.GetValue(storage) as string;
+
+        var field = storage.GetType().GetField("groupingLabel", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        return field?.GetValue(storage) as string;
+    }
+
+    private static bool LabelsMatch(string expectedLabel, string originalGroupLabel, string candidateLabel)
+    {
+        if (string.IsNullOrEmpty(expectedLabel) && string.IsNullOrEmpty(originalGroupLabel))
+            return !string.IsNullOrEmpty(candidateLabel);
+
+        return (!string.IsNullOrEmpty(expectedLabel) && candidateLabel == expectedLabel)
+            || (!string.IsNullOrEmpty(originalGroupLabel) && candidateLabel == originalGroupLabel);
     }
     #endregion
 }

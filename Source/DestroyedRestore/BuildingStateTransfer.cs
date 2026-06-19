@@ -125,7 +125,7 @@ public static class BuildingStateTransfer
             $"APPLY CALLED " +
             $"Thing={thing} " +
             $"Rot={thing.Rotation} " +
-            $"Priority={data.storagePriority} ");
+            $"Priority={data?.storagePriority} ");
 
         if (data is null)
             return;
