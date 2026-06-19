@@ -11,6 +11,7 @@
  * Licensed under the MIT License.
  */
 
+using Replace_Stuff;
 using Replace_Stuff.Compatibility;
 using Replace_Stuff.DestroyedRestore;
 using Replace_Stuff.Interfaces;
@@ -32,9 +33,6 @@ internal static class ReplacementPipeline
     {
         var activeComps = replacementFrame.ReplaceData.compHandlers;
 
-        //Pre-Action: Run before oldThing is destroyed
-        RunHandlers(activeComps, h => h.PreAction(null, replacementFrame.TargetThing));
-
         if (replacementFrame.TargetThing is null || !replacementFrame.TargetThing.Spawned)
         {
             replacementFrame.resourceContainer.TryDropAll(replacementFrame.Position, replacementFrame.Map, ThingPlaceMode.Near);
@@ -44,11 +42,12 @@ internal static class ReplacementPipeline
         }
 
         var oldThing = replacementFrame.TargetThing;
+        var newThing = CreateReplacement(replacementFrame);
+        RunHandlers(activeComps, oldThing, h => h.PreAction(replacementFrame.ReplaceData, oldThing, newThing));
         var transientState = StorageReplacementEngine.ExtractStoredItems(oldThing);
         DeconstructDropStuff(oldThing);
 
         oldThing.Destroy(DestroyMode.Vanish);
-        var newThing = CreateReplacement(replacementFrame);
 
         SpawnReplacement(newThing, replacementFrame);
         InitializeReplacement(oldThing, newThing, worker);
@@ -56,7 +55,7 @@ internal static class ReplacementPipeline
         StorageReplacementEngine.RestoreStoredItems(newThing, transientState);
 
         // Post-Action: Run after newThing is spawned
-        RunHandlers(activeComps, h => h.PostAction(replacementFrame.ReplaceData, newThing));
+        RunHandlers(activeComps, oldThing, h => h.PostAction(replacementFrame.ReplaceData, oldThing, newThing));
 
         Cleanup(oldThing, worker, replacementFrame.resourceContainer);
     }
@@ -164,8 +163,9 @@ internal static class ReplacementPipeline
         return newThing;
     }
 
-    private static void RunHandlers(List<string> compNames, Action<IReplacementHandler> action)
+    private static void RunHandlers(List<string> compNames, Thing oldThing, Action<IReplacementHandler> action)
     {
+        // Run modern, registered handlers from the string list
         foreach (var compName in compNames)
         {
             if (ReplacementRegistry.TryGetHandler(compName, out var handler))
@@ -178,6 +178,30 @@ internal static class ReplacementPipeline
                 {
                     RSLog.Error($"Error executing replacement handler {compName}: {e.Message}");
                 }
+            }
+        }
+
+        // Scan the old building for legacy IReplacementComp components attached to it
+        if (oldThing is ThingWithComps thingWithComps)
+        {
+            foreach (var comp in thingWithComps.AllComps)
+            {
+                // ignore the obsolete warning
+#pragma warning disable CS0618
+                if (comp is IReplacementComp legacyComp)
+                {
+                    try
+                    {
+                        // Wrap the old instance in the bridge so the modern pipeline can invoke it seamlessly
+                        var bridge = new LegacyReplacementBridge(legacyComp);
+                        action(bridge);
+                    }
+                    catch (Exception e)
+                    {
+                        RSLog.Error($"Error executing legacy replacement comp {comp.GetType().Name}: {e.Message}");
+                    }
+                }
+#pragma warning restore CS0618
             }
         }
     }

@@ -73,6 +73,7 @@
     <Publicize Include="Assembly-CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Compatibility\ThirdParty\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 

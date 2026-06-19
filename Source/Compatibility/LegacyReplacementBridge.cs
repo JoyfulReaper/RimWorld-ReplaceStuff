@@ -22,23 +22,20 @@ using Verse;
 public class LegacyReplacementBridge : IReplacementHandler
 {
     private readonly IReplacementComp legacyComp;
-    private Thing cachedOldThing;
 
     public LegacyReplacementBridge(IReplacementComp comp)
     {
         legacyComp = comp;
     }
 
-    public void PreAction(ReplaceData data, Thing oldThing)
+    public void PreAction(ReplaceData data, Thing oldThing, Thing newThing)
     {
-        // Cache the old thing so we can give it to the legacy PostAction later
-        cachedOldThing = oldThing;
-        legacyComp.PreAction(null, oldThing);
+        legacyComp.PreAction(newThing, oldThing);
     }
 
-    public void PostAction(ReplaceData data, Thing newThing)
+    public void PostAction(ReplaceData data, Thing oldThing, Thing newThing)
     {
-        legacyComp.PostAction(newThing, cachedOldThing);
+        legacyComp.PostAction(newThing, oldThing);
     }
 }
 #pragma warning restore CS0618
