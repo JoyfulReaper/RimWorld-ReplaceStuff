@@ -18,21 +18,17 @@ using Verse;
 /*
  * Example Def XML
 <Defs>
-    <InterchangeableItems>
-        <defName>MyUpgradedCoolers</defName>
+    <Replace_Stuff.InterchangeableItems MayRequire="Ludeon.RimWorld.Ideology">
+        <defName>ReplaceStuffModCompat_Ideology</defName>
         <replaceLists>
             <li>
-                <category>Coolers</category>
-                <items>
-                    <li>Cooler</li>
-                    <li>SuperCooler_Advanced</li>
-                </items>
                 <comps>
-                    <li>Replace_Stuff.CoolerReplacementComp</li>
+                    <li>MyMod.Namespace.CompQualityBuilder</li>
+                    <li>MyMod.Namespace.CompTemperatureSync</li>
                 </comps>
             </li>
         </replaceLists>
-    </InterchangeableItems>
+    </Replace_Stuff.InterchangeableItems>
 </Defs>
  */
 
@@ -49,7 +45,7 @@ public class InterchangeableItems : Def
     public override void ResolveReferences()
     {
         base.ResolveReferences();
-        
+
         // Trigger the resolution for every list in this Def
         foreach (var list in replaceLists)
         {
@@ -66,10 +62,10 @@ public class ReplaceList
     public string category = "";
 
     public List<ThingDef> items = new();
-    
+
     // Raw strings from XML
-    public List<string> comps = new(); 
-    
+    public List<string> comps = new();
+
     // Performance Cache: Parsed types
     [Unsaved]
     public List<System.Type> compTypes = new();
@@ -77,9 +73,9 @@ public class ReplaceList
     // Call this once during Def initialization
     public void ResolveComps()
     {
-        if (comps.NullOrEmpty()) 
+        if (comps.NullOrEmpty())
             return;
-            
+
         foreach (string compName in comps)
         {
             var type = GenTypes.GetTypeInAnyAssembly(compName);

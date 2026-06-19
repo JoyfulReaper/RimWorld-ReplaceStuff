@@ -92,7 +92,7 @@ internal class ReplacementLoader
         foreach (var candidate in sortedCandidates)
         {
             var compType = GenTypes.GetTypeInAnyAssembly(candidate.targetName);
-            if (compType == null)
+            if (compType is null)
             {
                 RSLog.Warning($"Could not find comp type {candidate.targetName} for {candidate.type.Name}.");
                 continue;
@@ -101,7 +101,7 @@ internal class ReplacementLoader
             if (ReplacementRegistry.IsRegistered(compType.FullName))
             {
                 RSLog.Warning($"Skipping {candidate.type.Name} for {compType.FullName}: A higher or equal priority handler is already registered.");
-                continue;
+                continue; // Another already registered
             }
 
             try

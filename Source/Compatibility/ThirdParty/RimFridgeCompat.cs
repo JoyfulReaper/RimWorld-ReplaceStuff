@@ -12,6 +12,7 @@
  */
 
 using HarmonyLib;
+using Replace_Stuff.NewThing;
 using System;
 using System.Reflection;
 using Verse;
@@ -29,6 +30,7 @@ public static class RimFridgeCompat
 {
     public static Type fridgeType;
     public static FieldInfo DesiredTempInfo;
+
     static RimFridgeCompat()
     {
         try
@@ -40,6 +42,15 @@ public static class RimFridgeCompat
         catch (System.Reflection.ReflectionTypeLoadException) //Aeh, this happens to people, should not happen, meh.
         {
             Verse.Log.Warning("Failed to check for RimFridges");
+        }
+    }
+
+    [ReplacementRule(priority: 10)]
+    public static void RegisterFridgeRules()
+    {
+        if (fridgeType != null)
+        {
+            ReplacementMatcher.AddRule(d => d.thingClass == fridgeType);
         }
     }
 }

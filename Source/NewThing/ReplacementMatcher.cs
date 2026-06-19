@@ -11,13 +11,15 @@
  * Licensed under the MIT License.
  */
 
-using Replace_Stuff.Compatibility.ThirdParty;
+using Replace_Stuff.Compatibility;
 using Replace_Stuff.CoolersOverWalls;
+using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using Verse;
 
 namespace Replace_Stuff.NewThing;
@@ -52,6 +54,38 @@ public static class ReplacementMatcher
     /// </summary>
     static ReplacementMatcher()
     {
+        // Scan for auto-registered rules
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        var foundRules = new List<(MethodInfo method, int priority)>();
+
+        foreach (var type in assembly.GetTypes())
+        {
+            foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                var attr = (ReplacementRuleAttribute)Attribute.GetCustomAttribute(method, typeof(ReplacementRuleAttribute));
+                if (attr != null)
+                {
+                    foundRules.Add((method, attr.Priority));
+                }
+            }
+        }
+
+        // Register them (sorted by priority)
+        foreach (var rule in foundRules.OrderByDescending(r => r.priority))
+        {
+            // Invoke the method to get the predicate and add the rule
+            // Assuming the method signature is: public static void AddMyRule() { AddRule(...); }
+            try
+            {
+                rule.method.Invoke(null, null);
+                RSLog.Debug($"Successfully executed registration rule: {rule.method.Name}");
+            }
+            catch (Exception e)
+            {
+                RSLog.Error($"Failed to execute registration rule {rule.method.Name}: {e.Message}");
+            }
+        }
+
         // Walls/Fences
         AddRule(d => d.IsWall() || (d.building?.isFence ?? false),
                 o => o.IsWall() || (o.building?.isFence ?? false));
@@ -74,7 +108,7 @@ public static class ReplacementMatcher
         AddRule(d => d.IsTable);
 
         // Fridges
-        AddRule(d => RimFridgeCompat.fridgeType != null && d.thingClass == RimFridgeCompat.fridgeType);
+        //AddRule(d => RimFridgeCompat.fridgeType != null && d.thingClass == RimFridgeCompat.fridgeType);
 
         // Growers
         AddRule(d => typeof(IPlantToGrowSettable).IsAssignableFrom(d.thingClass));

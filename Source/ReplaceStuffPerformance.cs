@@ -56,6 +56,7 @@ public class ReplaceStuffPerformance : Verse.Mod
             DesignationMenuFixer.SanityCheck(); // TODO RENAME ME
             ReplacementLoader.AddRulesFromXML();
             Patch_ReservationManager.Initialize(_harmony);
+            ReplacementLoader.RegisterCodeBasedHandlers();
 
 #if DEBUG
             DebugPatchOrder();
