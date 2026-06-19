@@ -1,55 +1,191 @@
-----------------------------------------------------------------
-6/19/2026: Version 0.0.30
 Replace Stuff: Performance Edition
+CHANGELOG
 
-This release is a large fork-level update from the original Replace Stuff base repo. The biggest change is that the mod is now organized around a more explicit replacement pipeline and a broader compatibility system, with the goal of keeping the original gameplay intact while reducing overhead and making future support easier.
+Compared against upstream Replace Stuff:
+MemeGoddess/RimWorld-ReplaceStuff upstream/master @ 0ea5dc9
+"Updated for v4850"
 
-Added:
-- A new replacement pipeline centered around `ReplacementPipeline`, `ReplacementValidator`, and `ReplacementUtility`.
-- Registry-based compatibility support so replacement handlers can be discovered through attributes and XML-backed definitions.
-- A legacy compatibility bridge for older replacement data and handler behavior.
-- Dedicated compatibility handlers for third-party features such as QualityBuilder and interchangeable item groups.
-- New state transfer and storage preservation logic for replacement events, including persistent building data and storage contents.
-- Expanded support for wall attachments, worktables, turrets, and storage-specific replacement behavior.
-- Better support for over-mineable, over-wall, and bridge-adjacent construction cases.
-- Updated mod metadata, preview assets, and project organization for the Performance Edition fork.
-
-Changed:
-- Reworked the core replacement flow to use clearer stages for validation, extraction, destruction, spawning, and state restoration.
-- Split feature code into smaller namespaces and patch groups, making the mod easier to maintain and debug.
-- Refactored the old hardcoded replacement and compatibility logic into reusable registries, handlers, and patch helpers.
-- Improved storage handling, including preservation of labels, settings, priorities, filters, and contents where applicable.
-- Updated over-wall cooler and vent handling to better fit RimWorld 1.6 and current mod compatibility patterns.
-- Refined blueprint, frame, and spawn behavior for replacement, over-mineable, and bridge placement paths.
-- Modernized the project setup, including solution and metadata updates.
-- Updated translations and keyed text across supported languages.
-
-Fixed:
-- Several null-safety and map-reference issues during spawn and replacement flow.
-- Cases where replacement state could be lost between destruction and rebuild.
-- Problems around duplicate replacement work, validation overlap, and construction ordering.
-- Issues with blueprint, frame, and ghost behavior in special placement situations.
-- Some attachment and wall-adjacency edge cases that could interfere with replacement or reconstruction.
-- Various internal cleanup issues that previously made the code harder to extend or reason about.
-
-Compatibility Notes:
-- The mod is still under active development and should be treated as an alpha/early beta quality fork.
-- Some compatibility behavior has been moved into the new handler/registry system, so mod integrations should now be easier to add or adjust.
-- Support is centered on RimWorld 1.6 in this fork.
-
-Known Issues:
-- Some edge cases may still exist around complex storage replacements and modded building interactions.
-- Because this is a substantial refactor, unusual mod combinations may still expose regressions.
-- Please test carefully before relying on it in long-running saves.
-
-Developer Notes:
-- This fork is focused on performance, maintainability, and compatibility rather than preserving the original file layout.
-- The source tree now separates feature areas such as `Replace`, `NewThing`, `OverMineable`, `PlaceBridges`, `DestroyedRestore`, and `Compatibility`.
-- The original base repo has been heavily reorganized, so this changelog reflects the fork as a new implementation path rather than a small patch set.
-
-Credits:
-- Original mod concept and foundation: Alex Tearse-Doyle / Uuugggg.
-- Fork and performance edition work: Kyle Givler.
-- Earlier optimization and compatibility ideas contributed by the community, including Hexnet111 and others.
+Current fork baseline:
+JoyfulReaper/RimWorld-ReplaceStuff dev @ fccb2be
+Version: 0.0.31
 
 ----------------------------------------------------------------
+2026-06-19: Performance Edition fork update
+----------------------------------------------------------------
+
+This is a fork-level rewrite of Replace Stuff for RimWorld 1.6. The goal is still the original mod's familiar experience: designate a new building over an old one and let the game handle the transition. The major difference is that the internals now use a more explicit replacement pipeline, cached matching rules, and a compatibility handler system so replacements can preserve more state while doing less repeated work.
+
+This changelog focuses on the meaningful differences from the base repo rather than listing every moved file or namespace rename.
+
+
+Player-facing changes
+---------------------
+
+- Reworked the replacement flow around a dedicated replacement frame and pipeline.
+  Replacement now has clearer stages for capturing old building state, removing the original, spawning the replacement, restoring data, restoring stored contents, and cleaning up attached structures.
+
+- Improved preservation of building state during replacement.
+  The fork can now preserve or restore more data from the old building, including:
+  - faction and rotation;
+  - quality where applicable;
+  - worktable bills;
+  - temperature targets for coolers, heaters, and compatible temperature-control buildings;
+  - selected plants for growers and hydroponics-style buildings;
+  - storage filters, priorities, group labels, and related storage state;
+  - compatible wall attachments.
+
+- Improved storage replacement behavior.
+  Stored items are extracted before the old storage building is destroyed and restored afterward. Storage group labels and settings are also carried across where possible, including better handling for grouped shelves and nearby companion storage buildings.
+
+- Added safer handling for wall attachments.
+  Attachments such as wall lights and related buildings can be captured and restored when the supporting wall is replaced, reducing cases where upgrades silently discard attached objects.
+
+- Expanded over-wall cooler and vent support.
+  Over-wall cooler and vent behavior has been reorganized for RimWorld 1.6, with dedicated placement, spawn, construction, and designation-menu patches.
+
+- Improved terrain, rock, fog, and bridge-adjacent placement behavior.
+  The old over-mineable and bridge placement code has been reorganized under a broader terrain system. The fork includes more explicit handling for blueprints over mineables, fogged cells, conduit placement, bridge-like terrain, and construction over terrain that needs support.
+
+- Fixed bridge preference settings.
+  When more than one bridge-like terrain is available, the settings window can show a preferred bridge order and save that order.
+
+- Flattened/renamed some designation menu behavior.
+  The Performance Edition changes include menu cleanup around over-wall cooler entries and the mod settings category now identifies the Performance Edition build.
+
+
+Compatibility changes
+---------------------
+
+- Added a registry-based replacement compatibility system.
+  Replacement compatibility can now be described through rules and handlers instead of being hardcoded into one large flow. This should make future mod support easier to add and easier to reason about.
+
+- Added attribute-driven replacement rules.
+  Code can register replacement rules with a priority, allowing higher-priority rules to win without tightly coupling all compatibility logic into one class.
+
+- Added attribute-driven replacement handlers.
+  Replacement handlers can be discovered automatically and registered against target comp types. Handlers can run before and after replacement to preserve mod-specific state.
+
+- Added XML-backed interchangeable item groups.
+  Defs can declare groups of interchangeable buildings/items and optional comp handlers, allowing mod integrations to be added or adjusted with data instead of only C# patches.
+
+- Added a legacy compatibility bridge.
+  Existing `IReplacementComp` style integrations can still be adapted into the new handler pipeline, reducing the breakage risk for older compatibility code.
+
+- Added QualityBuilder support.
+  QualityBuilder state is preserved through replacement, including skilled-builder designation state and desired quality settings where the external comp is present.
+
+- Added RimFridge support hooks.
+  RimFridge building detection and temperature handling are implemented via reflection so the fork can support fridge replacement behavior without requiring a hard dependency.
+
+- Improved support for generic modded temperature controllers and growers.
+  State capture now uses common RimWorld interfaces/comps where possible, so compatible modded buildings can benefit without a bespoke patch for every def.
+
+- Reworked and expanded compatibility defs.
+  Compatibility defs were moved out of the version-specific `1.6/Defs` folder into shared `Defs`, and many supported integrations were refreshed or restored there, including vanilla/DLC defs and several third-party mod definition sets.
+
+
+Architecture and performance changes
+------------------------------------
+
+- Replaced much of the old scattered replacement logic with a central pipeline.
+  Core replacement behavior now lives around `ReplacementPipeline`, `ReplacementFrame`, `ReplacementUtility`, `ReplacementMatcher`, `BuildingStateTransfer`, and `StorageReplacementEngine`.
+
+- Added cached replacement matching.
+  `ReplacementMatcher` caches ThingDef-to-ThingDef replacement checks and uses a bounded weak-reference cache for active thing replacement lookups. This reduces repeated scanning in hot placement and construction paths.
+
+- Split feature areas into clearer namespaces and patch groups.
+  The old `NewThing`, `OverMineable`, `PlaceBridges`, `DestroyedRestore`, and broad replacement files were reorganized into more focused areas such as:
+  - `Core`;
+  - `Replace`;
+  - `Data`;
+  - `Compatibility`;
+  - `OverWallCoolers`;
+  - `Terrain`;
+  - `Terrain/Bridging`;
+  - `Utilities`.
+
+- Reworked replacement frame generation.
+  Replacement frame defs are generated and registered through a dedicated registrar/generator, with hooks for compatibility systems that need to alter generated frames.
+
+- Added a clearer replacement data model.
+  Persistent state is stored in `ReplacementData`, with support for comp handler keys, attached building data, storage data, quality, bills, temperature, grower settings, and arbitrary mod data.
+
+- Reduced broad debug/logging noise in release paths.
+  Logging has been consolidated under `RSLog`, with debug-oriented diagnostics gated more cleanly.
+
+- Removed the old tick scheduler.
+  The fork no longer depends on the previous `TickScheduler` path.
+
+- Removed several older specialized patch classes after their behavior was folded into the new systems.
+  This includes old classes for direct new-thing replacement, destroyed-building revival, bridge placement, over-mineable placement, wall attachment handling, and replacement frames.
+
+
+Gameplay rule changes and supported replacement categories
+---------------------------------------------------------
+
+- Default replacement rules now cover major vanilla categories through centralized rule registration:
+  - walls and fences;
+  - doors;
+  - tables;
+  - beds;
+  - coolers;
+  - vents;
+  - growers;
+  - batteries;
+  - wind turbines;
+  - watermill generators;
+  - steam geyser buildings;
+  - RimWorld 1.6 matching replacement tags;
+  - XML-defined interchangeable groups.
+
+- Replacement validation now explicitly avoids replacing a building with an identical non-stuffed building and avoids identical stuff replacements where appropriate.
+
+- Replacement work now shares or adjusts reservations more deliberately so pawns can interact with old buildings and replacement frames without as many construction-order conflicts.
+
+- Replacement construction now increments both construction and deconstruction records for the worker when the replacement completes.
+
+
+Packaging and project layout
+----------------------------
+
+- RimWorld support is centered on 1.6.
+  Older version-specific assemblies and legacy 1.1 through 1.5 folders were removed from this fork.
+
+- The old `LoadFolders.xml` layout was removed.
+  Shared defs, patches, languages, textures, and metadata now live at the package root or in common folders rather than under only `1.6`.
+
+- Mod metadata was changed for the Performance Edition fork.
+  The package ID is now `ReplaceStuff.Performance`, the author is Kyle Givler, and the Steam Workshop ID points at the Performance Edition upload.
+
+- Preview art was replaced and the editable source image was added.
+
+- The solution and project files were updated for the reorganized source tree and current assembly output.
+
+- A project-level MIT license file was added/updated to reflect the original mod foundation and fork ownership.
+
+- README documentation was rewritten for the Performance Edition, including a modder documentation link.
+
+
+Translations and text
+---------------------
+
+- English keyed text was updated for the Performance Edition name, settings, warnings, and menu text.
+
+- Existing language folders were moved out of old version-specific folders and refreshed where needed.
+
+- Over-wall cooler/vent labels and concept text were updated across the available localization files.
+
+- Old HugsLib update news files were removed.
+
+
+Known risks and testing focus
+-----------------------------
+
+This fork changes a large amount of replacement behavior and should be tested like a beta, especially before use in long-running saves.
+
+Credits
+-------
+
+- Original Replace Stuff mod concept and foundation: Uuugggg / Alex Tearse-Doyle.
+- Performance Edition fork and architecture work: Kyle Givler.
+- Earlier optimization and compatibility ideas: Hexnet111 and other community contributors.
