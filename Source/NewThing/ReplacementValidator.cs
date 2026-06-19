@@ -1,4 +1,5 @@
-﻿/*
+﻿// TODO: NAMING: We have two classes named ReplacementValidator in two different namespaces. Verify and rename one.
+/*
  * REPLACE STUFF: Performance Edition
  * 
  * 

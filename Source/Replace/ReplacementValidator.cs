@@ -1,4 +1,5 @@
-﻿/*
+﻿// TODO: NAMING: We have two classes named ReplacementValidator in two different namespaces. Verify and rename one.
+/*
  * REPLACE STUFF: Performance Edition
  * 
  * 
@@ -11,10 +12,10 @@
  * Licensed under the MIT License.
  */
 
-using Verse;
-using RimWorld;
 using Replace_Stuff.NewThing;
+using RimWorld;
 using System.Collections.Generic;
+using Verse;
 
 
 namespace Replace_Stuff.Replace;
@@ -106,7 +107,7 @@ internal static class ReplacementValidator
         if (replacementStuff is null || thing is null)
             return false;
 
-         // Can't replace enemy items
+        // Can't replace enemy items
         if (thing.Faction != Faction.OfPlayer && thing.Faction != null)
             return false;
 
@@ -134,18 +135,21 @@ internal static class ReplacementValidator
         if (matchDef != null && buildableDef != matchDef)
             return false;
 
-        if (!GenConstruct.CanBuildOnTerrain(buildableDef, thing.Position, thing.Map, thing.Rotation, thing, replacementStuff))
-            return false;
-
-        if (thing.BeingReplacedByNewThing() != null)
-            return false;
-
         if (!_allowedStuffCache.TryGetValue(buildableDef, out var allowedStuffSet))
         {
             allowedStuffSet = new HashSet<ThingDef>(GenStuff.AllowedStuffsFor(buildableDef));
             _allowedStuffCache[buildableDef] = allowedStuffSet;
         }
 
-        return allowedStuffSet.Contains(replacementStuff);
+        if (!allowedStuffSet.Contains(replacementStuff))
+            return false;
+
+        if (!GenConstruct.CanBuildOnTerrain(buildableDef, thing.Position, thing.Map, thing.Rotation, thing, replacementStuff))
+            return false;
+
+        if (thing.BeingReplacedByNewThing() != null)
+            return false;
+
+        return true;
     }
 }

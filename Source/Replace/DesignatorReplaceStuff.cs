@@ -84,6 +84,7 @@ public class Designator_ReplaceStuff : Designator
             return;
 
         var cost = 0;
+        var seenThings = new HashSet<int>();
         var dragCells = Find.DesignatorManager.Dragger.DragCells;
         var currentMap = Map; // Performance cache: access local register instead of property lookups
         var grid = currentMap.thingGrid;
@@ -98,7 +99,13 @@ public class Designator_ReplaceStuff : Designator
             {
                 var thing = thingsInCell[t];
 
-                if (thing is not ReplacementFrame && ReplacementValidator.IsValidReplacement(selectedStuffDef, thing))
+                if (thing is ReplacementFrame)
+                    continue;
+
+                if (!seenThings.Add(thing.thingIDNumber))
+                    continue;
+
+                if (ReplacementValidator.IsValidReplacement(selectedStuffDef, thing))
                 {
                     if (GenConstruct.BuiltDefOf(thing.def) is ThingDef builtDef)
                     {
