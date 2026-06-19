@@ -1,28 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-  <Cooler_Over.label>クーラー(後付)</Cooler_Over.label>
-  <Cooler_Over.description>通常のクーラーと違って,壁としては機能しません.壁に対してのみ設置できます.\n電気の力で冷気を部屋に送り込みますが,逆に室外機は多くの熱を発生します.夏の期間,部屋を冷却するのに使用したり,又は,冷凍倉庫として利用できます.</Cooler_Over.description>
-  <Blueprint_Cooler_Over.label>クーラー(後付)(設計)</Blueprint_Cooler_Over.label>
-  <Frame_Cooler_Over.label>クーラー(後付)(施工)</Frame_Cooler_Over.label>
-  <Frame_Cooler_Over.description>通常のクーラーと違って,壁としては機能しません.壁に対してのみ設置できます.\n電気の力で冷気を部屋に送り込みますが,逆に室外機は多くの熱を発生します.夏の期間,部屋を冷却するのに使用したり,又は,冷凍倉庫として利用できます.</Frame_Cooler_Over.description>
+  <Cooler_Over.label>壁掛け式クーラー</Cooler_Over.label>
+  <Cooler_Over.description>既存の壁を解体することなく、壁面に直接設置できる電気式の冷却装置です。室内に冷気を送り込むと同時に、屋外の室外機から大量の熱を排出します。夏の室温調節や、冷凍室を構築するのに最適です。</Cooler_Over.description>
+  <Blueprint_Cooler_Over.label>壁掛け式クーラー（設計図）</Blueprint_Cooler_Over.label>
+  <Frame_Cooler_Over.label>壁掛け式クーラー（建築中）</Frame_Cooler_Over.label>
+  <Frame_Cooler_Over.description>既存の壁を解体することなく、壁面に直接設置できる電気式の冷却装置です。室内に冷気を送り込むと同時に、屋外の室外機から大量の熱を排出します。夏の室温調節や、冷凍室を構築するのに最適です。</Frame_Cooler_Over.description>
 
-  <Cooler_Over2W.label>ワイドクーラー (後付)</Cooler_Over2W.label>
-  <Cooler_Over2W.description>壁に収まるクーラーです.冷たい空気が一方の側から出て,熱い排気が逆側から出てきます.暑い夏の間に部屋を冷やしたり,冷凍倉庫を作るのに利用ができます.</Cooler_Over2W.description>
-  <Blueprint_Cooler_Over2W.label>ワイドクーラー(後付)(設計)</Blueprint_Cooler_Over2W.label>
-  <Frame_Cooler_Over2W.label>ワイドクーラー(後付)(施工)</Frame_Cooler_Over2W.label>
-  <Frame_Cooler_Over2W.description>壁に収まるクーラーです.冷たい空気が一方の側から出て,熱い排気が逆側から出てきます.暑い夏の間に部屋を冷やしたり,冷凍倉庫を作るのに利用ができます.</Frame_Cooler_Over2W.description>
+  <Cooler_Over2W.label>壁掛け式クーラー（幅広）</Cooler_Over2W.label>
+  <Cooler_Over2W.description>2マス厚の防熱壁（二重壁）に直接設置できるように設計された電気式の冷却装置です。既存の壁を解体して断熱性能を損なうことなく、室内に冷気を送り込むことができます。屋外側からは同様に大量の熱が排出されます。</Cooler_Over2W.description>
+  <Blueprint_Cooler_Over2W.label>壁掛け式クーラー（幅広）（設計図）</Blueprint_Cooler_Over2W.label>
+  <Frame_Cooler_Over2W.label>壁掛け式クーラー（幅広）（建築中）</Frame_Cooler_Over2W.label>
+  <Frame_Cooler_Over2W.description>2マス厚の防熱壁（二重壁）に直接設置できるように設計された電気式の冷却装置です。既存の壁を解体して断熱性能を損なうことなく、室内に冷気を送り込むことができます。屋外側からは同様に大量の熱が排出されます。</Frame_Cooler_Over2W.description>
 
-  <Vent_Over.label>換気口(後付)</Vent_Over.label>
-  <Vent_Over.description>シンプルな換気口は,人の往来が無くても,つないだ部屋と部屋との温度差を一様にします.</Vent_Over.description>
-  <Blueprint_Vent_Over.label>換気口(後付)(設計)</Blueprint_Vent_Over.label>
-  <Frame_Vent_Over.label>換気口(後付)(施工)</Frame_Vent_Over.label>
-  <Frame_Vent_Over.description>シンプルな換気口は,人の往来が無くても,つないだ部屋と部屋との温度差を一様にします.</Frame_Vent_Over.description>
+  <Vent_Over.label>壁掛け式換気口</Vent_Over.label>
+  <Vent_Over.description>既存の壁を解体することなく、壁面に直接設置できるシンプルな換気口です。部屋の密閉性を損なうことなく、隣接する2つの部屋の温度を徐々に均一化させることができます。</Vent_Over.description>
+  <Blueprint_Vent_Over.label>壁掛け式換気口（設計図）</Blueprint_Vent_Over.label>
+  <Frame_Vent_Over.label>壁掛け式換気口（建築中）</Frame_Vent_Over.label>
+  <Frame_Vent_Over.description>既存の壁を解体することなく、壁面に直接設置できるシンプルな換気口です。部屋の密閉性を損なうことなく、隣接する2つの部屋の温度を徐々に均一化させることができます。</Frame_Vent_Over.description>
 
-  <Vent_Over2W.label>ワイド換気口(後付)</Vent_Over2W.label>
-  <Vent_Over2W.description>シンプルな換気口は,人の往来が無くても,つないだ部屋と部屋との温度差を一様にします.</Vent_Over2W.description>
-  <Blueprint_Vent_Over2W.label>ワイド換気口(後付)(設計)</Blueprint_Vent_Over2W.label>
-  <Frame_Vent_Over2W.label>ワイド換気口(後付)(施工)</Frame_Vent_Over2W.label>
-  <Frame_Vent_Over2W.description>シンプルな換気口は,人の往来が無くても,つないだ部屋と部屋との温度差を一様にします.</Frame_Vent_Over2W.description>
+  <Vent_Over2W.label>壁掛け式換気口（幅広）</Vent_Over2W.label>
+  <Vent_Over2W.description>2マス厚の防熱壁（二重壁）に直接設置できるように設計されたシンプルな換気口です。壁を壊して断熱性能を損なうことなく、隣接する部屋同士の温度を徐々に均一化させることができます。</Vent_Over2W.description>
+  <Blueprint_Vent_Over2W.label>壁掛け式換気口（幅広）（設計図）</Blueprint_Vent_Over2W.label>
+  <Frame_Vent_Over2W.label>壁掛け式換気口（幅広）（建築中）</Frame_Vent_Over2W.label>
+  <Frame_Vent_Over2W.description>2マス厚の防熱壁（二重壁）に直接設置できるように設計されたシンプルな換気口です。壁を壊して断熱性能を損なうことなく、隣接する部屋同士の温度を徐々に均一化させることができます。</Frame_Vent_Over2W.description>
 
 </LanguageData>

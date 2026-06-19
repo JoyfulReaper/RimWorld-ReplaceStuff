@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-	
-	<TD.ReplaceStuff>Replace Stuff</TD.ReplaceStuff>
-	<TD.Replace>대체</TD.Replace>
-	<TD.ReplaceDesc>물건을 대체합니다.\n예. 나무 벽을 돌로 대체</TD.ReplaceDesc>
-	<TD.ReplacingTag> (대체되는중)</TD.ReplacingTag>
-	<TD.ToggleBlueprintOverRock>청사진을 바위 속에 놓습니다.</TD.ToggleBlueprintOverRock>
-	<TD.SettingsNoOverwallCoolers>벽걸이형 에어컨을 건설 메뉴에서 감춥니다.</TD.SettingsNoOverwallCoolers>
-	<TD.IncapableOfSmoothing>다듬을 수 없음</TD.IncapableOfSmoothing>
-	<TD.FailedStuffBeingReplaced>물건이 대체되었습니다.</TD.FailedStuffBeingReplaced>
-	
+    
+    <TD.ReplaceStuff>Replace Stuff: Performance Edition</TD.ReplaceStuff>
+    <TD.Replace>대체</TD.Replace>
+    <TD.ReplaceDesc>구조물의 자재를 즉시 변경합니다. 예: 나무 벽을 즉시 돌 벽으로 업그레이드합니다.</TD.ReplaceDesc>
+    <TD.ReplacingTag> (대체 중)</TD.ReplacingTag>
+    <TD.ToggleBlueprintOverRock>천연암석 위에 청사진을 바로 배치할 수 있도록 허용</TD.ToggleBlueprintOverRock>
+    <TD.SettingsNoOverwallCoolers>건축 메뉴에서 아주 유용한 벽걸이형 냉방기 및 환풍구 숨기기</TD.SettingsNoOverwallCoolers>
+    <TD.SettingsNoNormalCoolers>건축 메뉴에서 기본(표준) 냉방기 및 환풍구 숨기기</TD.SettingsNoNormalCoolers>
+    <TD.SettingsCornerBuildable>내부에서 대각선 모서리 타일을 건축하거나 채굴할 수 있도록 허용</TD.SettingsCornerBuildable>
+    <TD.SettingsCornerBuildableDesc>주의: 이 옵션은 때때로 기괴한 경로 탐색 문제를 일으킬 수 있습니다. 정착민들이 이상하게 행동한다면 비활성화하십시오.</TD.SettingsCornerBuildableDesc>
+    <TD.IncapableOfSmoothing>다듬을 수 없음</TD.IncapableOfSmoothing>
+    <TD.FailedStuffBeingReplaced>대체하려는 기존 자재</TD.FailedStuffBeingReplaced>
+    
+    <!-- Performance Edition 추가 필드 -->
+    <TD.SettingsPreferredBridge>선호하는 다리 건설 순서:</TD.SettingsPreferredBridge>
+    <TD.SettingsBridgeResources>사용 가능한 자재가 있는 다리가 우선적으로 배치됩니다. 드래그 앤 드롭으로 나머지 순서를 변경할 수 있습니다.</TD.SettingsBridgeResources>
+    <TD.ReplacementAlreadyInProgess>대체 작업이 이미 진행 중입니다.</TD.ReplacementAlreadyInProgess>
+    
 </LanguageData>

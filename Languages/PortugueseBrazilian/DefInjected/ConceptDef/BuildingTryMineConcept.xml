@@ -1,8 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-  <BuildersTryMine.label>Construtores vão tentar meus objetos de valor</BuildersTryMine.label>
-  <BuildersTryMine.helpText>Nota: Colocar um prédio sobre minério valioso permitirá que os construtores mineirem o minério. Minério pode ser desperdiçado se extraído com pouca habilidade. Se seus construtores não são qualificados em mineração, você pode querer cancelar seu projeto de construção e permitir que mineiros qualificados façam seu trabalho primeiro.</BuildersTryMine.helpText>
-
+  <BuildersTryMine.label>Construtores tentarão minerar minérios valiosos</BuildersTryMine.label>
+  <BuildersTryMine.helpText>Aviso: Colocar um projeto de construção diretamente sobre um filão de minério valioso fará com que o construtor tente minerá-lo na hora. No entanto, se a habilidade de mineração dele for muito baixa, isso pode resultar em um desperdício terrível de recursos. Se os seus construtores forem absolutamente lamentáveis na mineração, talvez seja melhor cancelar o projeto e deixar que mineradores de verdade façam o trabalho primeiro.</BuildersTryMine.helpText>
 
 </LanguageData>

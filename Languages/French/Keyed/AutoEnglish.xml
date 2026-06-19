@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-	
-	<TD.ReplaceStuff>Remplacer des objets</TD.ReplaceStuff>
-	<TD.Replace>Remplacer</TD.Replace>
-	<TD.ReplaceDesc>Remplacez un objet, par ex. remplacer un mur de bois par de la pierre</TD.ReplaceDesc>
-	<TD.ReplacingTag> (Replacer)</TD.ReplacingTag>
-	<TD.ToggleBlueprintOverRock>Placer des plans sur le rocher de la montagne</TD.ToggleBlueprintOverRock>
-	<TD.SettingsNoOverwallCoolers>Cachez ces glacières murales super astucieuses dans le menu de construction</TD.SettingsNoOverwallCoolers>
-	<TD.SettingsNoNormalCoolers>Cachez le refroidisseur normal et l'évent dans le menu de construction</TD.SettingsNoNormalCoolers>
-	<TD.SettingsCornerBuildable>Les tuiles d'angle sont constructibles et exploitables de l'intérieur</TD.SettingsCornerBuildable>
-	<TD.SettingsCornerBuildableDesc>Cela peut parfois causer des problèmes de chemin étranges - désactivez-le pour peut-être résoudre ce problème.</TD.SettingsCornerBuildableDesc>
-	<TD.IncapableOfSmoothing>incapable de lisser</TD.IncapableOfSmoothing>
-	<TD.FailedStuffBeingReplaced>objets en cours de remplacement</TD.FailedStuffBeingReplaced>
-	
+    
+    <TD.ReplaceStuff>Replace Stuff: Performance Edition</TD.ReplaceStuff>
+    <TD.Replace>Remplacer</TD.Replace>
+    <TD.ReplaceDesc>Changez le matériau d'une structure en un clin d'œil, comme remplacer un mur en bois par de la pierre.</TD.ReplaceDesc>
+    <TD.ReplacingTag> (Remplacement)</TD.ReplacingTag>
+    <TD.ToggleBlueprintOverRock>Placer les plans directement sur la roche de montagne</TD.ToggleBlueprintOverRock>
+    <TD.SettingsNoOverwallCoolers>Masquer ces climatiseurs et ventilations muraux super pratiques du menu de construction</TD.SettingsNoOverwallCoolers>
+    <TD.SettingsNoNormalCoolers>Masquer les climatiseurs et ventilations standards du menu de construction</TD.SettingsNoNormalCoolers>
+    <TD.SettingsCornerBuildable>Permettre de construire et miner les cases d'angle depuis l'intérieur</TD.SettingsCornerBuildable>
+    <TD.SettingsCornerBuildableDesc>Attention : Cela peut parfois perturber le déplacement des colons. Désactivez cette option si vos pions font n'importe quoi.</TD.SettingsCornerBuildableDesc>
+    <TD.IncapableOfSmoothing>incapable de lisser</TD.IncapableOfSmoothing>
+    <TD.FailedStuffBeingReplaced>matériau en cours de remplacement</TD.FailedStuffBeingReplaced>
+    
+    <!-- New Performance Edition Keys -->
+    <TD.SettingsPreferredBridge>Ordre de priorité pour la construction des ponts :</TD.SettingsPreferredBridge>
+    <TD.SettingsBridgeResources>Les ponts avec des ressources disponibles sont prioritaires. Glissez-déposez pour réordonner le reste.</TD.SettingsBridgeResources>
+    <TD.ReplacementAlreadyInProgess>Remplacement déjà en cours.</TD.ReplacementAlreadyInProgess>
+    
 </LanguageData>

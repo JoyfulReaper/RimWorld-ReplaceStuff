@@ -1,9 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-  <Cooler_Over.label>refrigerador de parede</Cooler_Over.label>
-  <Cooler_Over2W.label>refrigerador de parede (largo)</Cooler_Over2W.label>
-  <Vent_Over.label>ventilação de parede</Vent_Over.label>
+  <Cooler_Over.label>Climatizador de parede</Cooler_Over.label>
+  <Cooler_Over.description>Um dispositivo elétrico que pode ser instalado diretamente sobre uma parede existente sem a necessidade de demolição. Sopra ar frio para dentro do ambiente enquanto descarrega calor pelo lado de fora. Ideal para regular a temperatura no verão ou para a construção de câmaras frias.</Cooler_Over.description>
+  <Blueprint_Cooler_Over.label>Climatizador de parede (projeto)</Blueprint_Cooler_Over.label>
+  <Frame_Cooler_Over.label>Climatizador de parede (em construção)</Frame_Cooler_Over.label>
+  <Frame_Cooler_Over.description>Um dispositivo elétrico que pode ser instalado diretamente sobre uma parede existente sem a necessidade de demolição. Sopra ar frio para dentro do ambiente enquanto descarrega calor pelo lado de fora. Ideal para regular a temperatura no verão ou para a construção de câmaras frias.</Frame_Cooler_Over.description>
 
+  <Cooler_Over2W.label>Climatizador de parede (largo)</Cooler_Over2W.label>
+  <Cooler_Over2W.description>Um climatizador projetado especificamente para paredes duplas (com dois blocos de espessura). É instalado diretamente sobre a estrutura sem quebrar o isolamento térmico, soprando ar frio para o interior. A seção externa descarrega calor normalmente.</Cooler_Over2W.description>
+  <Blueprint_Cooler_Over2W.label>Climatizador de parede (largo) (projeto)</Blueprint_Cooler_Over2W.label>
+  <Frame_Cooler_Over2W.label>Climatizador de parede (largo) (em construção)</Frame_Cooler_Over2W.label>
+  <Frame_Cooler_Over2W.description>Um climatizador projetado especificamente para paredes duplas (com dois blocos de espessura). É instalado diretamente sobre a estrutura sem quebrar o isolamento térmico, soprando ar frio para o interior. A seção externa descarrega calor normalmente.</Frame_Cooler_Over2W.description>
+
+  <Vent_Over.label>Ventilação de parede</Vent_Over.label>
+  <Vent_Over.description>Um sistema simples de aeração instalado diretamente sobre a parede. Permite equalizar gradualmente a temperatura entre duas salas adjacentes sem a necessidade de demolir a estrutura e sem comprometer o isolamento térmico do ambiente.</Vent_Over.description>
+  <Blueprint_Vent_Over.label>Ventilação de parede (projeto)</Blueprint_Vent_Over.label>
+  <Frame_Vent_Over.label>Ventilação de parede (em construção)</Frame_Vent_Over.label>
+  <Frame_Vent_Over.description>Um sistema simples de aeração instalado diretamente sobre a parede. Permite equalizar gradualmente a temperatura entre duas salas adjacentes sem a necessidade de demolir a estrutura e sem comprometer o isolamento térmico do ambiente.</Frame_Vent_Over.description>
 
 </LanguageData>

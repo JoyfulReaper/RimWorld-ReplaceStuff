@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-  <TD.ReplaceStuff>Replace Stuff</TD.ReplaceStuff>
+  <TD.ReplaceStuff>Replace Stuff: Performance Edition</TD.ReplaceStuff>
   <TD.Replace>Заменить</TD.Replace>
   <TD.ReplaceDesc>Заменяет материал построек, например можно заменить все деревянные стены каменными</TD.ReplaceDesc>
   <TD.ReplacingTag> (Заменяется)</TD.ReplacingTag>

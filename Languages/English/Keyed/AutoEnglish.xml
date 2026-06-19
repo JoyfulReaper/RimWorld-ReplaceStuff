@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-	
-	<TD.ReplaceStuff>Replace Stuff: Performance Editon</TD.ReplaceStuff>
-	<TD.Replace>Replace</TD.Replace>
-	<TD.ReplaceDesc><TD.ReplaceDesc>Swap a structure's building material, such as replacing a wooden wall with stone.</TD.ReplaceDesc></TD.ReplaceDesc>
-	<TD.ReplacingTag> (Replacing)</TD.ReplacingTag>
-	<TD.ToggleBlueprintOverRock>Place blueprints over mountain rock</TD.ToggleBlueprintOverRock>
-	<TD.SettingsNoOverwallCoolers>Hide those super-nifty over-wall coolers and vents from the build menu</TD.SettingsNoOverwallCoolers>
-	<TD.SettingsNoNormalCoolers>Hide the normal cooler and vent from the build menu</TD.SettingsNoNormalCoolers>
-	<TD.SettingsCornerBuildable>Corner tiles are buildable and mineable from inside</TD.SettingsCornerBuildable>
-	<TD.SettingsCornerBuildableDesc>This might sometime cause weird pathing issues - turn it off to maybe fix that.</TD.SettingsCornerBuildableDesc>
-	<TD.IncapableOfSmoothing>incapable of smoothing</TD.IncapableOfSmoothing>
-	<TD.FailedStuffBeingReplaced>stuff being replaced</TD.FailedStuffBeingReplaced>
-	<TD.SettingsPreferredBridge>Preferred Bridge order to place when needed:</TD.SettingsPreferredBridge>
-	<TD.SettingsBridgeResources>(First priority is bridges you have resources for ; Second priority is this list order - drag-and-drop to re-order)</TD.SettingsBridgeResources>
-	<TD.ReplacementAlreadyInProgess>Replacement already in progess.</TD.ReplacementAlreadyInProgess>
-	
+    
+    <TD.ReplaceStuff>Replace Stuff: Performance Edition</TD.ReplaceStuff>
+    <TD.Replace>Remplacer</TD.Replace>
+    <TD.ReplaceDesc>Changez le matériau d'une structure en un clin d'œil, comme remplacer un mur en bois par de la pierre.</TD.ReplaceDesc>
+    <TD.ReplacingTag> (Remplacement)</TD.ReplacingTag>
+    <TD.ToggleBlueprintOverRock>Placer les plans directement sur la roche de montagne</TD.ToggleBlueprintOverRock>
+    <TD.SettingsNoOverwallCoolers>Masquer ces climatiseurs et ventilations muraux super pratiques du menu de construction</TD.SettingsNoOverwallCoolers>
+    <TD.SettingsNoNormalCoolers>Masquer les climatiseurs et ventilations standards du menu de construction</TD.SettingsNoNormalCoolers>
+    <TD.SettingsCornerBuildable>Permettre de construire et miner les cases d'angle depuis l'intérieur</TD.SettingsCornerBuildable>
+    <TD.SettingsCornerBuildableDesc>Attention : Cela peut parfois perturber le déplacement des colons. Désactivez cette option si vos pions font n'importe quoi.</TD.SettingsCornerBuildableDesc>
+    <TD.IncapableOfSmoothing>incapable de lisser</TD.IncapableOfSmoothing>
+    <TD.FailedStuffBeingReplaced>matériau en cours de remplacement</TD.FailedStuffBeingReplaced>
+    
+    <!-- New Performance Edition Keys -->
+    <TD.SettingsPreferredBridge>Ordre de priorité pour la construction des ponts :</TD.SettingsPreferredBridge>
+    <TD.SettingsBridgeResources>Les ponts avec des ressources disponibles sont prioritaires. Glissez-déposez pour réordonner le reste.</TD.SettingsBridgeResources>
+    <TD.ReplacementAlreadyInProgess>Remplacement déjà en cours.</TD.ReplacementAlreadyInProgess>
+    
 </LanguageData>

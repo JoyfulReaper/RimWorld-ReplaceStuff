@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-	
-	<TD.ReplaceStuff>Replace Stuff</TD.ReplaceStuff>
-	<TD.Replace>建材替換</TD.Replace>
-	<TD.ReplaceDesc>替換物品材質，例如將木牆替換成石製的</TD.ReplaceDesc>
-	<TD.ReplacingTag> （建材替換中）</TD.ReplacingTag>
-	<TD.ToggleBlueprintOverRock>藍圖可以放置在天然岩石上</TD.ToggleBlueprintOverRock>
-	<TD.SettingsNoOverwallCoolers>在建造清單中隱藏那些超級輕巧的壁掛式冷氣和通風口</TD.SettingsNoOverwallCoolers>
-	<TD.SettingsNoNormalCoolers>在建造清單中隱藏原版的冷氣和通風口</TD.SettingsNoNormalCoolers>
-	<TD.SettingsCornerBuildable>位於轉角的目標可以在內部斜向建造或開採</TD.SettingsCornerBuildable>
-	<TD.SettingsCornerBuildableDesc>這有時候可能會導致奇怪的路徑問題 - 將其關閉以解決問題。</TD.SettingsCornerBuildableDesc>
-	<TD.IncapableOfSmoothing>和一些東西無法相容。</TD.IncapableOfSmoothing>
-	<TD.FailedStuffBeingReplaced>物品已經被改建完畢</TD.FailedStuffBeingReplaced>
-	
+    
+    <TD.ReplaceStuff>Replace Stuff: Performance Edition</TD.ReplaceStuff>
+    <TD.Replace>建材替換</TD.Replace>
+    <TD.ReplaceDesc>隨時更換結構的建材，像是把木牆直接升級成石牆。</TD.ReplaceDesc>
+    <TD.ReplacingTag> （建材替換中）</TD.ReplacingTag>
+    <TD.ToggleBlueprintOverRock>藍圖可以直接拍在天然岩石上</TD.ToggleBlueprintOverRock>
+    <TD.SettingsNoOverwallCoolers>在建築選單中隱藏那些超方便的壁掛式冷氣和通風口</TD.SettingsNoOverwallCoolers>
+    <TD.SettingsNoNormalCoolers>在建築選單中隱藏原版標準的冷氣和通風口</TD.SettingsNoNormalCoolers>
+    <TD.SettingsCornerBuildable>允許從內部建造或開採轉角方格</TD.SettingsCornerBuildable>
+    <TD.SettingsCornerBuildableDesc>注意：這有時候可能會導致奇怪的尋路問題。如果你的小人開始舉止怪異，請將其關閉。</TD.SettingsCornerBuildableDesc>
+    <TD.IncapableOfSmoothing>無法平滑</TD.IncapableOfSmoothing>
+    <TD.FailedStuffBeingReplaced>正被替換的建材</TD.FailedStuffBeingReplaced>
+    
+    <!-- Performance Edition 新增欄位 -->
+    <TD.SettingsPreferredBridge>偏好的橋樑放置順序：</TD.SettingsPreferredBridge>
+    <TD.SettingsBridgeResources>擁有可用資源的橋樑會優先放置。可以透過拖放來重新排序其餘橋樑。</TD.SettingsBridgeResources>
+    <TD.ReplacementAlreadyInProgess>替換作業已在進行中。</TD.ReplacementAlreadyInProgess>
+    
 </LanguageData>

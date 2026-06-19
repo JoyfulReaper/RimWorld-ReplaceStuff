@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-  <BuildersTryMine.label>Les travailleurs de la construction peuvent extraire des minéraux précieux</BuildersTryMine.label>
-  <BuildersTryMine.helpText>Remarque: placer des bâtiments sur du minerai précieux permettra aux personnes affectées au bâtiment d'extraire le minerai. Cependant, des compétences minières trop faibles peuvent entraîner un gaspillage de minerai. Si vos ouvriers du bâtiment ne maîtrisent pas les compétences minières, vous voudrez peut-être annuler le plan de construction que vous avez défini et laisser les mineurs qualifiés terminer d'abord l'extraction, puis commencer la construction.</BuildersTryMine.helpText>
-
+  <BuildersTryMine.label>Les constructeurs tentent de miner le minerai précieux</BuildersTryMine.label>
+  <BuildersTryMine.helpText>Attention : placer un plan de construction directement sur un filon de minerai précieux poussera le constructeur à l'extraire sur-le-champ. Cependant, si sa compétence en minage est trop faible, il risquerait de gaspiller de précieuses ressources. Si vos constructeurs ont un niveau de minage absolument lamentable, vous devriez peut-être les empêcher de s'en charger et confier cette tâche à de vrais mineurs professionnels.</BuildersTryMine.helpText>
 
 </LanguageData>

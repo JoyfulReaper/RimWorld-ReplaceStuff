@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-	
-	<TD.ReplaceStuff>Replace Stuff</TD.ReplaceStuff>
-	<TD.Replace>替换</TD.Replace>
-	<TD.ReplaceDesc>替换某个东西的材质，例如将木墙换成石墙</TD.ReplaceDesc>
-	<TD.ReplacingTag>(替换中)</TD.ReplacingTag>
-	<TD.ToggleBlueprintOverRock>将蓝图放于山岩上</TD.ToggleBlueprintOverRock>
-	<TD.SettingsNoOverwallCoolers>从建筑菜单中隐藏炒鸡漂亮的越墙式制冷机</TD.SettingsNoOverwallCoolers>
-	<TD.SettingsNoNormalCoolers>从建筑菜单中隐藏原版的制冷机和通风孔</TD.SettingsNoNormalCoolers>
-	<TD.SettingsCornerBuildable>允许在角落内部建造或是开采方块</TD.SettingsCornerBuildable>
-	<TD.SettingsCornerBuildableDesc>这有时候会导致奇怪的寻路问题-关闭这个选项也许能修复该问题。</TD.SettingsCornerBuildableDesc>
-	<TD.IncapableOfSmoothing>无法兼容</TD.IncapableOfSmoothing>
-	<TD.FailedStuffBeingReplaced>替换完毕</TD.FailedStuffBeingReplaced>
-	
+    
+    <TD.ReplaceStuff>Replace Stuff: Performance Edition</TD.ReplaceStuff>
+    <TD.Replace>替换</TD.Replace>
+    <TD.ReplaceDesc>随时更换结构的材质，比如直接把木墙升级为石墙。</TD.ReplaceDesc>
+    <TD.ReplacingTag>(替换中)</TD.ReplacingTag>
+    <TD.ToggleBlueprintOverRock>蓝图可以直接拍在天然岩石上</TD.ToggleBlueprintOverRock>
+    <TD.SettingsNoOverwallCoolers>在建筑菜单中隐藏那些超实用的越墙式制冷机和通风孔</TD.SettingsNoOverwallCoolers>
+    <TD.SettingsNoNormalCoolers>在建筑菜单中隐藏原版标准的制冷机和通风孔</TD.SettingsNoNormalCoolers>
+    <TD.SettingsCornerBuildable>允许从内部建造或开采转角方格</TD.SettingsCornerBuildable>
+    <TD.SettingsCornerBuildableDesc>注意：这有时会导致奇怪的寻路问题。如果你的小人开始举止怪异，请将其关闭。</TD.SettingsCornerBuildableDesc>
+    <TD.IncapableOfSmoothing>无法平滑</TD.IncapableOfSmoothing>
+    <TD.FailedStuffBeingReplaced>正被替换的建材</TD.FailedStuffBeingReplaced>
+    
+    <!-- Performance Edition 新增字段 -->
+    <TD.SettingsPreferredBridge>偏好的桥梁放置顺序：</TD.SettingsPreferredBridge>
+    <TD.SettingsBridgeResources>拥有可用资源的桥梁会优先放置。你可以通过拖放来重新排序其余桥梁。</TD.SettingsBridgeResources>
+    <TD.ReplacementAlreadyInProgess>替换作业已在进行中。</TD.ReplacementAlreadyInProgess>
+    
 </LanguageData>

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-	<TD.ReplaceStuff>Replace Stuff</TD.ReplaceStuff>
-	<TD.Replace>Reemplazar</TD.Replace>
-	<TD.ReplaceDesc>Reemplace el material de cualquier cosa, por ejemplo, sustituya una pared de madera por una piedr</TD.ReplaceDesc>
-	<TD.ReplacingTag> (Reemplazando)</TD.ReplacingTag>
-	<TD.ToggleBlueprintOverRock>Colocar planos sobre roca de montaña</TD.ToggleBlueprintOverRock>
-	<TD.SettingsNoOverwallCoolers>Esconder los súper ingeniosos refrigeradores empotrados del menú de construcción</TD.SettingsNoOverwallCoolers>
-	<TD.SettingsNoNormalCoolers>Ocultar el refrigerador y el conducto de ventilación normales del menú de construcción</TD.SettingsNoNormalCoolers>
-	<TD.IncapableOfSmoothing>incapaz de alisar</TD.IncapableOfSmoothing>
-	<TD.FailedStuffBeingReplaced>materiales que serán reemplazados</TD.FailedStuffBeingReplaced>
+    <TD.ReplaceStuff>Replace Stuff: Performance Edition</TD.ReplaceStuff>
+    <TD.Replace>Reemplazar</TD.Replace>
+    <TD.ReplaceDesc>Cambia el material de una estructura al instante, como mejorar una pared de madera a una de piedra.</TD.ReplaceDesc>
+    <TD.ReplacingTag> (Reemplazando)</TD.ReplacingTag>
+    <TD.ToggleBlueprintOverRock>Coloca planos directamente sobre la roca de la montaña</TD.ToggleBlueprintOverRock>
+    <TD.SettingsNoOverwallCoolers>Ocultar esos ingeniosos refrigeradores y ventilaciones sobre la pared del menú de construcción</TD.SettingsNoOverwallCoolers>
+    <TD.SettingsNoNormalCoolers>Ocultar los refrigeradores y ventilaciones estándar del menú de construcción</TD.SettingsNoNormalCoolers>
+    <TD.IncapableOfSmoothing>incapaz de alisar</TD.IncapableOfSmoothing>
+    <TD.FailedStuffBeingReplaced>material siendo reemplazado</TD.FailedStuffBeingReplaced>
   
 </LanguageData>

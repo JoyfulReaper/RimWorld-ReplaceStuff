@@ -1,8 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-  <BuildersTryMine.label>Los constructores tratarán de extraer los bienes de valor</BuildersTryMine.label>
-  <BuildersTryMine.helpText>Nota: Colocar un edificio sobre un mineral valioso permitirá a los constructores extraer el mineral. El mineral puede desperdiciarse si se extrae con poca habilidad. Si sus constructores no son expertos en minería, es posible que desee cancelar su proyecto de construcción y dejar que mineros cualificados hagan antes su trabajo.</BuildersTryMine.helpText>
+  <Cooler_Over.label>Climatizador de pared</Cooler_Over.label>
+  <Cooler_Over.description>Un dispositivo eléctrico que se puede montar directamente sobre una pared existente sin tener que demolerla. Sopla aire frío hacia el interior mientras expulsa el calor hacia el exterior. Ideal para regular la temperatura en verano o para construir cámaras frigoríficas.</Cooler_Over.description>
+  <Blueprint_Cooler_Over.label>Climatizador de pared (plano)</Blueprint_Cooler_Over.label>
+  <Frame_Cooler_Over.label>Climatizador de pared (en construcción)</Frame_Cooler_Over.label>
+  <Frame_Cooler_Over.description>Un dispositivo eléctrico que se puede montar directamente sobre una pared existente sin tener que demolerla. Sopla aire frío hacia el interior mientras expulsa el calor hacia el exterior. Ideal para regular la temperatura en verano o para construir cámaras frigoríficas.</Frame_Cooler_Over.description>
 
+  <Cooler_Over2W.label>Climatizador de pared (ancho)</Cooler_Over2W.label>
+  <Cooler_Over2W.description>Un climatizador diseñado específicamente para paredes dobles (de dos bloques de grosor). Se instala directamente sobre la estructura sin romper el aislamiento térmico. La sección externa expulsa el calor de forma normal.</Cooler_Over2W.description>
+  <Blueprint_Cooler_Over2W.label>Climatizador de pared (ancho) (plano)</Blueprint_Cooler_Over2W.label>
+  <Frame_Cooler_Over2W.label>Climatizador de pared (ancho) (en construcción)</Frame_Cooler_Over2W.label>
+  <Frame_Cooler_Over2W.description>Un climatizador diseñado específicamente para paredes dobles (de dos bloques de grosor). Se instala directamente sobre la estructura sin romper el aislamiento térmico. La sección externa expulsa el calor de forma normal.</Frame_Cooler_Over2W.description>
+
+  <Vent_Over.label>Ventilación de pared</Vent_Over.label>
+  <Vent_Over.description>Un sistema de ventilación sencillo que se monta directamente sobre la pared. Permite igualar la temperatura entre dos habitaciones contiguas sin necesidad de demoler la pared y sin comprometer el aislamiento térmico de la sala.</Vent_Over.description>
+  <Blueprint_Vent_Over.label>Ventilación de pared (plano)</Blueprint_Vent_Over.label>
+  <Frame_Vent_Over.label>Ventilación de pared (en construcción)</Frame_Vent_Over.label>
+  <Frame_Vent_Over.description>Un sistema de ventilación sencillo que se monta directamente sobre la pared. Permite igualar la temperatura entre dos habitaciones contiguas sin necesidad de demoler la pared y sin comprometer el aislamiento térmico de la sala.</Frame_Vent_Over.description>
 
 </LanguageData>

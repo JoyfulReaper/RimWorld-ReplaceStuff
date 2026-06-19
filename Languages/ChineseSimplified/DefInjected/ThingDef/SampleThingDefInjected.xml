@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-	
-	<Cooler_Over.label>越墙式制冷机</Cooler_Over.label>
-	<Cooler_Over.description>一个能够安装于墙体上的电器设备，可将冷空气吹入房间内，同时外机部分产生大量热量。可以在夏季为房间降温，或者用其建造一个冷库。</Cooler_Over.description>
+    
+    <Cooler_Over.label>越墙式制冷机</Cooler_Over.label>
+    <Cooler_Over.description>一个可直接架设在墙面上的电器，无需拆除现有墙体即可向室内吹入冷气，同时外机部分会产生大量的热气。非常适合用于夏季调节室温或建造冷库。</Cooler_Over.description>
 
-	<Cooler_Over2W.label>越墙式制冷机(宽)</Cooler_Over2W.label>
-	<Cooler_Over2W.description>一个能够安装于墙体上的电器设备，可将冷空气吹入房间内，同时外机部分产生大量热量。可以在夏季为房间降温，或者用其建造一个冷库。</Cooler_Over2W.description>
+    <Cooler_Over2W.label>越墙式制冷机（宽型）</Cooler_Over2W.label>
+    <Cooler_Over2W.description>一个可直接架设在双层墙面上的电器。专为两格厚度的保温墙体设计，無需拆除现有墙体即可向室内吹入冷气。外机部分同样会产生大量的热气。</Cooler_Over2W.description>
 
-	<Vent_Over.label>越墙式通风孔</Vent_Over.label>
-	<Vent_Over.description>一个通风孔，在平衡两个房间温度的同时保持墙体无法通过。</Vent_Over.description>
-	
+    <Vent_Over.label>越墙式通风孔</Vent_Over.label>
+    <Vent_Over.description>一个可直接架设在墙面上的简易空气通道。在平衡两个相邻房间温度的同时，无需拆除墙体，且完全不影响房间的封闭性。</Vent_Over.description>
+    
 </LanguageData>

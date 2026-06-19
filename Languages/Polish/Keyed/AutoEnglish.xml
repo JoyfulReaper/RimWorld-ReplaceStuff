@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-	
-	<TD.ReplaceStuff>Replace Stuff</TD.ReplaceStuff>
-	<TD.Replace>Wymień</TD.Replace>
-	<TD.ReplaceDesc>Zastąp rzeczy, np. zastąp drewnianą ścianę kamienną.</TD.ReplaceDesc>
-	<TD.ReplacingTag> (Wymiana)</TD.ReplacingTag>
-	<TD.ToggleBlueprintOverRock>Umieść plany nad górami</TD.ToggleBlueprintOverRock>
-	<TD.SettingsNoOverwallCoolers>Ukryj te super-ładne klimatyzatory na ścianie z menu budowania</TD.SettingsNoOverwallCoolers>
-	<TD.IncapableOfSmoothing>niezdolny do wygładzenia</TD.IncapableOfSmoothing>
-	<TD.FailedStuffBeingReplaced>wczasie wymiany</TD.FailedStuffBeingReplaced>
-	
+    
+    <TD.ReplaceStuff>Replace Stuff: Performance Edition</TD.ReplaceStuff>
+    <TD.Replace>Zastąp</TD.Replace>
+    <TD.ReplaceDesc>Zmień materiał konstrukcji w mgnieniu oka, np. ulepszając drewnianą ścianę na kamienną.</TD.ReplaceDesc>
+    <TD.ReplacingTag> (Zastępowanie)</TD.ReplacingTag>
+    <TD.ToggleBlueprintOverRock>Wrzucaj plany budowy bezpośrednio na górską skałę</TD.ToggleBlueprintOverRock>
+    <TD.SettingsNoOverwallCoolers>Ukryj te sprytne naścienne klimatyzatory i wentylatory z menu budowania</TD.SettingsNoOverwallCoolers>
+    <TD.IncapableOfSmoothing>nie potrafi wygładzać</TD.IncapableOfSmoothing>
+    <TD.FailedStuffBeingReplaced>wymieniany materiał</TD.FailedStuffBeingReplaced>
+    
+    <!-- Nowe klucze z wersji Performance Edition -->
+    <TD.SettingsNoNormalCoolers>Ukryj standardowe klimatyzatory i wentylatory z menu budowania</TD.SettingsNoNormalCoolers>
+    <TD.SettingsCornerBuildable>Zezwól na budowanie i kopanie narożnych kafelków od środka</TD.SettingsCornerBuildable>
+    <TD.SettingsCornerBuildableDesc>Uwaga: Może to czasem powodować dziwne problemy ze ścieżkami pawonów. Wyłącz to, jeśli zaczną się gubić.</TD.SettingsCornerBuildableDesc>
+    <TD.SettingsPreferredBridge>Preferowana kolejność stawiania mostów:</TD.SettingsPreferredBridge>
+    <TD.SettingsBridgeResources>Mosty z dostępnymi zasobami mają pierwszeństwo. Przeciągnij i upuść, aby zmienić kolejność reszty.</TD.SettingsBridgeResources>
+    <TD.ReplacementAlreadyInProgess>Zastępowanie jest już w toku.</TD.ReplacementAlreadyInProgess>
+    
 </LanguageData>

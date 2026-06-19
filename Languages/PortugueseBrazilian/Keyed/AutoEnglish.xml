@@ -1,14 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-  <TD.ReplaceStuff>Substitua as coisas</TD.ReplaceStuff>
-  <TD.Replace>Substituir</TD.Replace>
-  <TD.ReplaceDesc>Substituir material de uma coisa, por ex. substituir uma parede de madeira com pedra</TD.ReplaceDesc>
-  <TD.ReplacingTag> (Substituindo)</TD.ReplacingTag>
-  <TD.ToggleBlueprintOverRock>Coloque plantas sobre a rocha da montanha</TD.ToggleBlueprintOverRock>
-  <TD.SettingsNoOverwallCoolers>Oculte os super coolers de over-wall do menu construir</TD.SettingsNoOverwallCoolers>
-  <TD.SettingsNoNormalCoolers>Oculte o cooler normal e desabafar do menu de compilação</TD.SettingsNoNormalCoolers>
-  <TD.IncapableOfSmoothing>incapaz de suavizar</TD.IncapableOfSmoothing>
-  <TD.FailedStuffBeingReplaced>coisas sendo substituídas</TD.FailedStuffBeingReplaced>
+  <TD.ReplaceStuff>Replace Stuff: Performance Edition</TD.ReplaceStuff>
+  <TD.Replace>Заменить</TD.Replace>
+  <TD.ReplaceDesc>Меняйте материал построек на лету, например, обновляя деревянные стены до каменных.</TD.ReplaceDesc>
+  <TD.ReplacingTag> (Заменяется)</TD.ReplacingTag>
+  <TD.ToggleBlueprintOverRock>Размещать проекты построек прямо поверх скал</TD.ToggleBlueprintOverRock>
+  <TD.SettingsNoOverwallCoolers>Скрыть классные настенные кондиционеры и вентиляцию из меню строительства</TD.SettingsNoOverwallCoolers>
+  <TD.SettingsNoNormalCoolers>Скрыть стандартные кондиционеры и вентиляцию из меню строительства</TD.SettingsNoNormalCoolers>
+  <TD.SettingsCornerBuildable>Разрешить строить и копать угловые клетки изнутри</TD.SettingsCornerBuildable>
+  <TD.SettingsCornerBuildableDesc>Внимание: иногда это вызывает сбои в поиске пути. Отключите опцию, если ваши пешки начнут чудить.</TD.SettingsCornerBuildableDesc>
+  <TD.IncapableOfSmoothing>нельзя сгладить</TD.IncapableOfSmoothing>
+  <TD.FailedStuffBeingReplaced>заменяемый материал</TD.FailedStuffBeingReplaced>
 
 </LanguageData>
