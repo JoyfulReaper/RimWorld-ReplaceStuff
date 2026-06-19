@@ -81,7 +81,7 @@ public static class Patch_GenConstruct
     /// </summary>
     public static bool Prefix(Thing thing, ref List<Thing> __result)
     {
-        if (thing is null || !thing.Spawned || thing.Map != null)
+        if (thing is null || !thing.Spawned || thing.Map is null)
         {
             __result = emptyList;
             return false;
