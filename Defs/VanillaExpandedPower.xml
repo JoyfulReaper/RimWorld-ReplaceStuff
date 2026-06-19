@@ -1,21 +1,24 @@
 ﻿<Defs>
-	<Replace_Stuff.InterchangeableItems MayRequire="vanillaexpanded.vfepower">
-		<defName>ReplaceStuffModCompat_VanillaExpandedPower</defName>
-		<replaceLists>
-			<li>
-				<category>PoweredGenerators</category>
-				<items>
-					<li>VFE_IndustrialWoodFiredGenerator</li>
-					<li>VFE_IndustrialChemfuelPoweredGenerator</li>
-				</items>
-			</li>
-			
-			<li>
-				<category>SolarGenerators</category>
-				<items>
-					<li>VFE_AdvancedSolarGenerator</li>
-				</items>
-			</li>
-		</replaceLists>
-	</Replace_Stuff.InterchangeableItems>
+    <Replace_Stuff.InterchangeableItems MayRequire="vanillaexpanded.vfepower">
+        <defName>ReplaceStuffModCompat_VanillaExpandedPower</defName>
+        <replaceLists>
+            <li>
+                <category>PoweredGenerators</category>
+                <items>
+                    <li>WoodFiredGenerator</li> <!-- Vanilla -->
+                    <li>VFE_IndustrialWoodFiredGenerator</li>
+                    <li>ChemfuelPoweredGenerator</li> <!-- Vanilla -->
+                    <li>VFE_IndustrialChemfuelPoweredGenerator</li>
+                </items>
+            </li>
+            
+            <li>
+                <category>SolarGenerators</category>
+                <items>
+                    <li>SolarGenerator</li> <!-- Vanilla -->
+                    <li>VFE_AdvancedSolarGenerator</li>
+                </items>
+            </li>
+        </replaceLists>
+    </Replace_Stuff.InterchangeableItems>
 </Defs>

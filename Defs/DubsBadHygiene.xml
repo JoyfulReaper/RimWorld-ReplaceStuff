@@ -1,6 +1,6 @@
 ﻿<Defs>
 	<Replace_Stuff.InterchangeableItems MayRequire="dubwise.dubsbadhygiene">
-		<defName>ReplaceStuffModCompat_BadHiegene</defName>
+		<defName>ReplaceStuffModCompat_BadHygiene</defName>
 		<replaceLists>
 			<li>
 

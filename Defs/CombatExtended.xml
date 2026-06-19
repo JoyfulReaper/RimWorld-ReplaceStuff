@@ -1,22 +1,12 @@
 <Defs>
-    <Replace_Stuff.InterchangeableItems MayRequire="ceteam.combatextended">
-        <defName>ReplaceStuffModCompat_CombatExtended</defName>
+    <!-- This block requires BOTH mods to be present to function -->
+    <Replace_Stuff.InterchangeableItems MayRequire="ceteam.combatextended, harunasion.electricloadingbench">
+        <defName>ReplaceStuffModCompat_CombatExtended_Electric</defName>
         <replaceLists>
             <li>
                 <category>AmmoBench</category>
                 <items>
                     <li>AmmoBench</li>
-                </items>
-            </li>
-        </replaceLists>
-    </Replace_Stuff.InterchangeableItems>
-
-    <Replace_Stuff.InterchangeableItems MayRequire="harunasion.electricloadingbench">
-        <defName>ReplaceStuffModCompat_CombatExtended_ElectricReloading</defName>
-        <replaceLists>
-            <li>
-                <category>AmmoBench</category>
-                <items>
                     <li>AmmoElectricBench</li>
                 </items>
             </li>

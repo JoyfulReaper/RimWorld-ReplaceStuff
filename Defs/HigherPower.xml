@@ -1,20 +1,21 @@
 ﻿<Defs>
-	<Replace_Stuff.InterchangeableItems MayRequire="leion247612.higherhpower">
-		<defName>ReplaceStuffModCompat_HigherPower</defName>
-		<replaceLists>
-			<li>
-				<category>PoweredGenerators</category>
-				<items>
-					<li>ChemfuelPoweredGenerator_II</li>
-				</items>
-			</li>
-			
-			<li>
-				<category>SolarGenerators</category>
-				<items>
+    <Replace_Stuff.InterchangeableItems MayRequire="leion247612.higherhpower">
+        <defName>ReplaceStuffModCompat_HigherPower</defName>
+        <replaceLists>
+            <li>
+                <category>PoweredGenerators</category>
+                <items>
+                    <li>FueledGenerator</li>
+					<li>ChemfuelPoweredGenerator_II</li> </items>
+            </li>
+            
+            <li>
+                <category>SolarGenerators</category>
+                <items>
+                    <li>SolarGenerator</li>
 					<li>SolarGenerator_II</li>
-				</items>
-			</li>
-		</replaceLists>
-	</Replace_Stuff.InterchangeableItems>
+				 </items>
+            </li>
+        </replaceLists>
+    </Replace_Stuff.InterchangeableItems>
 </Defs>

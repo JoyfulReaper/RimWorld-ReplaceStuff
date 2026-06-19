@@ -1,41 +1,47 @@
 ﻿<Defs>
-	<Replace_Stuff.InterchangeableItems MayRequire="vanillaexpanded.vfespacer">
-		<defName>ReplaceStuffModCompat_VanillaExpandedSpacer</defName>
-		<replaceLists>
-			<li>
-				<category>Dressers</category>
-				<items>
-					<li>Table_IlluminatedDresser</li>
-				</items>
-			</li>
+    <Replace_Stuff.InterchangeableItems MayRequire="vanillaexpanded.vfespacer">
+        <defName>ReplaceStuffModCompat_VanillaExpandedSpacer</defName>
+        <replaceLists>
+            <li>
+                <category>Dressers</category>
+                <items>
+                    <li>Dresser</li>
+                    <li>Table_IlluminatedDresser</li>
+                </items>
+            </li>
 
-			<li>
-				<category>EndTables</category>
-				<items>
-					<li>Table_IlluminatedEndTable</li>
-				</items>
-			</li>
+            <li>
+                <category>EndTables</category>
+                <items>
+                    <li>EndTable</li>
+                    <li>Table_IlluminatedEndTable</li>
+                </items>
+            </li>
 
-			<li>
-				<category>Lights</category>
-				<items>
-					<li>Spacer_OutdoorLamp</li>
-				</items>
-			</li>
+            <li>
+                <category>Chairs</category>
+                <items>
+                    <li>DiningChair</li>
+                    <li>Armchair</li>
+                    <li>VFES_ModernCouch</li>
+                </items>
+            </li>
 
-			<li>
-				<category>Chair</category>
-				<items>
-					<li>VFES_ModernCouch</li>
-				</items>
-			</li>
-			
-			<li>
-				<category>TVs</category>
-				<items>
-					<li>UltrascreenTV</li>
-				</items>
-			</li>
-		</replaceLists>
-	</Replace_Stuff.InterchangeableItems>
+            <li>
+                <category>Lights</category>
+                <items>
+                    <li>StandingLamp</li>
+                    <li>Spacer_OutdoorLamp</li>
+                </items>
+            </li>
+
+            <li>
+                <category>TVs</category>
+                <items>
+                    <li>MegascreenTelevision</li>
+                    <li>UltrascreenTV</li>
+                </items>
+            </li>
+        </replaceLists>
+    </Replace_Stuff.InterchangeableItems>
 </Defs>

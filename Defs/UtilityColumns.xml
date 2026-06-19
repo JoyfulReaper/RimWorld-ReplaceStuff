@@ -1,34 +1,31 @@
 ﻿<Defs>
-	<Replace_Stuff.InterchangeableItems MayRequire="nephlite.orbitaltradecolumn">
-		<defName>ReplaceStuffModCompat_UtilityColumns</defName>
-		<replaceLists>
-			<li>
-				<category>Lights</category>
-				<items>
-					<li>LightColumnMod</li>
-					<li>DarkColumnMod</li>
-				</items>
-			</li>
+    <Replace_Stuff.InterchangeableItems MayRequire="nephlite.orbitaltradecolumn">
+        <defName>ReplaceStuffModCompat_UtilityColumns</defName>
+        <replaceLists>
+            <li>
+                <category>Lights</category>
+                <items>
+                    <li>LightColumnMod</li>
+                    <li>DarkColumnMod</li>
+                    <li>FlameColumnMod</li>
+                </items>
+            </li>
 
-			<li>
-				<category>Sunlamps</category>
-				<items>
-					<li>SunColumnMod</li>
-				</items>
-			</li>
+            <li>
+                <category>Sunlamps</category>
+                <items>
+                    <li>SunLamp</li> <li>SunColumnMod</li>
+                </items>
+            </li>
 
-			<li>
-				<category>Columns</category>
-				<items>
-					<li>LightColumnMod</li>
-					<li>DarkColumnMod</li>
-					<li>DetColumnMod</li>
-					<li>FlameColumnMod</li>
-					<li>GraveColumnMod</li>
-					<li>SunColumnMod</li>
-					<li>IceColumnMod</li>
-				</items>
-			</li>
-		</replaceLists>
-	</Replace_Stuff.InterchangeableItems>
+            <li>
+                <category>UtilityColumns</category>
+                <items>
+                    <li>DetColumnMod</li>
+                    <li>GraveColumnMod</li>
+                    <li>IceColumnMod</li>
+                </items>
+            </li>
+        </replaceLists>
+    </Replace_Stuff.InterchangeableItems>
 </Defs>
