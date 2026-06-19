@@ -15,7 +15,7 @@
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.OverMineable;
+namespace Replace_Stuff.Terrain;
 
 static class MineableUtility
 {

@@ -11,7 +11,7 @@
  * Licensed under the MIT License.
  */
 
-namespace Replace_Stuff.OverMineable;
+namespace Replace_Stuff.Terrain;
 
 internal static class BlueprintUtility
 {

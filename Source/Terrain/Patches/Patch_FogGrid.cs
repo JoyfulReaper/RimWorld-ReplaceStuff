@@ -13,6 +13,7 @@
 
 using HarmonyLib;
 using Replace_Stuff.Replace.Patches;
+using Replace_Stuff.Terrain.Extensions;
 using RimWorld;
 using System.Linq;
 using Verse;

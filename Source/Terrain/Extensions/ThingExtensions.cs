@@ -15,7 +15,7 @@ using System.Linq;
 using Verse;
 
 
-namespace Replace_Stuff.OverMineable;
+namespace Replace_Stuff.Terrain.Extensions;
 
 public static class ThingExtensions
 {

@@ -13,6 +13,8 @@
 
 using RimWorld;
 
+namespace Replace_Stuff.Terrain;
+
 [DefOf]
 public static class ConceptDefOf
 {
