@@ -51,6 +51,14 @@ public static class GenConstruct_BlocksConstruction
             return;
         }
 
+        // Replacement frames intentionally coexist with the building they are
+        // replacing until construction completes.
+        if (__result && constructible is ReplacementFrame rf && t == rf.TargetThing)
+        {
+            __result = false;
+            return;
+        }
+
         // Mineables
         if (!__result && t.IsBlockingRock(constructible))
         {

@@ -59,6 +59,16 @@ public static class ReplacementUtility
         replaceFrame.TargetThing = targetThing;
         replaceFrame.TargetStuff = targetThing.Stuff;
 
+        RSLog.Debug(
+            $"PlaceReplaceFrame(): Target={targetThing.def.defName} " +
+            $"Frame={replacementFrameDef.defName} " +
+            $"StuffOld={targetThing.Stuff?.defName ?? "none"} " +
+            $"StuffNew={stuff?.defName ?? "none"} " +
+            $"Size={targetThing.def.size} " +
+            $"InteractionOffset={replacementFrameDef.interactionCellOffset} " +
+            $"WorkDeconstruct={ReplacementFrame.WorkToDeconstructDef(replacementFrameDef, targetThing.Stuff)} " +
+            $"WorkBuild={replaceFrame.WorkToReplace}");
+
 
         RSLog.Debug(
             $"PlaceReplaceFrame(): BEFORE SPAWN: OldRot={(targetThing is null ? "null" : targetThing.Rotation.ToString())} "
