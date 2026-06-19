@@ -136,23 +136,23 @@ public static class BuildingStateTransfer
             cq.SetQuality(data.quality.Value, ArtGenerationContext.Colony);
         }
 
-        //// Target temperature - TODO Restore 
-        //if (data.targetTemperature.HasValue)
-        //{
-        //    if (thing is Building_Cooler cooler)
-        //        cooler.compTempControl.targetTemperature =
-        //            data.targetTemperature.Value;
+        // Target temperature - TODO Restore 
+        if (data.targetTemperature.HasValue)
+        {
+            if (thing is Building_Cooler cooler)
+                cooler.compTempControl.targetTemperature =
+                    data.targetTemperature.Value;
 
-        //    if (thing is Building_Heater heater)
-        //        heater.compTempControl.targetTemperature =
-        //            data.targetTemperature.Value;
-        //}
+            if (thing is Building_Heater heater)
+                heater.compTempControl.targetTemperature =
+                    data.targetTemperature.Value;
+        }
 
-        //// Growers - TODO Restore 
-        //if (data.plantDef != null && thing is Building_PlantGrower grower)
-        //{
-        //    grower.SetPlantDefToGrow(data.plantDef);
-        //}
+        // Growers - TODO Restore 
+        if (data.plantDef != null && thing is Building_PlantGrower grower)
+        {
+            grower.SetPlantDefToGrow(data.plantDef);
+        }
 
         // Bill stacks
         if (data.bills != null && thing is Building_WorkTable table && table.BillStack.Count == 0)

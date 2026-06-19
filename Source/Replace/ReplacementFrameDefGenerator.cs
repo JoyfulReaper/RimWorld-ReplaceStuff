@@ -11,7 +11,6 @@
  * Licensed under the MIT License.
  */
 
-using Replace_Stuff.Compatibility;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -27,6 +26,8 @@ namespace Replace_Stuff.Replace;
 internal static class ReplacementFrameDefGenerator
 {
     private static readonly Dictionary<ThingDef, ThingDef> _buildingToFrameMap = [];
+
+    public static event Action<ThingDef, ThingDef> OnFrameCreated;
 
     public static IReadOnlyDictionary<ThingDef, ThingDef> BuildingToFrameMap
      => _buildingToFrameMap;
@@ -132,15 +133,10 @@ internal static class ReplacementFrameDefGenerator
             thingDef.graphicData.color = DrawColor(thingDef);
         }
 
-        // Support QualityBuilder
-        if (QualityBuilderCompat.qualityBuilderPropsType is not null)
-        {
-            if (def.HasComp(typeof(CompQuality)) && def.building != null)
-                thingDef.comps.Add((CompProperties)Activator.CreateInstance(QualityBuilderCompat.qualityBuilderPropsType));
-        }
-
         thingDef.entityDefToBuild = def;
         thingDef.modContentPack = LoadedModManager.GetMod<ReplaceStuffPerformance>().Content;
+
+        OnFrameCreated?.Invoke(thingDef, def);
 
         return thingDef;
     }

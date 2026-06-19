@@ -16,10 +16,11 @@ using HarmonyLib;
 using Replace_Stuff.Interfaces;
 using Replace_Stuff.Replace;
 using Replace_Stuff.Utilities;
+using RimWorld;
 using System;
 using Verse;
 
-namespace Replace_Stuff.Compatibility;
+namespace Replace_Stuff.Compatibility.ThirdParty;
 
 public class QualityBuilderHandler : IReplacementHandler
 {
@@ -29,15 +30,32 @@ public class QualityBuilderHandler : IReplacementHandler
     // Define a unique key for this handler to prevent collisions
     private const string DesignationKey = "QualityBuilder_HasDesignation";
 
-    // Static constructor ensures reflection runs only once
     static QualityBuilderHandler()
     {
         try
         {
             _compType = AccessTools.TypeByName("CompQualityBuilder");
+
+            if (_compType != null)
+            {
+                // Register using the Comp's FullName
+                ReplacementRegistry.RegisterHandler(_compType.FullName, new QualityBuilderHandler());
+            }
+
             // TODO: Assuming the typo is on purpose, verify
-            AccessTools.TypeByName("CompProperties_QualityBuilderr");
+            var propsType = AccessTools.TypeByName("CompProperties_QualityBuilderr");
             _designationDef = DefDatabase<DesignationDef>.GetNamed("SkilledBuilder", false);
+
+            if (propsType != null)
+            {
+                ReplacementFrameDefGenerator.OnFrameCreated += (buildingDef, frameDef) =>
+                {
+                    if (buildingDef.HasComp(typeof(CompQuality)) && buildingDef.building is not null)
+                    {
+                        frameDef.comps.Add((CompProperties)Activator.CreateInstance(propsType));
+                    }
+                };
+            }
         }
         catch (Exception e)
         {
