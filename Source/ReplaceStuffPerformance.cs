@@ -53,7 +53,7 @@ public class ReplaceStuffPerformance : Verse.Mod
         static ModStartup()
         {
             ReplacementFrameDefRegistrar.Register();
-            DesignationMenuFixer.SanityCheck(); // TODO RENAME ME
+            DesignationMenuFixer.FlattenDesignationMenus(); // TODO RENAME ME
             ReplacementLoader.AddRulesFromXML();
             Patch_ReservationManager.Initialize(_harmony);
             ReplacementLoader.RegisterCodeBasedHandlers();

@@ -24,7 +24,7 @@ namespace Replace_Stuff.OverWallCoolers;
 /// </summary>
 public static class DesignationMenuFixer
 {
-    public static void SanityCheck()
+    public static void FlattenDesignationMenus()
     {
         foreach (var category in DefDatabase<DesignationCategoryDef>.AllDefsListForReading)
         {
