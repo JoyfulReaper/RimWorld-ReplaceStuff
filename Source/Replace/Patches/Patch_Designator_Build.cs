@@ -61,8 +61,7 @@ internal class Patch_Designator_Build
             return true;
 
         // Optimized search for replaceable items
-        var replaceables = c.GetThingList(__instance.Map);
-        if (replaceables.Count == 0)
+        if (c.GetThingList(__instance.Map).Count == 0)
             return true;
 
         if (thingDef.MadeFromStuff && __instance.StuffDef is null)
@@ -78,29 +77,9 @@ internal class Patch_Designator_Build
         if (typeof(Building_Door).IsAssignableFrom(thingDef.thingClass))
             ___placingRot = DoorUtility.DoorRotationAt(c, __instance.Map, thingDef.building.preferConnectingToFences);
 
-
-        Thing thingToReplace = null;
         var stuff = __instance.StuffDef;
-        for (int i = 0; i < replaceables.Count; i++)
-        {
-            var replaceable = replaceables[i];
-
-            if (!ReplacementCandidateChecker.IsValidReplacement(stuff, replaceable, thingDef))
-                continue;
-
-            if (replaceable.Rotation != ___placingRot)
-                continue;
-
-            // Priority: Blueprints and Frames
-            if (replaceable is Blueprint_Build || replaceable is Frame)
-            {
-                thingToReplace = replaceable;
-                break; // Found the best target, stop searching
-            }
-
-            // Fallback for regular buildings
-            thingToReplace ??= replaceable;
-        }
+        var thingToReplace = ReplacementCandidateChecker.FindReplacementTarget(
+            __instance.Map, c, ___placingRot, thingDef, stuff);
 
         if (thingToReplace == null)
             return true;

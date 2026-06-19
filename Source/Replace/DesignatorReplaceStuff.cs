@@ -271,32 +271,11 @@ public class Designator_ReplaceStuff : Designator
     /// </remarks>
     public static void ReplaceFirstEligibleThing(Map map, IntVec3 cell, ThingDef stuffDef)
     {
-        Thing firstReplaceable = null;
-        Thing blueprintOrFrameTarget = null;
-
-        var replaceables = cell.GetThingList(map);
-        var count = replaceables.Count;
-        for (int i = 0; i < count; i++)
-        {
-            var replaceable = replaceables[i];
-            if (!ReplacementCandidateChecker.IsValidReplacement(stuffDef, replaceable))
-                continue;
-
-            firstReplaceable ??= replaceable;
-
-            if (replaceable is Blueprint_Build || replaceable is Frame)
-            {
-                blueprintOrFrameTarget = replaceable;
-                break;
-            }
-        }
-
-        var thingToReplace = blueprintOrFrameTarget ?? firstReplaceable;
+        var thingToReplace = ReplacementCandidateChecker.FindReplacementTarget(
+            map, cell, Rot4.North, buildingDef: null, stuffDef, requireRotationMatch: false);
 
         if (thingToReplace is not null)
-        {
             ReplacementHandler.ExecuteReplacement(thingToReplace, stuffDef);
-        }
     }
 
     public override void DrawPanelReadout(ref float curY, float width)

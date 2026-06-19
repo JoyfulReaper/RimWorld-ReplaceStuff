@@ -1,5 +1,4 @@
-﻿// TODO: NAMING: We have two classes named ReplacementValidator in two different namespaces. Verify and rename one.
-/*
+﻿/*
  * REPLACE STUFF: Performance Edition
  * 
  * 
@@ -151,5 +150,73 @@ internal static class ReplacementCandidateChecker
             return false;
 
         return true;
+    }
+
+    /// <summary>
+    /// Finds the best replacement target at a cell for a build designation.
+    /// </summary>
+    /// <param name="exclude">
+    /// Optional thing to ignore, e.g. a blueprint that was just placed.
+    /// </param>
+    /// <param name="preferInProgress">
+    /// When true, unfinished blueprints and frames take priority over completed buildings.
+    /// </param>
+    /// <param name="requireRotationMatch">
+    /// When false, any rotation is accepted. Used by the dedicated Replace designator.
+    /// </param>
+    public static Thing FindReplacementTarget(
+        Map map,
+        IntVec3 cell,
+        Rot4 placingRot,
+        ThingDef buildingDef,
+        ThingDef stuff,
+        Thing exclude = null,
+        bool preferInProgress = true,
+        bool requireRotationMatch = true)
+    {
+        var replaceables = cell.GetThingList(map);
+        if (replaceables.Count == 0)
+            return null;
+
+        Thing builtTarget = null;
+
+        for (int i = 0; i < replaceables.Count; i++)
+        {
+            var replaceable = replaceables[i];
+            if (replaceable == exclude)
+                continue;
+
+            if (!IsValidReplacement(stuff, replaceable, buildingDef))
+                continue;
+
+            if (requireRotationMatch && !RotationMatches(replaceable, placingRot, cell))
+                continue;
+
+            if (preferInProgress && replaceable is Blueprint_Build or Frame)
+                return replaceable;
+
+            if (replaceable is Blueprint or Frame)
+                continue;
+
+            builtTarget ??= replaceable;
+        }
+
+        return builtTarget;
+    }
+
+    /// <summary>
+    /// Returns true when placement rotation is compatible with the existing thing.
+    /// Symmetric buildings such as 1x1 walls may differ in Rot4 while occupying the same cells.
+    /// </summary>
+    public static bool RotationMatches(Thing replaceable, Rot4 placingRot, IntVec3 cell)
+    {
+        if (replaceable.Rotation == placingRot)
+            return true;
+
+        if (!replaceable.def.rotatable)
+            return true;
+
+        return GenAdj.OccupiedRect(cell, replaceable.Rotation, replaceable.def.size) ==
+               GenAdj.OccupiedRect(cell, placingRot, replaceable.def.size);
     }
 }
