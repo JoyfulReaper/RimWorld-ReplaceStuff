@@ -13,7 +13,7 @@
 
 using Replace_Stuff;
 using Replace_Stuff.Compatibility;
-using Replace_Stuff.DestroyedRestore;
+using Replace_Stuff.Data;
 using Replace_Stuff.Interfaces;
 using Replace_Stuff.Replace;
 using Replace_Stuff.Utilities;
@@ -123,7 +123,7 @@ internal static class ReplacementPipeline
         ApplyConstructionQuality(newThing, worker);
     }
 
-    private static void ApplyPersistentState(Thing newThing, ReplaceData replaceData)
+    private static void ApplyPersistentState(Thing newThing, ReplacementData replaceData)
     {
         BuildingStateTransfer.Apply(replaceData, newThing);
     }

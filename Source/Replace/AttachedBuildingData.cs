@@ -12,6 +12,7 @@
  */
 
 
+using Replace_Stuff.Data;
 using RimWorld;
 using Verse;
 
@@ -30,7 +31,7 @@ public class AttachedBuildingData : IExposable
 
     public QualityCategory? quality;
 
-    public ReplaceData state;
+    public ReplacementData state;
 
     public void ExposeData()
     {

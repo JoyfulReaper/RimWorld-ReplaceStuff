@@ -11,13 +11,12 @@
  * Licensed under the MIT License.
  */
 
-using Replace_Stuff.Replace;
 using Replace_Stuff.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
 
-namespace Replace_Stuff.DestroyedRestore;
+namespace Replace_Stuff.Data;
 
 /// <summary>
 /// Map component responsible for storing, serializing, and recovering metadata 
@@ -28,7 +27,7 @@ public class ReplacementStateStore : MapComponent
     /// <summary>
     /// Tracks captured building metadata, indexed by the cell coordinates where the destruction occurred.
     /// </summary>
-    public Dictionary<IntVec3, ReplaceData> destroyedBuildings;
+    public Dictionary<IntVec3, ReplacementData> destroyedBuildings;
     //Actually want this to be deep-ref since it's despawned!
 
     /// <summary>
@@ -37,7 +36,7 @@ public class ReplacementStateStore : MapComponent
     /// <param name="map">The map this component tracks.</param>
     public ReplacementStateStore(Map map) : base(map)
     {
-        destroyedBuildings = new Dictionary<IntVec3, ReplaceData>();
+        destroyedBuildings = new Dictionary<IntVec3, ReplacementData>();
     }
 
     /// <summary>
@@ -64,7 +63,7 @@ public class ReplacementStateStore : MapComponent
     {
         var comp = map.GetComponent<ReplacementStateStore>();
 
-        if (comp.destroyedBuildings.TryGetValue(pos, out ReplaceData data))
+        if (comp.destroyedBuildings.TryGetValue(pos, out ReplacementData data))
         {
             BuildingStateTransfer.Apply(data, newBuilding);
             comp.destroyedBuildings.Remove(pos);

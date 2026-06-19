@@ -11,6 +11,7 @@
  * Licensed under the MIT License.
  */
 
+using Replace_Stuff.Data;
 using Replace_Stuff.Interfaces;
 using Replace_Stuff.Replace;
 using Replace_Stuff.Utilities;
@@ -22,13 +23,13 @@ namespace Replace_Stuff.Compatibility.ThirdParty.RimFridge;
 [ReplacementHandler("RimFridge.RimFridge_Building")]
 public class FridgeHandler : IReplacementHandler
 {
-    public void PreAction(ReplaceData data, Thing oldThing, Thing newThing)
+    public void PreAction(ReplacementData data, Thing oldThing, Thing newThing)
     {
         // No pre-action needed, but you can capture data if you want
         // RimFridge usually just needs the temp copied over.
     }
 
-    public void PostAction(ReplaceData data, Thing oldThing, Thing newThing)
+    public void PostAction(ReplacementData data, Thing oldThing, Thing newThing)
     {
         if (RimFridgeCompat.DesiredTempInfo != null)
         {

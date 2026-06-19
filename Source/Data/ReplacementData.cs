@@ -5,13 +5,14 @@
  */
 
 using Replace_Stuff.Compatibility;
+using Replace_Stuff.Replace;
 using RimWorld;
 using System.Collections.Generic;
 using Verse;
 
-namespace Replace_Stuff.Replace;
+namespace Replace_Stuff.Data;
 
-public class ReplaceData : IExposable
+public class ReplacementData : IExposable
 {
     public Faction faction;
     public QualityCategory? quality;
@@ -31,9 +32,9 @@ public class ReplaceData : IExposable
     public StorageSettings storageSettings;
     public bool belongedToGroup;
 
-    public static ReplaceData FromThing(Thing thing)
+    public static ReplacementData FromThing(Thing thing)
     {
-        var data = new ReplaceData();
+        var data = new ReplacementData();
 
         // Core properties
         data.faction = thing.Faction;

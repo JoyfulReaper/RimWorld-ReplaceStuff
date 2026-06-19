@@ -16,7 +16,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.DestroyedRestore.Patches;
+namespace Replace_Stuff.Data.Patches;
 
 [HarmonyPatch(typeof(ThingUtility), nameof(ThingUtility.CheckAutoRebuildOnDestroyed))]
 static class Patch_ThingUtility

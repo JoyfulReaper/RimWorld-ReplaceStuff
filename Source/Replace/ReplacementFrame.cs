@@ -12,6 +12,7 @@
  */
 
 using HarmonyLib;
+using Replace_Stuff.Data;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
@@ -47,7 +48,7 @@ public class ReplacementFrame : Frame
     public ThingDef TargetStuff;
 
     /// <summary>Encapsulated state data transferred from the target structure to the new one.</summary>
-    public ReplaceData ReplaceData;
+    public ReplacementData ReplaceData;
 
 
     /// <summary>

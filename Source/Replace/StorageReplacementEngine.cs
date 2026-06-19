@@ -11,6 +11,7 @@
  * Licensed under the MIT License.
  */
 
+using Replace_Stuff.Data;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System.Collections.Generic;
@@ -55,7 +56,7 @@ internal static class StorageReplacementEngine
         }
     }
 
-    internal static void CaptureStorageFiltersAndPriority(ReplaceData data, Thing thing)
+    internal static void CaptureStorageFiltersAndPriority(ReplacementData data, Thing thing)
     {
         // Storage filters/pirority
         if (thing is IStoreSettingsParent storageParent)
@@ -76,7 +77,7 @@ internal static class StorageReplacementEngine
         }
     }
 
-    internal static void CaptureStorageItems(ReplaceData data, Thing thing)
+    internal static void CaptureStorageItems(ReplacementData data, Thing thing)
     {
         // Stored items
         if (thing is Building_Storage storage)
@@ -97,7 +98,7 @@ internal static class StorageReplacementEngine
         }
     }
 
-    internal static void ApplyStorageItems(ReplaceData data, Thing thing)
+    internal static void ApplyStorageItems(ReplacementData data, Thing thing)
     {
         // Stored items & Custom Storage Naming
         if (thing is Building_Storage storage)

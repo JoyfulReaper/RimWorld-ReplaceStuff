@@ -20,20 +20,20 @@ using System.Linq;
 using UnityEngine;
 using Verse;
 
-namespace Replace_Stuff.DestroyedRestore;
+namespace Replace_Stuff.Data;
 
 [StaticConstructorOnStartup]
 public static class BuildingStateTransfer
 {
     static BuildingStateTransfer() { }
 
-    public static ReplaceData Capture(Thing thing, HashSet<int> visited)
+    public static ReplacementData Capture(Thing thing, HashSet<int> visited)
     {
         if (!visited.Add(thing.thingIDNumber))
             return null;
 
         // Faction and rotation
-        ReplaceData data = new()
+        ReplacementData data = new()
         {
             faction = thing.Faction,
             rotation = thing.Rotation
@@ -89,7 +89,7 @@ public static class BuildingStateTransfer
         return data;
     }
 
-    private static void CaptureAttachements(ReplaceData data, Thing thing, HashSet<int> visited)
+    private static void CaptureAttachements(ReplacementData data, Thing thing, HashSet<int> visited)
     {
         // Attachments (ex: Wall Lamps)
         var attached = GenConstruct.GetAttachedBuildings(thing);
@@ -114,7 +114,7 @@ public static class BuildingStateTransfer
         }
     }
 
-    public static void Apply(ReplaceData data, Thing thing)
+    public static void Apply(ReplacementData data, Thing thing)
     {
         //LOG storage parent, priorityallowed defs and rotation
         RSLog.Debug(
@@ -164,7 +164,7 @@ public static class BuildingStateTransfer
         ApplyAttachements(data, thing);
     }
 
-    public static void ApplyAttachements(ReplaceData data, Thing thing)
+    public static void ApplyAttachements(ReplacementData data, Thing thing)
     {
         // Attachments (ex Wall Lamps)
         foreach (var attachment in data.attachedBuildings)
@@ -196,7 +196,7 @@ public static class BuildingStateTransfer
         }
     }
 
-    public static void ApplyStorageFiltersAndPriority(ReplaceData data, Thing thing)
+    public static void ApplyStorageFiltersAndPriority(ReplacementData data, Thing thing)
     {
         if (thing is IStoreSettingsParent storageParent && data.storageSettings != null)
         {

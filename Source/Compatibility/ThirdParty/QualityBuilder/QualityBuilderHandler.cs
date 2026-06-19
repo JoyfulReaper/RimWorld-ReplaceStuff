@@ -13,6 +13,7 @@
 
 
 using HarmonyLib;
+using Replace_Stuff.Data;
 using Replace_Stuff.Interfaces;
 using Replace_Stuff.Replace;
 using Replace_Stuff.Utilities;
@@ -55,7 +56,7 @@ public class QualityBuilderHandler : IReplacementHandler
         }
     }
 
-    public void PreAction(ReplaceData data, Thing oldThing, Thing newThing)
+    public void PreAction(ReplacementData data, Thing oldThing, Thing newThing)
     {
         if (_designationDef is null)
             return;
@@ -67,7 +68,7 @@ public class QualityBuilderHandler : IReplacementHandler
         }
     }
 
-    public void PostAction(ReplaceData data, Thing oldThing, Thing newThing)
+    public void PostAction(ReplacementData data, Thing oldThing, Thing newThing)
     {
         if (_designationDef is null)
             return;

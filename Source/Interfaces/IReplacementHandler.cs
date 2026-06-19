@@ -11,7 +11,7 @@
  * Licensed under the MIT License.
  */
 
-using Replace_Stuff.Replace;
+using Replace_Stuff.Data;
 using Verse;
 
 namespace Replace_Stuff.Interfaces;
@@ -24,8 +24,8 @@ namespace Replace_Stuff.Interfaces;
 public interface IReplacementHandler
 {
     // Runs before old thing is destroyed
-    void PreAction(ReplaceData data, Thing oldThing, Thing newThing);
+    void PreAction(ReplacementData data, Thing oldThing, Thing newThing);
 
     // Runs after the new thing is spawned
-    void PostAction(ReplaceData data, Thing oldThing, Thing newThing);
+    void PostAction(ReplacementData data, Thing oldThing, Thing newThing);
 }
