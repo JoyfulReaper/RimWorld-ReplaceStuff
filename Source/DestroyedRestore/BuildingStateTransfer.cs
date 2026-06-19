@@ -39,7 +39,6 @@ public static class BuildingStateTransfer
             rotation = thing.Rotation
         };
 
-        // POPULATE COMP HANDLERS
         // Iterate through all comps, check if we have a handler for them
         if (thing is ThingWithComps thingWithComps)
         {

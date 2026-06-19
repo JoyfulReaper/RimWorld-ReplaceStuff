@@ -1,7 +1,7 @@
-using Verse;
-using RimWorld;
 using Replace_Stuff.Utilities;
+using RimWorld;
 using System.Collections.Generic;
+using Verse;
 
 namespace Replace_Stuff.Replace;
 
@@ -49,9 +49,8 @@ internal static class StorageReplacementEngine
             var settings = storageParent.GetStoreSettings();
             RSLog.Debug($"DEBUG: Before copy - Priority: {settings?.Priority.ToString() ?? "NULL"}, Allowed: {settings?.filter?.AllowedDefCount.ToString() ?? "NULL"}");
 
-            data.storageFilter = new ThingFilter();
-            data.storageFilter.CopyAllowancesFrom(settings.filter);
-            data.storagePriority = settings.Priority;
+            data.storageSettings = new StorageSettings();
+            data.storageSettings.CopyFrom(settings);
 
             RSLog.Debug(
                 $"CAPTURE IstoreSettingsParent:" +
@@ -67,8 +66,8 @@ internal static class StorageReplacementEngine
         // Stored items
         if (thing is Building_Storage storage)
         {
-            data.settings = new StorageSettings();
-            data.settings.CopyFrom(storage.GetStoreSettings());
+            data.storageSettings = new StorageSettings();
+            data.storageSettings.CopyFrom(storage.GetStoreSettings());
 
             var currentGroup = GetStorageGroup(storage);
             if (currentGroup != null)
@@ -106,51 +105,38 @@ internal static class StorageReplacementEngine
                 }
                 else
                 {
-                    // Group disbanded because it dropped below 2 members.
-                    // Locate the orphaned companion to safely forge a valid 2-member group.
+                    // Group disbanded. Locate the orphaned companion to safely forge a valid 2-member group.
                     var companion = FindOrphanedCompanion(storage.Map, storage.GroupingLabel, storage.Position, storage.def);
-                    if (companion != null)
+                    if (companion is not null)
                     {
                         var newGroup = storage.Map.storageGroups.NewGroup(data.storageLabel);
-
-                        // Force the label onto the IRenamable property
                         newGroup.RenamableLabel = data.storageLabel;
 
-                        // Bind both to satisfy the engine's >1 member invariant
-                        if (!newGroup.members.Contains(companion)) newGroup.members.Add(companion);
-                        if (!newGroup.members.Contains(storage)) newGroup.members.Add(storage);
+                        if (!newGroup.members.Contains(companion))
+                            newGroup.members.Add(companion);
+                        if (!newGroup.members.Contains(storage))
+                            newGroup.members.Add(storage);
 
                         SetStorageGroup(companion, newGroup);
                         SetStorageGroup(storage, newGroup);
 
-                        if (data.settings != null)
+                        // Use the unified settings object
+                        if (data.storageSettings != null)
                         {
-                            newGroup.GetStoreSettings().CopyFrom(data.settings);
-                        }
-                        else if (data.storageFilter != null)
-                        {
-                            var settings = newGroup.GetStoreSettings();
-                            settings.filter.CopyAllowancesFrom(data.storageFilter);
-                            if (data.storagePriority.HasValue)
-                                settings.Priority = data.storagePriority.Value;
+                            newGroup.GetStoreSettings().CopyFrom(data.storageSettings);
                         }
 
                         newGroup.Notify_SettingsChanged();
                     }
                     else
                     {
-                        // No companion survived. 
-                        // downgrade to a standalone shelf.
+                        // No companion survived. Downgrade to a standalone shelf.
                         var settings = storage.GetStoreSettings();
-                        if (data.settings != null)
+
+                        // Use the unified settings object
+                        if (data.storageSettings != null)
                         {
-                            settings.CopyFrom(data.settings);
-                        }
-                        else if (data.storageFilter != null)
-                        {
-                            settings.filter.CopyAllowancesFrom(data.storageFilter);
-                            if (data.storagePriority.HasValue)
-                                settings.Priority = data.storagePriority.Value;
+                            settings.CopyFrom(data.storageSettings);
                         }
                         storage.Notify_SettingsChanged();
                     }

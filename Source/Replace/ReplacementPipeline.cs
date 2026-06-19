@@ -11,12 +11,15 @@
  * Licensed under the MIT License.
  */
 
-using Verse;
-using RimWorld;
-using Replace_Stuff.Replace;
-using System.Collections.Generic;
-using Replace_Stuff.Utilities;
+using Replace_Stuff.Compatibility;
 using Replace_Stuff.DestroyedRestore;
+using Replace_Stuff.Interfaces;
+using Replace_Stuff.Replace;
+using Replace_Stuff.Utilities;
+using RimWorld;
+using System;
+using System.Collections.Generic;
+using Verse;
 
 internal static class ReplacementPipeline
 {
@@ -27,6 +30,11 @@ internal static class ReplacementPipeline
     /// <param name="worker"></param>
     internal static void ExecuteReplacementPipeline(ReplacementFrame replacementFrame, Pawn worker)
     {
+        var activeComps = replacementFrame.ReplaceData.compHandlers;
+
+        //Pre-Action: Run before oldThing is destroyed
+        RunHandlers(activeComps, h => h.PreAction(null, replacementFrame.TargetThing));
+
         if (replacementFrame.TargetThing is null || !replacementFrame.TargetThing.Spawned)
         {
             replacementFrame.resourceContainer.TryDropAll(replacementFrame.Position, replacementFrame.Map, ThingPlaceMode.Near);
@@ -46,6 +54,10 @@ internal static class ReplacementPipeline
         InitializeReplacement(oldThing, newThing, worker);
         ApplyPersistentState(newThing, replacementFrame.ReplaceData);
         StorageReplacementEngine.RestoreStoredItems(newThing, transientState);
+
+        // Post-Action: Run after newThing is spawned
+        RunHandlers(activeComps, h => h.PostAction(newThing, oldThing));
+
         Cleanup(oldThing, worker, replacementFrame.resourceContainer);
     }
 
@@ -86,7 +98,7 @@ internal static class ReplacementPipeline
         BuildingStateTransfer.Apply(replaceData, newThing);
     }
 
-     private static void ApplyConstructionQuality(Thing newThing, Pawn worker)
+    private static void ApplyConstructionQuality(Thing newThing, Pawn worker)
     {
         if (worker != null && newThing.TryGetComp<CompQuality>() is CompQuality compQuality)
         {
@@ -150,5 +162,23 @@ internal static class ReplacementPipeline
         RSLog.Debug($"CreateReplacement() AFTER MAKETHING: New Rot={newThing.Rotation}");
 
         return newThing;
+    }
+
+    private static void RunHandlers(List<string> compNames, Action<IReplacementHandler> action)
+    {
+        foreach (var compName in compNames)
+        {
+            if (ReplacementRegistry.TryGetHandler(compName, out var handler))
+            {
+                try
+                {
+                    action(handler);
+                }
+                catch (Exception e)
+                {
+                    RSLog.Error($"Error executing replacement handler {compName}: {e.Message}");
+                }
+            }
+        }
     }
 }

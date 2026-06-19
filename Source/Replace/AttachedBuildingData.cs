@@ -39,5 +39,8 @@ public class AttachedBuildingData : IExposable
         Scribe_Values.Look(ref position, "position");
         Scribe_Values.Look(ref rotation, "rotation");
         Scribe_Values.Look(ref hitPoints, "hitPoints");
+        Scribe_References.Look(ref faction, "faction");
+        Scribe_Values.Look(ref quality, "quality");
+        Scribe_Deep.Look(ref state, "state");
     }
 }
