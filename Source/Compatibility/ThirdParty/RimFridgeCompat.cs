@@ -35,7 +35,7 @@ public static class RimFridgeCompat
     {
         try
         {
-            fridgeType = AccessTools.TypeByName("Building_Refrigerator");
+            fridgeType = AccessTools.TypeByName("RimFridge.RimFridge_Building");
             if (fridgeType != null)
                 DesiredTempInfo = AccessTools.Field(fridgeType, "DesiredTemp");
         }

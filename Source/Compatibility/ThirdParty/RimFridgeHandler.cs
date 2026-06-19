@@ -19,7 +19,7 @@ using Verse;
 
 namespace Replace_Stuff.Compatibility.ThirdParty;
 
-[ReplacementHandler("Building_Refrigerator")]
+[ReplacementHandler("RimFridge.RimFridge_Building")]
 public class FridgeHandler : IReplacementHandler
 {
     public void PreAction(ReplaceData data, Thing oldThing, Thing newThing)

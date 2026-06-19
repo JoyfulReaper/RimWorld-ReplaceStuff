@@ -24,49 +24,46 @@ internal class ReplacementLoader
 {
     public static void AddRulesFromXML()
     {
-        var comps = new List<ReplaceList>();
         foreach (var def in DefDatabase<InterchangeableItems>.AllDefs)
         {
             foreach (var list in def.replaceLists)
             {
+                // Register Interchangeable Items for UI/Blueprints
+                if (list.items.Any())
+                {
+                    ReplacementRegistry.AddInterchangeableItems(list);
+                }
+
+                // Register Comps/Handlers for State Transfer
                 if (list.comps.Any())
                 {
-                    comps.Add(list);
+                    foreach (var compName in list.comps)
+                    {
+                        if (ReplacementRegistry.TryGetHandler(compName, out _))
+                            continue;
+
+                        var type = GenTypes.GetTypeInAnyAssembly(compName);
+                        if (type is null)
+                        {
+                            RSLog.Warning($"Could not find replacement handler type: {compName}");
+                            continue;
+                        }
+
+                        try
+                        {
+                            var handler = (IReplacementHandler)Activator.CreateInstance(type);
+                            if (handler != null)
+                            {
+                                ReplacementRegistry.RegisterHandler(compName, handler);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            RSLog.Error($"Failed to create instance of {compName}: {e.Message}");
+                        }
+                    }
                 }
             }
-        }
-        foreach (var itemList in comps)
-        {
-            foreach (var compName in itemList.comps)
-            {
-                if (ReplacementRegistry.TryGetHandler(compName, out _))
-                    continue;
-
-                var type = GenTypes.GetTypeInAnyAssembly(compName);
-                if (type is null)
-                {
-                    RSLog.Warning($"Could not find replacement handler type: {compName}");
-                    continue;
-                }
-
-                try
-                {
-                    var handler = (IReplacementHandler)Activator.CreateInstance(type);
-                    if (handler is null)
-                        continue;
-
-                    ReplacementRegistry.RegisterHandler(compName, handler);
-                }
-                catch (Exception e)
-                {
-                    RSLog.Error($"Failed to create instance of {compName}: {e.Message}");
-                    continue;
-                }
-            }
-        }
-        foreach (var itemList in comps)
-        {
-            ReplacementRegistry.AddInterchangeableItems(itemList);
         }
     }
 
