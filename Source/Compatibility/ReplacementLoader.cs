@@ -35,7 +35,7 @@ internal class ReplacementLoader
                 }
 
                 // Register Comps/Handlers for State Transfer
-                if (list.comps.Any())
+                if (list.comps?.Any() ?? false)
                 {
                     foreach (var compName in list.comps)
                     {

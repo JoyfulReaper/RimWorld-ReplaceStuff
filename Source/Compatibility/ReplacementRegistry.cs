@@ -12,9 +12,7 @@
  */
 
 using Replace_Stuff.Interfaces;
-using Replace_Stuff.NewThing;
 using Replace_Stuff.Utilities;
-using System;
 using System.Collections.Generic;
 using Verse;
 
@@ -23,6 +21,8 @@ namespace Replace_Stuff.Compatibility
     public static class ReplacementRegistry
     {
         private static readonly Dictionary<string, IReplacementHandler> _handlerRegistry = new();
+
+        private static readonly Dictionary<ThingDef, HashSet<ThingDef>> _interchangeablePools = new();
 
         internal static bool IsRegistered(string name) =>
             _handlerRegistry.ContainsKey(name);
@@ -54,13 +54,40 @@ namespace Replace_Stuff.Compatibility
 
         internal static void AddInterchangeableList(List<ThingDef> items)
         {
-            if (items.Count < 2)
+            if (items == null || items.Count < 2)
                 return;
-            ReplacementMatcher.AddRule(ListContainsThingDef(new HashSet<ThingDef>(items)));
+
+            var fullSet = new HashSet<ThingDef>(items);
+            foreach (var item in items)
+            {
+                if (item == null) continue;
+
+                if (!_interchangeablePools.TryGetValue(item, out var existingPool))
+                {
+                    _interchangeablePools[item] = fullSet;
+                }
+                else
+                {
+                    // Safe merge pattern if multiple mod lists register overlapping configurations
+                    existingPool.UnionWith(fullSet);
+                    foreach (var member in fullSet)
+                    {
+                        if (member != null)
+                            _interchangeablePools[member] = existingPool;
+                    }
+                }
+            }
         }
 
-        static Predicate<ThingDef> ListContainsThingDef(HashSet<ThingDef> list) =>
-            list.Contains;
+        /// <summary>
+        /// O(1) Fast-path lookup to determine if two structural definitions are explicitly marked as interchangeable.
+        /// </summary>
+        internal static bool AreInterchangeable(ThingDef a, ThingDef b)
+        {
+            return a != null && b != null &&
+                   _interchangeablePools.TryGetValue(a, out var pool) &&
+                   pool.Contains(b);
+        }
 
         public static void DebugListHandlers()
         {

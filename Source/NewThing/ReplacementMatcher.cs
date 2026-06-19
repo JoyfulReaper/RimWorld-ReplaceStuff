@@ -12,7 +12,6 @@
  */
 
 using Replace_Stuff.Compatibility;
-using Replace_Stuff.CoolersOverWalls;
 using Replace_Stuff.Utilities;
 using RimWorld;
 using System;
@@ -73,8 +72,6 @@ public static class ReplacementMatcher
         // Register them (sorted by priority)
         foreach (var rule in foundRules.OrderByDescending(r => r.priority))
         {
-            // Invoke the method to get the predicate and add the rule
-            // Assuming the method signature is: public static void AddMyRule() { AddRule(...); }
             try
             {
                 rule.method.Invoke(null, null);
@@ -85,39 +82,6 @@ public static class ReplacementMatcher
                 RSLog.Error($"Failed to execute registration rule {rule.method.Name}: {e.Message}");
             }
         }
-
-        // Walls/Fences
-        AddRule(d => d.IsWall() || (d.building?.isFence ?? false),
-                o => o.IsWall() || (o.building?.isFence ?? false));
-
-        // Doors
-        AddRule(d => d.IsWall() || typeof(Building_Door).IsAssignableFrom(d.thingClass));
-
-        // Coolers
-        AddRule(d => typeof(Building_Cooler).IsAssignableFrom(d.thingClass));
-
-        // Beds
-        AddRule(d => typeof(Building_Bed).IsAssignableFrom(d.thingClass) && d.GetStatValueAbstract(StatDefOf.WorkToBuild) > 0f);
-
-        // Fences
-        DesignationCategoryDef fencesDef = DefDatabase<DesignationCategoryDef>.GetNamed("Fences", false);
-        if (fencesDef != null)
-            AddRule(d => d.designationCategory == fencesDef);
-
-        // Tables
-        AddRule(d => d.IsTable);
-
-        // Fridges
-        //AddRule(d => RimFridgeCompat.fridgeType != null && d.thingClass == RimFridgeCompat.fridgeType);
-
-        // Growers
-        AddRule(d => typeof(IPlantToGrowSettable).IsAssignableFrom(d.thingClass));
-
-        // Power
-        AddRule(d => typeof(Building_Battery).IsAssignableFrom(d.thingClass));
-        AddRule(d => d.placeWorkers?.Any(w => w == typeof(PlaceWorker_WatermillGenerator)) ?? false);
-        AddRule(d => d.placeWorkers?.Any(w => w == typeof(PlaceWorker_WindTurbine)) ?? false);
-        AddRule(d => d.placeWorkers?.Any(w => w == typeof(PlaceWorker_OnSteamGeyser)) ?? false);
     }
 
     public static void AddRule(Predicate<ThingDef> newCheck, Predicate<ThingDef> oldCheck = null)
@@ -176,6 +140,13 @@ public static class ReplacementMatcher
 #pragma warning restore CS0168 // Variable is declared but never used
         {
             Debugger.Break();
+        }
+
+        // Bypasses the predicates loop entirely if items belong to an explicit XML registry list.
+        if (ReplacementRegistry.AreInterchangeable(newDef, oldDef))
+        {
+            _replacementCache.Add((newDef, oldDef), true);
+            return true;
         }
 
         foreach (var r in _replacements)
