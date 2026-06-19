@@ -13,7 +13,7 @@
   <Frame_Cooler_Over2W.label>Climatiseur mural large (en construction)</Frame_Cooler_Over2W.label>
   <Frame_Cooler_Over2W.description>Un appareil électrique conçu spécifiquement pour s'adapter aux murs doubles (deux cases d'épaisseur). Il s'installe directement sur la structure pour insuffler de l'air frais sans détruire la cloison isolante, tout en rejetant de la chaleur à l'extérieur.</Frame_Cooler_Over2W.description>
 
-  <Vent_Over.label>Ventilation murale</联.label>
+  <Vent_Over.label>Ventilation murale</Vent_Over.label>
   <Vent_Over.description>Un système d'aération simple qui s'installe directement sur un mur. Il permet d'équilibrer progressivement la température entre deux pièces adjacentes sans détruire la cloison et sans compromettre l'étanchéité thermique de la pièce.</Vent_Over.description>
   <Blueprint_Vent_Over.label>Ventilation murale (plan)</Blueprint_Vent_Over.label>
   <Frame_Vent_Over.label>Ventilation murale (en construction)</Frame_Vent_Over.label>
