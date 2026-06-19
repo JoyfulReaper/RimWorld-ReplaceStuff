@@ -29,7 +29,7 @@ namespace Replace_Stuff.Replace;
 /// systems to determine whether a cell contains a compatible
 /// replacement target.
 /// </remarks>
-internal static class ReplacementValidator
+internal static class ReplacementCandidateChecker
 {
     /// <summary>
     /// Caches the allowed construction materials for each

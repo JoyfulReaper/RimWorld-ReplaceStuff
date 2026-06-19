@@ -23,6 +23,9 @@ namespace Replace_Stuff.Compatibility
     {
         private static readonly Dictionary<string, IReplacementHandler> _handlerRegistry = new();
 
+        internal static bool IsRegistered(string name) =>
+            _handlerRegistry.ContainsKey(name);
+
         internal static bool TryGetHandler(string name, out IReplacementHandler handler) =>
             _handlerRegistry.TryGetValue(name, out handler);
 
@@ -52,7 +55,7 @@ namespace Replace_Stuff.Compatibility
         {
             if (items.Count < 2)
                 return;
-            ReplacementValidator.AddRule(ListContainsThingDef(new HashSet<ThingDef>(items)));
+            ReplacementMatcher.AddRule(ListContainsThingDef(new HashSet<ThingDef>(items)));
         }
 
         static Predicate<ThingDef> ListContainsThingDef(HashSet<ThingDef> list) =>

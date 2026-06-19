@@ -105,7 +105,7 @@ public class Designator_ReplaceStuff : Designator
                 if (!seenThings.Add(thing.thingIDNumber))
                     continue;
 
-                if (ReplacementValidator.IsValidReplacement(selectedStuffDef, thing))
+                if (ReplacementCandidateChecker.IsValidReplacement(selectedStuffDef, thing))
                 {
                     if (GenConstruct.BuiltDefOf(thing.def) is ThingDef builtDef)
                     {
@@ -220,7 +220,7 @@ public class Designator_ReplaceStuff : Designator
         DesignatorContext.Enter();
         try
         {
-            if (!ReplacementValidator.IsReplacable(selectedStuffDef, cell, Map))
+            if (!ReplacementCandidateChecker.IsReplacable(selectedStuffDef, cell, Map))
                 return false;
 
             var things = cell.GetThingList(Map);
@@ -279,7 +279,7 @@ public class Designator_ReplaceStuff : Designator
         for (int i = 0; i < count; i++)
         {
             var replaceable = replaceables[i];
-            if (!ReplacementValidator.IsValidReplacement(stuffDef, replaceable))
+            if (!ReplacementCandidateChecker.IsValidReplacement(stuffDef, replaceable))
                 continue;
 
             firstReplaceable ??= replaceable;

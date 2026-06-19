@@ -1,5 +1,4 @@
-﻿// TODO: NAMING: We have two classes named ReplacementValidator in two different namespaces. Verify and rename one.
-/*
+﻿/*
  * REPLACE STUFF: Performance Edition
  * 
  * 
@@ -12,44 +11,16 @@
  * Licensed under the MIT License.
  */
 
-using HarmonyLib;
+using Replace_Stuff.Compatibility.ThirdParty;
 using Replace_Stuff.CoolersOverWalls;
 using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using Verse;
 
 namespace Replace_Stuff.NewThing;
-
-// TODO: This class doesn't belong here, move it
-/// <summary>
-/// A compatibility handler that uses reflection to detect "RimFridge" buildings.
-/// It dynamically retrieves the 'DesiredTemp' field, allowing the mod to 
-/// synchronize temperature settings between replaced refrigerators without 
-/// requiring a hard dependency on the external mod.
-/// </summary>
-[StaticConstructorOnStartup]
-public static class FridgeCompat
-{
-    public static Type fridgeType;
-    public static FieldInfo DesiredTempInfo;
-    static FridgeCompat()
-    {
-        try
-        {
-            fridgeType = AccessTools.TypeByName("Building_Refrigerator");
-            if (fridgeType != null)
-                DesiredTempInfo = AccessTools.Field(fridgeType, "DesiredTemp");
-        }
-        catch (System.Reflection.ReflectionTypeLoadException) //Aeh, this happens to people, should not happen, meh.
-        {
-            Verse.Log.Warning("Replace Stuff failed to check for RimFridges");
-        }
-    }
-}
 
 /// <summary>
 /// The central registry and logic engine for structure replacements. 
@@ -57,7 +28,7 @@ public static class FridgeCompat
 /// performance.
 /// </summary>
 [StaticConstructorOnStartup]
-public static class ReplacementValidator
+public static class ReplacementMatcher
 {
     private static readonly List<ReplacementRule> _replacements = new();
 
@@ -79,7 +50,7 @@ public static class ReplacementValidator
     /// State transfer logic (bills, temperatures, ownership) has been migrated to 
     /// the ReplacementPipeline and BuildingStateTransfer systems.
     /// </summary>
-    static ReplacementValidator()
+    static ReplacementMatcher()
     {
         // Walls/Fences
         AddRule(d => d.IsWall() || (d.building?.isFence ?? false),
@@ -103,7 +74,7 @@ public static class ReplacementValidator
         AddRule(d => d.IsTable);
 
         // Fridges
-        AddRule(d => d.thingClass == FridgeCompat.fridgeType);
+        AddRule(d => RimFridgeCompat.fridgeType != null && d.thingClass == RimFridgeCompat.fridgeType);
 
         // Growers
         AddRule(d => typeof(IPlantToGrowSettable).IsAssignableFrom(d.thingClass));

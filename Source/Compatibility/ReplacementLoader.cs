@@ -69,7 +69,6 @@ internal class ReplacementLoader
             ReplacementRegistry.AddInterchangeableItems(itemList);
         }
     }
-
     public static void RegisterCodeBasedHandlers()
     {
         var assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -78,15 +77,20 @@ internal class ReplacementLoader
             var attribute = (ReplacementHandlerAttribute)Attribute.GetCustomAttribute(type, typeof(ReplacementHandlerAttribute));
             if (attribute != null)
             {
-                // Resolve the string to a Type at runtime
                 var compType = GenTypes.GetTypeInAnyAssembly(attribute.TargetCompName);
                 if (compType != null)
                 {
+                    if (ReplacementRegistry.IsRegistered(compType.FullName))
+                    {
+                        RSLog.Warning($"Duplicate handler registration for {compType.FullName}. Skipping {type.Name}.");
+                        continue; // Skip this one
+                    }
+
+                    // Register only if unique
                     try
                     {
                         var handler = (IReplacementHandler)Activator.CreateInstance(type);
                         ReplacementRegistry.RegisterHandler(compType.FullName, handler);
-
                         RSLog.Debug($"Auto-registered handler {type.Name} for {compType.FullName}");
                     }
                     catch (Exception e)
