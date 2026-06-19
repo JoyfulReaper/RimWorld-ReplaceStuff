@@ -22,9 +22,9 @@ using Verse;
 
 namespace Replace_Stuff.Compatibility.ThirdParty;
 
+[ReplacementHandler("CompQualityBuilder")]
 public class QualityBuilderHandler : IReplacementHandler
 {
-    private static readonly Type _compType;
     private static readonly DesignationDef _designationDef;
 
     // Define a unique key for this handler to prevent collisions
@@ -34,14 +34,6 @@ public class QualityBuilderHandler : IReplacementHandler
     {
         try
         {
-            _compType = AccessTools.TypeByName("CompQualityBuilder");
-
-            if (_compType != null)
-            {
-                // Register using the Comp's FullName
-                ReplacementRegistry.RegisterHandler(_compType.FullName, new QualityBuilderHandler());
-            }
-
             // TODO: Assuming the typo is on purpose, verify
             var propsType = AccessTools.TypeByName("CompProperties_QualityBuilderr");
             _designationDef = DefDatabase<DesignationDef>.GetNamed("SkilledBuilder", false);

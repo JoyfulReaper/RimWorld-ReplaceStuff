@@ -49,13 +49,16 @@ internal class ReplacementLoader
                     continue;
                 }
 
-                try {
+                try
+                {
                     var handler = (IReplacementHandler)Activator.CreateInstance(type);
                     if (handler is null)
                         continue;
 
                     ReplacementRegistry.RegisterHandler(compName, handler);
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     RSLog.Error($"Failed to create instance of {compName}: {e.Message}");
                     continue;
                 }
@@ -66,5 +69,36 @@ internal class ReplacementLoader
             ReplacementRegistry.AddInterchangeableItems(itemList);
         }
     }
-}
 
+    public static void RegisterCodeBasedHandlers()
+    {
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        foreach (var type in assembly.GetTypes())
+        {
+            var attribute = (ReplacementHandlerAttribute)Attribute.GetCustomAttribute(type, typeof(ReplacementHandlerAttribute));
+            if (attribute != null)
+            {
+                // Resolve the string to a Type at runtime
+                var compType = GenTypes.GetTypeInAnyAssembly(attribute.TargetCompName);
+                if (compType != null)
+                {
+                    try
+                    {
+                        var handler = (IReplacementHandler)Activator.CreateInstance(type);
+                        ReplacementRegistry.RegisterHandler(compType.FullName, handler);
+
+                        RSLog.Debug($"Auto-registered handler {type.Name} for {compType.FullName}");
+                    }
+                    catch (Exception e)
+                    {
+                        RSLog.Error($"Failed to auto-register handler {type.Name}: {e.Message}");
+                    }
+                }
+                else
+                {
+                    RSLog.Warning($"Could not find comp type {attribute.TargetCompName} for handler {type.Name}. Skipping.");
+                }
+            }
+        }
+    }
+}
