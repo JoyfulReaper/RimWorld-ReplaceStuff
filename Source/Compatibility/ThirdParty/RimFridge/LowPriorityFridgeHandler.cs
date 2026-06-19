@@ -21,7 +21,7 @@ namespace Replace_Stuff.Compatibility.ThirdParty.RimFridge;
 // FOR TESTING/DEBUGGING
 
 #if DEBUG
-[ReplacementHandler("Building_Refrigerator", priority: -10)]
+[ReplacementHandler("RimFridge.RimFridge_Building", priority: -10)]
 public class LowPriorityFridgeHandler : IReplacementHandler
 {
     public void PreAction(ReplacementData d, Thing o, Thing n) { }

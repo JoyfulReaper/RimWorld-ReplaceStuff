@@ -34,7 +34,7 @@ namespace Replace_Stuff.Core;
 
 public static class DefaultRules
 {
-    [ReplacementRule(priority: 100)]
+    [ReplacementRule(priority: 99)]
     public static void RegisterWalls()
     {
         // Walls/Fences
@@ -51,7 +51,7 @@ public static class DefaultRules
         ReplacementMatcher.AddRule(d => d.IsWall() || typeof(Building_Door).IsAssignableFrom(d.thingClass));
     }
 
-    [ReplacementRule(priority: 98)]
+    [ReplacementRule(priority: 99)]
     public static void RegisterFences()
     {
         // Fences
@@ -60,21 +60,21 @@ public static class DefaultRules
             ReplacementMatcher.AddRule(d => d.designationCategory == fencesDef);
     }
 
-    [ReplacementRule(priority: 97)]
+    [ReplacementRule(priority: 99)]
     public static void RegisterTables()
     {
         // Tables
         ReplacementMatcher.AddRule(d => d.IsTable);
     }
 
-    [ReplacementRule(priority: 95)]
+    [ReplacementRule(priority: 99)]
     public static void RegisterBeds()
     {
         // Beds
         ReplacementMatcher.AddRule(d => typeof(Building_Bed).IsAssignableFrom(d.thingClass) && d.GetStatValueAbstract(StatDefOf.WorkToBuild) > 0f);
     }
 
-    [ReplacementRule(priority: 90)]
+    [ReplacementRule(priority: 99)]
     public static void RegisterCoolers()
     {
         // Coolers
@@ -82,14 +82,14 @@ public static class DefaultRules
         ReplacementMatcher.AddRule(d => d != null && typeof(Building_Cooler).IsAssignableFrom(d.thingClass));
     }
 
-    [ReplacementRule(priority: 90)]
+    [ReplacementRule(priority: 99)]
     public static void RegisterGrowers()
     {
         // Growers
         ReplacementMatcher.AddRule(d => typeof(IPlantToGrowSettable).IsAssignableFrom(d.thingClass));
     }
 
-    [ReplacementRule(priority: 90)]
+    [ReplacementRule(priority: 99)]
     public static void RegisterPower()
     {
         ReplacementMatcher.AddRule(d => typeof(Building_Battery).IsAssignableFrom(d.thingClass));
@@ -98,7 +98,7 @@ public static class DefaultRules
         ReplacementMatcher.AddRule(d => d.placeWorkers?.Any(w => w == typeof(PlaceWorker_OnSteamGeyser)) ?? false);
     }
 
-    [ReplacementRule(priority: 100)]
+    [ReplacementRule(priority: 99)]
     public static void RegisterVents()
     {
         // Catches vanilla vents and any modded over-wall vents that inherit from Building_Vent
