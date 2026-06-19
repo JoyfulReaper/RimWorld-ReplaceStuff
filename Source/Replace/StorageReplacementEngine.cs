@@ -185,7 +185,6 @@ internal static class StorageReplacementEngine
         {
             if (building.def == storageDef &&
                 GetStorageGroup(building) == null &&
-                building.Rotation == rotation &&
                 building.Position.DistanceToSquared(currentLoc) <= 25 &&
                 LabelsMatch(expectedLabel, groupLabel, GetGroupingLabel(building)))
             {
