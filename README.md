@@ -1,79 +1,76 @@
 # Replace Stuff: Performance Edition
 
-**Replace Stuff: Performance Edition** is a modern, high-performance rewrite of the classic *Replace Stuff* mod for RimWorld.
+**Replace Stuff: Performance Edition** is a performance-focused fork of the original *Replace Stuff* mod for RimWorld.
 
-The goal remains the same: **Upgrade your buildings in-place** without the tedious work of manually deconstructing, waiting, and rebuilding. We’ve rebuilt the core logic from the ground up to be more stable, faster, and easier to support for mod compatibility.
+The goal is the same: **upgrade buildings in place** without the usual deconstruct, wait, and rebuild loop. This fork keeps the core gameplay while reorganizing the internals around a more explicit replacement pipeline, broader compatibility handling, and cleaner state restoration.
 
-> **⚠️ Alpha Warning:** This mod is currently in active development. We recommend backing up your saves and reporting issues with logs and reproduction steps.
+> **⚠️ Alpha Warning:** This mod is still under active development. Back up your saves and report issues with logs and reproduction steps.
 
 ---
 
-## 🛠 For Players: Why use this version?
-
-If you loved the original *Replace Stuff*, you will love the *Performance Edition*. It offers the same gameplay experience but is optimized to ensure your colony runs smoother, especially during large-scale renovation projects.
+## What This Version Adds
 
 ### Seamless Upgrades
 
-* **Build over existing structures:** For example, easily swap wooden walls for stone walls without manually tearing down your walls first.
-* **Smart Construction:** Builders automatically handle the deconstruction and construction sequence, keeping your colony functional throughout the process.
+* Replace walls, workbenches, storage, and other supported buildings without manually tearing them down first.
+* Builders handle the deconstruct-and-rebuild sequence automatically so colony flow stays intact.
 
-### State & Setting Preservation
+### State and Settings Preservation
 
-Gone are the days of resetting your machines every time you upgrade them. This mod remembers:
+* Coolers and heaters keep their temperature targets.
+* Workbenches preserve bills and production setup.
+* Storage buildings keep settings, priorities, filters, and related state.
+* Wall attachments such as lights and vents are handled during wall upgrades.
 
-* **Temperature:** Your coolers and heaters keep their target temperatures.
-* **Bills:** Your workbenches retain their production queues.
-* **Storage:** Your storage settings, priorities, and filters are automatically restored.
-* **Attachments:** Lights, vents, and other wall-mounted items are preserved during wall upgrades.
+### Smarter Placement Logic
 
-### Smarter Building Logic
-
-* **Storage Groups:** Stored items are safely managed during upgrades, so you don't lose track of your inventory.
-* **Environment Aware:** Builders can now mine or smooth rock, place bridge blueprints, or clear fogged areas automatically as part of the construction flow.
-* **Over-Wall Support:** Continue to use your favorite over-wall coolers and vents with full 1.6 compatibility.
+* Stored items are handled safely during replacement.
+* Blueprints can interact with rock, fog, and bridge-adjacent cases more gracefully.
+* Over-wall coolers and vents are supported with RimWorld 1.6 compatibility in mind.
 
 ---
 
-## ⚙️ Developer & Technical Information
+## Technical Notes
 
-For fellow developers, modders, and power users, the *Performance Edition* provides a vastly more modular and performant architecture. We have moved away from legacy event hooks in favor of a centralized pipeline.
+The internal codebase has been reorganized around a centralized replacement flow:
 
-### Architectural Highlights
+* `ReplacementPipeline` coordinates the replacement sequence.
+* `ReplacementValidator` handles cached rule checks and compatibility decisions.
+* `ReplacementUtility` and related helpers keep the implementation modular.
+* `BuildingStateTransfer` and storage replacement logic preserve persistent data during rebuilds.
+* `ReplacementRegistry` and compatibility handlers allow XML- or code-driven integration for supported mods.
 
-* **Centralized Pipeline:** All replacement logic is funneled through the `ReplacementPipeline`, moving away from "patch-everything" hacks to a deterministic flow: *Validate Target -> Extract State -> Destroy -> Spawn -> Apply State.*
-* **Rule-Based Validation:** The `ReplacementValidator` now uses a clean, cached, predicate-based system. Adding compatibility for new buildings no longer requires complex Harmony patches.
-* **Performance Optimization:** We have implemented aggressive caching for replacement rules and construction costs, drastically reducing CPU overhead during drag-select and large-area renovations.
+The patch layout is now grouped by feature area:
 
-### Data & State Transfer
-
-* **`BuildingStateTransfer`:** This system handles the capture and reapplication of persistent data. It is decoupled from the `Thing` class, making it easier to extend to modded buildings.
-* **`DestroyedBuildingStore`:** A `MapComponent` that safely serializes building metadata, preventing data loss during the frame-transition between destruction and auto-rebuild.
-
-### Compatibility Registry
-
-* **Registry-First Design:** Compatibility is no longer hardcoded in version-specific folders. The `ReplacementRegistry` allows other mods to define interchangeable building groups via XML or C# handlers without needing a hard dependency on this mod.
-
-### Harmony Patch Organization
-
-We have cleaned up the patch landscape significantly. Patches are categorized by feature area for easier debugging:
-
-* `Replace/Patches`: Construction, reservations, and attachments.
-* `NewThing/Patches`: Blueprint/Frame placement logic.
-* `OverMineable/Patches`: Rock, fog, and bridge-like terrain.
-* `DestroyedRestore/Patches`: State capture for auto-rebuilds.
+* `Replace/Patches` for replacement flow, reservations, and attachments.
+* `NewThing/Patches` for blueprint and frame placement.
+* `OverMineable/Patches` for rock, fog, and mining-related cases.
+* `PlaceBridges/Patches` for bridge terrain and placement logic.
+* `DestroyedRestore/Patches` for state capture and rebuild support.
 
 ---
 
-## 📜 Credits
+## Compatibility
 
-This project stands on the shoulders of the community giants who built the original foundation.
+This fork is centered on RimWorld 1.6 and is intended to be easier to extend for modded buildings and replacement rules than the original layout.
 
-* **Original Creator:** Uuugggg / Alex Tearse-Doyle.
-* **Maintainers & Contributors:** MemeGoddess, Hexnet111, and the many community members who submitted fixes and translations.
-* **Fork & Refactor:** Kyle Givler (Performance Edition).
+Supported compatibility work currently includes:
+
+* Registry-based replacement handlers.
+* Legacy replacement bridges for older data and behavior.
+* Third-party support hooks such as QualityBuilder and interchangeable item groups.
+* Expanded support for storage, wall attachments, and other complex replacement targets.
+
+---
+
+## Credits
+
+* Original mod concept and foundation: Uuugggg / Alex Tearse-Doyle.
+* Fork and performance edition work: Kyle Givler.
+* Earlier optimization and compatibility ideas: Hexnet111 and other community contributors.
 
 ### Source Code
 
-The code for this project is open source. If you encounter bugs or want to contribute to the performance or compatibility efforts, please visit the repository:
+The code for this project is open source. If you encounter bugs or want to contribute to the performance or compatibility effort, visit:
 
 **[GitHub: RimWorld-ReplaceStuff](https://github.com/JoyfulReaper/RimWorld-ReplaceStuff)**

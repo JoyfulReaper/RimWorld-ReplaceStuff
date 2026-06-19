@@ -1,38 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Replace Stuff - Performance Edition [ALPHA]</name>
+	<name>Replace Stuff - Performance Edition [BETA]</name>
 	<author>Kyle Givler</author>
 	<supportedVersions>
 		<li>1.6</li>
 	</supportedVersions>
 	<packageId>ReplaceStuff.Performance</packageId>
-<description>Performance-optimized fork of the original "Replace Stuff" mod.
+<description>Performance-focused fork of the original "Replace Stuff" mod.
 
-This version maintains the core functionality of replacing building materials in-place without deconstructing, but has been modified for higher performance.
-This mod is currentely under heavy active development. Please report any issues.
-
-I am refactoring, cleaning and modernizing the code for Replace Stuff from the ground up with perfromance in mind.
-Please Note: This is a major refactor in progress and I am aware some functions are broken, however please do sumbit any bugs/issues on github or in the comments.
-
-OPTIMIZATIONS:
-- Refactored and rebuilt from the ground up with perfromance in mind.
-
-Original mod by Uuugggg. 
-This fork is dedicated to maintaining the functionality of the original while removing the performance tax previously associated with complex base management.
+The goal is the same as the base mod: upgrade buildings in place without the usual deconstruct, wait, and rebuild loop. This fork reorganizes the internals around a clearer replacement pipeline, broader compatibility handling, and cleaner state restoration.
 
 FEATURES:
-- Replace the stuff a thing is made from in-place (e.g., stone walls to plasteel).
-- Does not break room temperature or workbench bills.
-- Blueprints are allowed over rock and fog.
-- Architect/Structure menu integration for easy material swapping.
+- Replace walls, workbenches, storage, and other supported buildings in place.
+- Preserve temperature settings, bills, storage settings, and other persistent building state where applicable.
+- Handle wall attachments, over-wall coolers and vents, rock, fog, and bridge-adjacent placement cases more gracefully.
+- Use registry-based compatibility handlers and legacy bridges for mod integrations.
 
+STATUS:
+- This mod is still under active development and should be treated as alpha/early beta quality.
+- Please back up saves and report bugs with logs and reproduction steps.
 
-SOURCE CODE:
+SOURCE CODE/BUG REPORTS:
 - Source Code: https://github.com/JoyfulReaper/RimWorld-ReplaceStuff
 
-CREDITS AND CONTRIBUTIONS:
-- Original mod by Uuugggg.
-- Includes performance optimizations originally identified by Hexnet111 (https://github.com/MemeGoddess/RimWorld-ReplaceStuff/pull/10).
+CREDITS:
+- Original mod by Uuugggg / Alex Tearse-Doyle.
+- Fork and performance edition work by Kyle Givler.
+- Earlier optimization and compatibility ideas contributed by Hexnet111 and other community members.
 </description>
 
 	<url>https://steamcommunity.com/sharedfiles/filedetails/?id=3736701303</url>
@@ -40,8 +34,12 @@ CREDITS AND CONTRIBUTIONS:
 		<li>
 			<packageId>brrainz.harmony</packageId>
 			<displayName>Harmony</displayName>
-			<steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+			<steamWorkshopUrl>steam://url/CommunityFilePage/2009416485</steamWorkshopUrl>
+      		<downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
 		</li>
 	</modDependencies>
-	<modIconPath IgnoreIfNoMatchingField="True">TDReplaceStuffIcon</modIconPath>
+	<loadAfter>
+    	<li>brrainz.harmony</li>
+  	</loadAfter>
+	<modVersion>0.0.30</modVersion>
 </ModMetaData>
