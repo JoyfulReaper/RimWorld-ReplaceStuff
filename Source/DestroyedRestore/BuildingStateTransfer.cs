@@ -72,21 +72,17 @@ public static class BuildingStateTransfer
             StorageReplacementEngine.CaptureStorageFiltersAndPriority(data, thing);
         }
 
-        // Coolers TODO these can be combined with heater
-        if (thing is Building_Cooler cooler)
-            data.targetTemperature =
-                cooler.compTempControl.targetTemperature;
+        // Climate Control (Catches Coolers, Heaters, and Modded Temp Controllers)
+        if (thing.TryGetComp<CompTempControl>() is CompTempControl tempControl)
+        {
+            data.targetTemperature = tempControl.targetTemperature;
+        }
 
-        // Heaters
-        if (thing is Building_Heater heater)
-            data.targetTemperature =
-                heater.compTempControl.targetTemperature;
-
-        // Growers
-        if (thing is Building_PlantGrower grower)
-            data.plantDef =
-                grower.GetPlantDefToGrow();
-
+        // Growers (Catches Vanilla Hydroponics, Plant Pots, and Modded Planters)
+        if (thing is IPlantToGrowSettable grower)
+        {
+            data.plantDef = grower.GetPlantDefToGrow();
+        }
 
         CaptureAttachements(data, thing, visited);
 
@@ -136,20 +132,14 @@ public static class BuildingStateTransfer
             cq.SetQuality(data.quality.Value, ArtGenerationContext.Colony);
         }
 
-        // Target temperature - TODO Restore 
-        if (data.targetTemperature.HasValue)
+        // Target temperature (Vanilla + Modded)
+        if (data.targetTemperature.HasValue && thing.TryGetComp<CompTempControl>() is CompTempControl tempControl)
         {
-            if (thing is Building_Cooler cooler)
-                cooler.compTempControl.targetTemperature =
-                    data.targetTemperature.Value;
-
-            if (thing is Building_Heater heater)
-                heater.compTempControl.targetTemperature =
-                    data.targetTemperature.Value;
+            tempControl.targetTemperature = data.targetTemperature.Value;
         }
 
-        // Growers - TODO Restore 
-        if (data.plantDef != null && thing is Building_PlantGrower grower)
+        // Growers (Vanilla + Modded)
+        if (data.plantDef != null && thing is IPlantToGrowSettable grower)
         {
             grower.SetPlantDefToGrow(data.plantDef);
         }
