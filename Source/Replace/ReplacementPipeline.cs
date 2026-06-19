@@ -18,7 +18,6 @@ using Replace_Stuff.Interfaces;
 using Replace_Stuff.Replace;
 using Replace_Stuff.Utilities;
 using RimWorld;
-using System;
 using System.Collections.Generic;
 using Verse;
 
@@ -29,24 +28,30 @@ internal static class ReplacementPipeline
     /// </summary>
     /// <param name="replacementFrame"></param>
     /// <param name="worker"></param>
+    /// 
+
     internal static void ExecuteReplacementPipeline(ReplacementFrame replacementFrame, Pawn worker)
     {
-        var activeComps = replacementFrame.ReplaceData.compHandlers;
-
         if (replacementFrame.TargetThing is null || !replacementFrame.TargetThing.Spawned)
         {
             replacementFrame.resourceContainer.TryDropAll(replacementFrame.Position, replacementFrame.Map, ThingPlaceMode.Near);
             replacementFrame.Destroy(DestroyMode.Cancel);
-
             return;
         }
 
         var oldThing = replacementFrame.TargetThing;
         var newThing = CreateReplacement(replacementFrame);
-        RunHandlers(activeComps, oldThing, h => h.PreAction(replacementFrame.ReplaceData, oldThing, newThing));
+
+        var handlers = ResolveHandlers(replacementFrame.ReplaceData.compHandlers, oldThing);
+
+        // Run PreAction handlers
+        foreach (var h in handlers)
+            h.PreAction(replacementFrame.ReplaceData, oldThing, newThing);
+
         var transientState = StorageReplacementEngine.ExtractStoredItems(oldThing);
         DeconstructDropStuff(oldThing);
 
+        // oldThing loses its Map and Spawned status here
         oldThing.Destroy(DestroyMode.Vanish);
 
         SpawnReplacement(newThing, replacementFrame);
@@ -54,10 +59,36 @@ internal static class ReplacementPipeline
         ApplyPersistentState(newThing, replacementFrame.ReplaceData);
         StorageReplacementEngine.RestoreStoredItems(newThing, transientState);
 
-        // Post-Action: Run after newThing is spawned
-        RunHandlers(activeComps, oldThing, h => h.PostAction(replacementFrame.ReplaceData, oldThing, newThing));
+        // Run PostAction handlers
+        foreach (var h in handlers)
+            h.PostAction(replacementFrame.ReplaceData, oldThing, newThing);
 
         Cleanup(oldThing, worker, replacementFrame.resourceContainer);
+    }
+
+    private static List<IReplacementHandler> ResolveHandlers(List<string> compNames, Thing oldThing)
+    {
+        var handlers = new List<IReplacementHandler>();
+
+        foreach (var compName in compNames)
+        {
+            if (ReplacementRegistry.TryGetHandler(compName, out var handler))
+                handlers.Add(handler);
+        }
+
+        if (oldThing is ThingWithComps thingWithComps)
+        {
+            foreach (var comp in thingWithComps.AllComps)
+            {
+#pragma warning disable CS0618
+                if (comp is IReplacementComp legacyComp)
+                {
+                    handlers.Add(new LegacyReplacementBridge(legacyComp));
+                }
+#pragma warning restore CS0618
+            }
+        }
+        return handlers;
     }
 
     private static void Cleanup(Thing targetThing, Pawn worker, ThingOwner resourceContainer)
@@ -120,8 +151,8 @@ internal static class ReplacementPipeline
         var oldDef = oldThing.def;
         var stuffDef = oldThing.Stuff;
 
-        if (stuffDef == null)
-            return;
+        //if (stuffDef == null) // This would disable refunds for "non-stuffed" buildings
+        //    return;
 
         // We use our own calculator here instead of standard GenLeaving.DoLeavingsFor 
         // because we only want to drop the 'stuff' (material) used in construction,
@@ -161,48 +192,5 @@ internal static class ReplacementPipeline
         RSLog.Debug($"CreateReplacement() AFTER MAKETHING: New Rot={newThing.Rotation}");
 
         return newThing;
-    }
-
-    private static void RunHandlers(List<string> compNames, Thing oldThing, Action<IReplacementHandler> action)
-    {
-        // Run modern, registered handlers from the string list
-        foreach (var compName in compNames)
-        {
-            if (ReplacementRegistry.TryGetHandler(compName, out var handler))
-            {
-                try
-                {
-                    action(handler);
-                }
-                catch (Exception e)
-                {
-                    RSLog.Error($"Error executing replacement handler {compName}: {e.Message}");
-                }
-            }
-        }
-
-        // Scan the old building for legacy IReplacementComp components attached to it
-        if (oldThing is ThingWithComps thingWithComps)
-        {
-            foreach (var comp in thingWithComps.AllComps)
-            {
-                // ignore the obsolete warning
-#pragma warning disable CS0618
-                if (comp is IReplacementComp legacyComp)
-                {
-                    try
-                    {
-                        // Wrap the old instance in the bridge so the modern pipeline can invoke it seamlessly
-                        var bridge = new LegacyReplacementBridge(legacyComp);
-                        action(bridge);
-                    }
-                    catch (Exception e)
-                    {
-                        RSLog.Error($"Error executing legacy replacement comp {comp.GetType().Name}: {e.Message}");
-                    }
-                }
-#pragma warning restore CS0618
-            }
-        }
     }
 }
