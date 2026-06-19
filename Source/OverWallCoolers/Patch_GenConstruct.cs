@@ -11,10 +11,11 @@
  * Licensed under the MIT License.
  */
 
-namespace Replace_Stuff.OverWallCoolers;
+//namespace Replace_Stuff.OverWallCoolers;
 
 // I don't remember why I commented this out...
 // So... I'm not going to delete it yet... Instead of trying to figure it out right now.
+// Pretty sure I commented it b/c its not needed anymore.
 //[HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
 // class CoolerWallShare_Blocks
 // {

@@ -89,7 +89,7 @@ internal class ReplacementLoader
             var compType = GenTypes.GetTypeInAnyAssembly(candidate.targetName);
             if (compType is null)
             {
-                RSLog.Warning($"Could not find comp type {candidate.targetName} for {candidate.type.Name}.");
+                RSLog.Warning($"Compatilbity Layer: Could not find comp type {candidate.targetName} for {candidate.type.Name}.");
                 continue;
             }
 
