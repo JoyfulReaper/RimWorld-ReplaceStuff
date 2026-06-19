@@ -11,9 +11,10 @@
  * Licensed under the MIT License.
  */
 
+using Replace_Stuff.NewThing;
 using Verse;
 
-namespace Replace_Stuff.NewThing
+namespace Replace_Stuff.Replace.Extenstions
 {
     internal static class ThingExtenstions
     {

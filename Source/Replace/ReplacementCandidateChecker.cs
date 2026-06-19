@@ -12,7 +12,7 @@
  * Licensed under the MIT License.
  */
 
-using Replace_Stuff.NewThing;
+using Replace_Stuff.Replace.Extenstions;
 using RimWorld;
 using System.Collections.Generic;
 using Verse;
