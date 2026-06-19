@@ -36,6 +36,7 @@ internal static class ReplacementPipeline
         {
             replacementFrame.resourceContainer.TryDropAll(replacementFrame.Position, replacementFrame.Map, ThingPlaceMode.Near);
             replacementFrame.Destroy(DestroyMode.Cancel);
+            
             return;
         }
 
