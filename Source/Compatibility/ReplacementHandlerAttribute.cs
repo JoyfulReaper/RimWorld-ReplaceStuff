@@ -19,9 +19,11 @@ namespace Replace_Stuff.Compatibility;
 public class ReplacementHandlerAttribute : Attribute
 {
     public string TargetCompName { get; }
+    public int Priority { get; set; } // Higher number = higher priority
 
-    public ReplacementHandlerAttribute(string targetCompName)
+    public ReplacementHandlerAttribute(string targetCompName, int priority = 0)
     {
         TargetCompName = targetCompName;
+        Priority = priority;
     }
 }

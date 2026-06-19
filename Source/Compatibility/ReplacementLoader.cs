@@ -69,39 +69,51 @@ internal class ReplacementLoader
             ReplacementRegistry.AddInterchangeableItems(itemList);
         }
     }
+
     public static void RegisterCodeBasedHandlers()
     {
         var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        var allCandidates = new List<(Type type, int priority, string targetName)>();
+
+        // candidates
         foreach (var type in assembly.GetTypes())
         {
             var attribute = (ReplacementHandlerAttribute)Attribute.GetCustomAttribute(type, typeof(ReplacementHandlerAttribute));
             if (attribute != null)
             {
-                var compType = GenTypes.GetTypeInAnyAssembly(attribute.TargetCompName);
-                if (compType != null)
-                {
-                    if (ReplacementRegistry.IsRegistered(compType.FullName))
-                    {
-                        RSLog.Warning($"Duplicate handler registration for {compType.FullName}. Skipping {type.Name}.");
-                        continue; // Skip this one
-                    }
+                allCandidates.Add((type, attribute.Priority, attribute.TargetCompName));
+            }
+        }
 
-                    // Register only if unique
-                    try
-                    {
-                        var handler = (IReplacementHandler)Activator.CreateInstance(type);
-                        ReplacementRegistry.RegisterHandler(compType.FullName, handler);
-                        RSLog.Debug($"Auto-registered handler {type.Name} for {compType.FullName}");
-                    }
-                    catch (Exception e)
-                    {
-                        RSLog.Error($"Failed to auto-register handler {type.Name}: {e.Message}");
-                    }
-                }
-                else
-                {
-                    RSLog.Warning($"Could not find comp type {attribute.TargetCompName} for handler {type.Name}. Skipping.");
-                }
+        // Sort by Priority
+        var sortedCandidates = allCandidates.OrderByDescending(x => x.priority).ToList();
+
+        // Register based on priority
+        foreach (var candidate in sortedCandidates)
+        {
+            var compType = GenTypes.GetTypeInAnyAssembly(candidate.targetName);
+            if (compType == null)
+            {
+                RSLog.Warning($"Could not find comp type {candidate.targetName} for {candidate.type.Name}.");
+                continue;
+            }
+
+            if (ReplacementRegistry.IsRegistered(compType.FullName))
+            {
+                RSLog.Warning($"Skipping {candidate.type.Name} for {compType.FullName}: A higher or equal priority handler is already registered.");
+                continue;
+            }
+
+            try
+            {
+                var handler = (IReplacementHandler)Activator.CreateInstance(candidate.type);
+                ReplacementRegistry.RegisterHandler(compType.FullName, handler);
+
+                RSLog.Debug($"Registered {candidate.type.Name} for {compType.FullName} (Priority: {candidate.priority})");
+            }
+            catch (Exception e)
+            {
+                RSLog.Error($"Failed to register {candidate.type.Name}: {e.Message}");
             }
         }
     }

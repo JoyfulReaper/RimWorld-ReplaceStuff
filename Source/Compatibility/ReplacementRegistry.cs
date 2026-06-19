@@ -13,6 +13,7 @@
 
 using Replace_Stuff.Interfaces;
 using Replace_Stuff.NewThing;
+using Replace_Stuff.Utilities;
 using System;
 using System.Collections.Generic;
 using Verse;
@@ -60,5 +61,13 @@ namespace Replace_Stuff.Compatibility
 
         static Predicate<ThingDef> ListContainsThingDef(HashSet<ThingDef> list) =>
             list.Contains;
+
+        public static void DebugListHandlers()
+        {
+            foreach (var kvp in _handlerRegistry)
+            {
+                RSLog.Debug($"Registry Entry: {kvp.Key} -> Handler: {kvp.Value.GetType().Name}");
+            }
+        }
     }
 }
