@@ -160,3 +160,57 @@ public static class GenConstruct_CanReplace
         __result = true;
     }
 }
+
+/// <summary>
+/// Converts vanilla replacement blueprints into replacement frames when
+/// designation bypasses <see cref="Designator_Build.DesignateSingleCell"/>.
+/// </summary>
+[HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.PlaceBlueprintForBuild))]
+public static class GenConstruct_PlaceBlueprintForBuild_Replace
+{
+    public static bool Prefix(
+        BuildableDef sourceDef,
+        IntVec3 center,
+        Map map,
+        Rot4 rotation,
+        Faction faction,
+        ThingDef stuff,
+        bool sendBPSpawnedSignal,
+        ref Blueprint_Build __result)
+    {
+        if (faction != Faction.OfPlayer || sourceDef is not ThingDef thingDef)
+            return true;
+
+        if (DebugSettings.godMode || sourceDef.GetStatValueAbstract(StatDefOf.WorkToBuild, stuff) == 0f)
+            return true;
+
+        if (thingDef.MadeFromStuff && stuff == null)
+            return true;
+
+        var placingRot = rotation;
+        if (typeof(Building_Door).IsAssignableFrom(thingDef.thingClass))
+            placingRot = DoorUtility.DoorRotationAt(center, map, thingDef.building.preferConnectingToFences);
+
+        var target = ReplacementCandidateChecker.FindReplacementTarget(
+            map, center, placingRot, thingDef, stuff, preferInProgress: false);
+
+        if (target == null)
+            return true;
+
+        ReplacementHandler.ExecuteReplacement(target, stuff);
+
+        // dummy to satisfy the return type
+        var placeholder = (Blueprint_Build)ThingMaker.MakeThing(sourceDef.blueprintDef);
+        placeholder.stuffToUse = stuff;
+        placeholder.SetFactionDirect(faction);
+
+        // Fire the Quest Signal manually since we skipped the original method
+        if (faction != null && sendBPSpawnedSignal)
+        {
+            QuestUtility.SendQuestTargetSignals(faction.questTags, "PlacedBlueprint", placeholder.Named("SUBJECT"));
+        }
+
+        __result = placeholder;
+        return false; // Replacement executed, skip vanilla placement
+    }
+}
