@@ -246,12 +246,14 @@ public static class Patch_GenConstruct
     }
 
     //if found fogged:
-    public static AcceptanceReport BlueprintOverFogAcceptance(Map map, IntVec3 center, ThingDef entDef)
+    public static AcceptanceReport BlueprintOverFogAcceptance(Map map, IntVec3 center, BuildableDef entDef)
     {
         if (!BlueprintUtility.IsEnabledBlueprintOverRock)
             return new AcceptanceReport("CannotPlaceInUndiscovered".Translate());
+
         if (center.GetThingList(map).Any(t => t is Blueprint && t.def.entityDefToBuild == entDef))
             return new AcceptanceReport("IdenticalBlueprintExists".Translate());
+
         if (entDef.GetStatValueAbstract(StatDefOf.WorkToBuild) == 0f)
             return new AcceptanceReport("CannotPlaceInUndiscovered".Translate());
         return true;
