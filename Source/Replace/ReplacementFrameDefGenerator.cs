@@ -97,9 +97,10 @@ internal static class ReplacementFrameDefGenerator
         thingDef.defName = def.defName + "_ReplaceStuff";
         thingDef.label = def.label + "TD.ReplacingTag".Translate();
 
-        // Interaction: Zero out the offset to ensure we aren't inheriting 
-        // a valid cell from the building we are replacing.
-        thingDef.interactionCellOffset = IntVec3.Zero;
+        // Preserve the source building's interaction cell. Multi-cell buildings
+        // such as shelves rely on this for valid construction job stand cells.
+        thingDef.interactionCellOffset = def.interactionCellOffset;
+        //thingDef.interactionCellOffset = IntVec3.Zero;
 
         // Standard Properties
         thingDef.size = def.size;

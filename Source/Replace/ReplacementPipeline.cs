@@ -177,7 +177,8 @@ internal static class ReplacementPipeline
         // GenSpawn.Spawn(..., WipeMode.Vanish) immediately destroys the
         // existing building occupying the cell. Any state needed from
         // targetThing must be captured before spawning.
-        GenSpawn.Spawn(newThing, replacementFrame.Position, replacementFrame.Map, newThing.Rotation, WipeMode.Vanish);
+        newThing.Rotation = replacementFrame.Rotation;
+        GenSpawn.Spawn(newThing, replacementFrame.Position, replacementFrame.Map, replacementFrame.Rotation, WipeMode.Vanish);
 
         RSLog.Debug(
             $"SpawnReplacement(): " +
@@ -190,6 +191,7 @@ internal static class ReplacementPipeline
     {
         RSLog.Debug($"CreateReplacement() START: Old Rot={replacementFrame.TargetThing.Rotation}");
         var newThing = ThingMaker.MakeThing((ThingDef)replacementFrame.def.entityDefToBuild, replacementFrame.Stuff);
+        newThing.Rotation = replacementFrame.Rotation;
         RSLog.Debug($"CreateReplacement() AFTER MAKETHING: New Rot={newThing.Rotation}");
 
         return newThing;

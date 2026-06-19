@@ -84,6 +84,7 @@ internal static class StorageReplacementEngine
         {
             data.storageSettings = new StorageSettings();
             data.storageSettings.CopyFrom(storage.GetStoreSettings());
+            data.storagePriority = data.storageSettings.Priority;
 
             var currentGroup = GetStorageGroup(storage);
             if (currentGroup != null)
@@ -103,6 +104,12 @@ internal static class StorageReplacementEngine
         // Stored items & Custom Storage Naming
         if (thing is Building_Storage storage)
         {
+            if (!data.belongedToGroup || string.IsNullOrEmpty(data.storageLabel))
+            {
+                ApplyCapturedSettings(data, storage);
+                return;
+            }
+
             if (data.belongedToGroup && !string.IsNullOrEmpty(data.storageLabel))
             {
                 // Check if the group already exists on the map (multi-shelf setup)
@@ -137,27 +144,36 @@ internal static class StorageReplacementEngine
                         SetStorageGroup(storage, newGroup);
 
                         // Use the unified settings object
-                        if (data.storageSettings is not null)
-                        {
-                            newGroup.GetStoreSettings().CopyFrom(data.storageSettings);
-                        }
+                        ApplyCapturedSettings(data, newGroup.GetStoreSettings());
 
                         newGroup.Notify_SettingsChanged();
                     }
                     else
                     {
                         // No companion survived. Downgrade to a standalone shelf.
-                        var settings = storage.GetStoreSettings();
-
-                        // Use the unified settings object
-                        if (data.storageSettings is not null)
-                        {
-                            settings.CopyFrom(data.storageSettings);
-                        }
-                        storage.Notify_SettingsChanged();
+                        ApplyCapturedSettings(data, storage);
                     }
                 }
             }
+        }
+    }
+
+    private static void ApplyCapturedSettings(ReplacementData data, Building_Storage storage)
+    {
+        ApplyCapturedSettings(data, storage.GetStoreSettings());
+        storage.Notify_SettingsChanged();
+    }
+
+    private static void ApplyCapturedSettings(ReplacementData data, StorageSettings settings)
+    {
+        if (data.storageSettings is not null)
+        {
+            settings.CopyFrom(data.storageSettings);
+        }
+
+        if (data.storagePriority.HasValue)
+        {
+            settings.Priority = data.storagePriority.Value;
         }
     }
 
