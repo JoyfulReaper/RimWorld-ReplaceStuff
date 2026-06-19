@@ -15,7 +15,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.CoolersOverWalls;
+namespace Replace_Stuff.OverWallCoolers;
 
 [HarmonyPatch(typeof(GenSpawn), "SpawningWipes")]
 class PreventOverWallWipingPatch
@@ -23,7 +23,7 @@ class PreventOverWallWipingPatch
     //public static bool SpawningWipes(BuildableDef newEntDef, BuildableDef oldEntDef)
     public static void Postfix(BuildableDef newEntDef, BuildableDef oldEntDef, ref bool __result)
     {
-        if (!__result) 
+        if (!__result)
             return;
 
         ThingDef newDef = newEntDef as ThingDef;
@@ -46,7 +46,7 @@ class ForceCoolerReplacementPatch
     //public static bool SpawningWipes(BuildableDef newEntDef, BuildableDef oldEntDef)
     public static void Postfix(BuildableDef newEntDef, BuildableDef oldEntDef, ref bool __result)
     {
-        if (__result) 
+        if (__result)
             return;
 
         else if (newEntDef is ThingDef newDef && newDef.thingClass == typeof(Building_Cooler) &&

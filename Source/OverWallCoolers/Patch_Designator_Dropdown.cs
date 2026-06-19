@@ -14,14 +14,14 @@
 using HarmonyLib;
 using RimWorld;
 
-namespace Replace_Stuff.CoolersOverWalls; 	
+namespace Replace_Stuff.OverWallCoolers;
 
 [HarmonyPatch(typeof(Designator_Dropdown), MethodType.Constructor)]
 static class Patch_Designator_Dropdown
 {
     public static void Postfix(Designator_Dropdown __instance)
     {
-        if(__instance is not null)
+        if (__instance is not null)
             __instance.Order = 20f;
     }
 }

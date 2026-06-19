@@ -16,7 +16,7 @@ using RimWorld;
 using System.Collections.Generic;
 using Verse;
 
-namespace Replace_Stuff.Compatibility
+namespace Replace_Stuff.Utilities.Patches
 {
 #if DEBUG
     [HarmonyPatch(typeof(ThingDef), nameof(ThingDef.SpecialDisplayStats))]
@@ -30,12 +30,16 @@ namespace Replace_Stuff.Compatibility
 
             var report =
 $"""
-ReplaceTags: {(__instance.replaceTags == null ? "None" : string.Join(", ", __instance.replaceTags))}
+DefName: {__instance.defName}
+ReplaceTags: {string.Join(", ", __instance.replaceTags ?? [])}
+Category: {__instance.category}
+Passability: {__instance.passability}
 """;
+
             // Category, label, value text, tooltip, priority
             yield return new StatDrawEntry(
                 StatCategoryDefOf.Basics,
-                "defName",
+                "ReplaceStuffDebug",
                 __instance.defName,
                 report,
                 displayPriorityWithinCategory: 999);

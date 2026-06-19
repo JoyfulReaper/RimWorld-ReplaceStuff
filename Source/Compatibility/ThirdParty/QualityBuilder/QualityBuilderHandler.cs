@@ -20,7 +20,7 @@ using RimWorld;
 using System;
 using Verse;
 
-namespace Replace_Stuff.Compatibility.ThirdParty;
+namespace Replace_Stuff.Compatibility.ThirdParty.QualityBuilder;
 
 [ReplacementHandler("CompQualityBuilder")]
 public class QualityBuilderHandler : IReplacementHandler

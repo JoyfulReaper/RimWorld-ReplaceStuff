@@ -18,7 +18,7 @@ using System;
 using System.Reflection;
 using Verse;
 
-namespace Replace_Stuff.Compatibility.ThirdParty;
+namespace Replace_Stuff.Compatibility.ThirdParty.RimFridge;
 
 /// <summary>
 /// A compatibility handler that uses reflection to detect "RimFridge" buildings.

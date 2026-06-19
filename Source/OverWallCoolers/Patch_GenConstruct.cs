@@ -11,13 +11,9 @@
  * Licensed under the MIT License.
  */
 
-using RimWorld;
-using Verse;
-using HarmonyLib;
+namespace Replace_Stuff.OverWallCoolers;
 
- namespace Replace_Stuff.CoolersOverWalls;
-
- // I don't remember why I commented this out...
+// I don't remember why I commented this out...
 // So... I'm not going to delete it yet... Instead of trying to figure it out right now.
 //[HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
 // class CoolerWallShare_Blocks

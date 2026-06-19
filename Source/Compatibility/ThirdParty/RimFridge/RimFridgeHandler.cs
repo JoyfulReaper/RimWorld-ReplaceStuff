@@ -17,7 +17,7 @@ using Replace_Stuff.Utilities;
 using System;
 using Verse;
 
-namespace Replace_Stuff.Compatibility.ThirdParty;
+namespace Replace_Stuff.Compatibility.ThirdParty.RimFridge;
 
 [ReplacementHandler("RimFridge.RimFridge_Building")]
 public class FridgeHandler : IReplacementHandler

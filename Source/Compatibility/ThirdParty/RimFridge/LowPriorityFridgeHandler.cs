@@ -15,7 +15,9 @@ using Replace_Stuff.Interfaces;
 using Replace_Stuff.Replace;
 using Verse;
 
-namespace Replace_Stuff.Compatibility.ThirdParty;
+namespace Replace_Stuff.Compatibility.ThirdParty.RimFridge;
+
+// FOR TESTING/DEBUGGING
 
 #if DEBUG
 [ReplacementHandler("Building_Refrigerator", priority: -10)]

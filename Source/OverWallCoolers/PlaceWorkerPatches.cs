@@ -13,11 +13,11 @@
 
 using HarmonyLib;
 using RimWorld;
-using Verse;
 using System.Collections.Generic;
 using System.Reflection;
+using Verse;
 
-namespace Replace_Stuff.CoolersOverWalls;
+namespace Replace_Stuff.OverWallCoolers;
 
 
 [HarmonyPatch]

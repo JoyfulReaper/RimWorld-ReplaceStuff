@@ -12,7 +12,7 @@
  */
 
 using Replace_Stuff.Compatibility;
-using Replace_Stuff.CoolersOverWalls;
+using Replace_Stuff.OverWallCoolers;
 using RimWorld;
 using Verse;
 

@@ -11,12 +11,12 @@
  * Licensed under the MIT License.
  */
 
-using System.Linq;
-using Verse;
 using RimWorld;
 using System.Collections.Generic;
+using System.Linq;
+using Verse;
 
-namespace Replace_Stuff.CoolersOverWalls;
+namespace Replace_Stuff.OverWallCoolers;
 
 /// <summary>
 /// Fixes issues where Designator_Builds (specifically those made from stuff) are 
@@ -57,8 +57,8 @@ public static class DesignationMenuFixer
     /// </summary>
     private static bool ShouldUnpackDropdown(Designator_Dropdown dropdown)
     {
-        return dropdown.Elements.Any(element => 
-            element is Designator_Build buildDesignator && 
+        return dropdown.Elements.Any(element =>
+            element is Designator_Build buildDesignator &&
             buildDesignator.PlacingDef.MadeFromStuff);
     }
 }

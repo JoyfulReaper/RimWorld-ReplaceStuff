@@ -15,7 +15,7 @@
 
 using HarmonyLib;
 using Replace_Stuff.Compatibility;
-using Replace_Stuff.CoolersOverWalls;
+using Replace_Stuff.OverWallCoolers;
 using Replace_Stuff.Replace;
 using Replace_Stuff.Replace.Patches;
 using RimWorld;

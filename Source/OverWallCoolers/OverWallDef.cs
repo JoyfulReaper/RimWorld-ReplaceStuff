@@ -11,16 +11,16 @@
  * Licensed under the MIT License.
  */
 
-namespace Replace_Stuff.CoolersOverWalls;
+namespace Replace_Stuff.OverWallCoolers;
 
 using RimWorld;
 using Verse;
 
- [DefOf]
+[DefOf]
 public static class OverWallDef
 {
     public static ThingDef Cooler_Over;
-    
+
     public static ThingDef Cooler_Over2W;
 
     public static ThingDef Vent_Over;
@@ -32,17 +32,17 @@ public static class OverWallDef
     public static bool IsOverWall(this BuildableDef bdef)
     {
         return bdef == Cooler_Over ||
-            bdef == Cooler_Over2W || 
-            bdef == Vent_Over || 
+            bdef == Cooler_Over2W ||
+            bdef == Vent_Over ||
             bdef == Vent_Over2W;
     }
 
     public static bool IsWall(this BuildableDef bdef)
     {
         //return bdef == ThingDefOf.Wall || bdef.IsSmoothed;//Just IsSmoothed doesn't account for modded walls
-        return bdef is ThingDef def 
-            && def.coversFloor && 
-            def.holdsRoof && 
+        return bdef is ThingDef def
+            && def.coversFloor &&
+            def.holdsRoof &&
             def.passability == Traversability.Impassable &&
             (def.building?.canBuildNonEdificesUnder ?? true);
     }
