@@ -12,10 +12,9 @@
  */
 
 using HarmonyLib;
-using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.PlaceBridges.Patches;
+namespace Replace_Stuff.Terrain.Bridging.Patches;
 
 [HarmonyPatch(typeof(TerrainGrid), nameof(TerrainGrid.RemoveTopLayer))]
 public static class DestroyedTerrain

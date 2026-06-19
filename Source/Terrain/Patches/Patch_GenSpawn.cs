@@ -11,15 +11,10 @@
  * Licensed under the MIT License.
  */
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using RimWorld;
-using Verse;
 using HarmonyLib;
+using Verse;
 
-namespace Replace_Stuff.OverMineable.Patches;
+namespace Replace_Stuff.Terrain.Patches;
 
 //Frames can overlap anything. That shouldn't create a problem, right?
 [HarmonyPatch(typeof(GenSpawn), "SpawningWipes")]

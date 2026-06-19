@@ -11,11 +11,11 @@
  * Licensed under the MIT License.
  */
 
+using HarmonyLib;
 using RimWorld;
 using Verse;
-using HarmonyLib;
 
-namespace Replace_Stuff.OverMineable.Patches;
+namespace Replace_Stuff.Terrain.Patches;
 
 //It did create a problem! Putting two edifices in same spot is a problem
 //So frames aren't edifices... that shouldn't create a problem, right?

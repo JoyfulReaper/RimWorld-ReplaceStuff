@@ -15,7 +15,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.PlaceBridges.Patches;
+namespace Replace_Stuff.Terrain.Bridging.Patches;
 
 [HarmonyPatch(typeof(Blueprint), nameof(Blueprint.DeSpawn))]
 public static class CancelBlueprint

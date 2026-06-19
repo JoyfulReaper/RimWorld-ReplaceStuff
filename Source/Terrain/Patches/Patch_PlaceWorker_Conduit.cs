@@ -18,7 +18,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using Verse;
 
-namespace Replace_Stuff.OverMineable.Patches;
+namespace Replace_Stuff.Terrain.Patches;
 
 // 1) Change Conduit PlaceWorker to allow conduits over conduits
 // 2) TL;DR: actually ignore the thingToIgnore argument

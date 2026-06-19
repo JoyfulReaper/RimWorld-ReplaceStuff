@@ -18,7 +18,7 @@ using RimWorld;
 using System.Linq;
 using Verse;
 
-namespace Replace_Stuff.OverMineable.Patches;
+namespace Replace_Stuff.Terrain.Patches;
 
 [HarmonyPatch(typeof(FogGrid), "UnfogWorker")]
 public static class Patch_FogGrid

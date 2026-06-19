@@ -17,7 +17,7 @@ using System.Linq;
 using Verse;
 using Verse.AI;
 
-namespace Replace_Stuff.OverMineable.Patches;
+namespace Replace_Stuff.Terrain.Patches;
 
 //Include blueprints and frames in IsCornerTouchAllowed
 //(Frames were included, but ReplaceStuff removes their 'edifice' status so they need to be re-included)
@@ -37,7 +37,7 @@ public static class IsCornerTouchAllowed
             return;
 
         if (pc.map.thingGrid.ThingsListAtFast(target.Position)
-            .Any(thing => (thing is Blueprint || thing is Frame) && 
+            .Any(thing => (thing is Blueprint || thing is Frame) &&
                 TouchPathEndModeUtility.MakesOccupiedCellsAlwaysReachableDiagonally(thing.def)))
         {
             __result = true;

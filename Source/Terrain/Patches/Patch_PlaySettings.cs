@@ -11,35 +11,35 @@
  * Licensed under the MIT License.
  */
 
+using HarmonyLib;
+using RimWorld;
 using UnityEngine;
 using Verse;
-using RimWorld;
-using HarmonyLib;
 
-namespace Replace_Stuff.OverMineable.Patches;
+namespace Replace_Stuff.Terrain.Patches;
 
 [HarmonyPatch(typeof(PlaySettings), "DoPlaySettingsGlobalControls")]
 [StaticConstructorOnStartup]
 public static class Patch_PlaySettings_DoPlaySettingsGlobalControls
 {
-	private static Texture2D _icon = ContentFinder<Texture2D>.Get("BlueprintOverRockToggle", true);
+    private static Texture2D _icon = ContentFinder<Texture2D>.Get("BlueprintOverRockToggle", true);
 
-	[HarmonyPostfix]
-	public static void AddButton(WidgetRow row, bool worldView)
-	{
-		if (worldView) 
-			return;
+    [HarmonyPostfix]
+    public static void AddButton(WidgetRow row, bool worldView)
+    {
+        if (worldView)
+            return;
 
-		row.ToggleableIcon(ref BlueprintUtility.IsEnabledBlueprintOverRock, _icon, "TD.ToggleBlueprintOverRock".Translate());
-	}
+        row.ToggleableIcon(ref BlueprintUtility.IsEnabledBlueprintOverRock, _icon, "TD.ToggleBlueprintOverRock".Translate());
+    }
 }
 
 
 [HarmonyPatch(typeof(PlaySettings), "ExposeData")]
 public static class Patch_PlaySettings_ExposeData
 {
-	public static void Prefix()
-	{
-		Scribe_Values.Look(ref BlueprintUtility.IsEnabledBlueprintOverRock, "blueprintOverRock", true);
-	}
+    public static void Prefix()
+    {
+        Scribe_Values.Look(ref BlueprintUtility.IsEnabledBlueprintOverRock, "blueprintOverRock", true);
+    }
 }

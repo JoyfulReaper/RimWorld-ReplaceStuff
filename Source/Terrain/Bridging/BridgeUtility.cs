@@ -16,7 +16,7 @@ using RimWorld;
 using System.Linq;
 using Verse;
 
-namespace Replace_Stuff.PlaceBridges;
+namespace Replace_Stuff.Terrain.Bridging;
 
 /// <summary>
 /// Handles logic for determining and placing required bridge blueprints.

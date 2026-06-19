@@ -11,20 +11,20 @@
  * Licensed under the MIT License.
  */
 
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using HarmonyLib;
-using Verse;
 using UnityEngine;
+using Verse;
 
-namespace Replace_Stuff.OverMineable.Patches;
+namespace Replace_Stuff.Terrain.Patches;
 
-	//Cursor
+//Cursor
 [HarmonyPatch(typeof(GhostUtility), "GhostGraphicFor")]
 public static class ShowGhostOverFog
 {
-    public const int queueOverFog = 3176; 
+    public const int queueOverFog = 3176;
 
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {

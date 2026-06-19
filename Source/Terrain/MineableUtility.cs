@@ -12,7 +12,6 @@
  */
 
 
-using RimWorld;
 using Verse;
 
 namespace Replace_Stuff.Terrain;
@@ -35,12 +34,4 @@ static class MineableUtility
         //This checks ForceAllow, but not AllowsPlacing, since AllowsPlacing defaults to true, and PlaceWorks like ShowFacilites would be true.
         return td.IsMineableRock() && !placingDef.ForceAllowPlaceOver(td);
     }
-}
-
-
-
-[DefOf]
-public static class ConceptDefOf
-{
-    public static ConceptDef BuildersTryMine;
 }

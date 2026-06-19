@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 
-namespace Replace_Stuff.PlaceBridges.Patches;
+namespace Replace_Stuff.Terrain.Bridging.Patches;
 
 [HarmonyPatch(typeof(Designator_Build), "DrawPlaceMouseAttachments")]
 static class Patch_Designator_Build
@@ -72,7 +72,7 @@ static class Patch_Designator_Build
             if (__instance.Map.resourceCounter.GetCount(costDef) < count)
             {
                 GUI.color = Color.red;
-                label += $" ({ "NotEnoughStoredLower".Translate() })";
+                label += $" ({"NotEnoughStoredLower".Translate()})";
             }
 
             Widgets.Label(new Rect(curX + 29f, curY, 999f, 29f), label);

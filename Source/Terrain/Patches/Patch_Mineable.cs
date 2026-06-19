@@ -19,9 +19,8 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
-using Verse.AI;
 
-namespace Replace_Stuff.OverMineable.Patches;
+namespace Replace_Stuff.Terrain.Patches;
 //Include blueprints and frames in IsCornerTouchAllowed
 //Make sure mineable drop is in miner's region so it's not blocked off 
 [HarmonyPatch(typeof(Mineable), "TrySpawnYield", [typeof(Map), typeof(bool), typeof(Pawn)])]
@@ -52,24 +51,24 @@ public static class DropOnPawn
     }
 
 
-public static bool TryPlaceThingInSameRoom(Thing thing, IntVec3 center, Map map, ThingPlaceMode mode, Action<Thing, int> placedAction = null, Predicate<IntVec3> extraValidator = null, Rot4? rot = null, int squareRadius = 1, Pawn miner = null)
-{
-    if (miner != null)
+    public static bool TryPlaceThingInSameRoom(Thing thing, IntVec3 center, Map map, ThingPlaceMode mode, Action<Thing, int> placedAction = null, Predicate<IntVec3> extraValidator = null, Rot4? rot = null, int squareRadius = 1, Pawn miner = null)
     {
-        // Cache these lookups out here so they only run once per item drop
-        var minerRoom = miner.GetRoom();
-        var minerMap = miner.Map;
-
-        if (minerRoom != null && minerMap != null)
+        if (miner != null)
         {
-            Predicate<IntVec3> roomValidator = (IntVec3 pos) => 
-                pos.GetRoom(minerMap) == minerRoom;
-            extraValidator = extraValidator == null ? roomValidator : pos => extraValidator(pos) && roomValidator(pos);
-        }
-    }
+            // Cache these lookups out here so they only run once per item drop
+            var minerRoom = miner.GetRoom();
+            var minerMap = miner.Map;
 
-    return GenPlace.TryPlaceThing(thing, center, map, mode, placedAction, extraValidator, rot);
-}
+            if (minerRoom != null && minerMap != null)
+            {
+                Predicate<IntVec3> roomValidator = (IntVec3 pos) =>
+                    pos.GetRoom(minerMap) == minerRoom;
+                extraValidator = extraValidator == null ? roomValidator : pos => extraValidator(pos) && roomValidator(pos);
+            }
+        }
+
+        return GenPlace.TryPlaceThing(thing, center, map, mode, placedAction, extraValidator, rot);
+    }
 
     //public static bool TryPlaceThing(Thing thing, IntVec3 center, Map map, ThingPlaceMode mode, Action<Thing, int> placedAction = null, Predicate<IntVec3> extraValidator = null, Rot4? rot = null, int squareRadius = 1)
     // public static bool TryPlaceThingInSameRoom(Thing thing, IntVec3 center, Map map, ThingPlaceMode mode, Action<Thing, int> placedAction = null, Predicate<IntVec3> extraValidator = null, Rot4? rot = null, int squareRadius = 1, Pawn miner = null)

@@ -11,15 +11,14 @@
  * Licensed under the MIT License.
  */
 
+using HarmonyLib;
+using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using RimWorld;
-using Verse;
-using HarmonyLib;
 
-namespace Replace_Stuff.OverMineable.Patches;
+namespace Replace_Stuff.Terrain.Patches;
 
 //Blueprint can become a frame even if final thing would be blocked
 [HarmonyPatch(typeof(Blueprint), "TryReplaceWithSolidThing")]
@@ -32,7 +31,7 @@ public static class BlueprintToFrameUnderRock
         MethodInfo FirstBlockingThingInfo = AccessTools.Method(typeof(GenConstruct), "FirstBlockingThing");
 
         List<CodeInstruction> list = instructions.ToList();
-        for(int i=0;i< list.Count; i++)
+        for (int i = 0; i < list.Count; i++)
         {
             CodeInstruction inst = list[i];
             yield return inst;

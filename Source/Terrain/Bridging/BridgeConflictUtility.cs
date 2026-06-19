@@ -14,7 +14,7 @@
 using RimWorld;
 using Verse;
 
-namespace Replace_Stuff.PlaceBridges;
+namespace Replace_Stuff.Terrain.Bridging;
 
 public static class BridgeConflictUtility
 {

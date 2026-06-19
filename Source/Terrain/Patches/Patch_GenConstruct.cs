@@ -11,87 +11,87 @@
  * Licensed under the MIT License.
  */
 
-using RimWorld;
-using Verse;
 using HarmonyLib;
-using System.Collections.Generic;
-using System;
-using System.Reflection.Emit;
 using Replace_Stuff.Replace.Patches;
-using System.Reflection;
+using RimWorld;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using Verse;
 using Verse.AI;
 
-namespace Replace_Stuff.OverMineable.Patches;
+namespace Replace_Stuff.Terrain.Patches;
 
 //Smooth walls before replacing with other wall, don't mine them away and rebuild.
 [HarmonyPatch(typeof(GenConstruct), "HandleBlockingThingJob")]
 static class Patch_GenConstruct_HandleBlockingThingJob
 {
-	//public static Job HandleBlockingThingJob(Thing constructible, Pawn worker, bool forced = false)
-	public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator iLGenerator)
-	{
-		FieldInfo mineableInfo = AccessTools.Field(typeof(ThingDef), "mineable");
-		MethodInfo ToBeSmoothedInfo = AccessTools.Method(typeof(Patch_GenConstruct_HandleBlockingThingJob), nameof(Patch_GenConstruct_HandleBlockingThingJob.ToBeSmoothed),
-			new Type[] { typeof(Thing), typeof(Thing) });
-		MethodInfo SmoothItJobInfo = AccessTools.Method(typeof(Patch_GenConstruct_HandleBlockingThingJob), nameof(Patch_GenConstruct_HandleBlockingThingJob.SmoothItJob));
+    //public static Job HandleBlockingThingJob(Thing constructible, Pawn worker, bool forced = false)
+    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator iLGenerator)
+    {
+        FieldInfo mineableInfo = AccessTools.Field(typeof(ThingDef), "mineable");
+        MethodInfo ToBeSmoothedInfo = AccessTools.Method(typeof(Patch_GenConstruct_HandleBlockingThingJob), nameof(Patch_GenConstruct_HandleBlockingThingJob.ToBeSmoothed),
+            new Type[] { typeof(Thing), typeof(Thing) });
+        MethodInfo SmoothItJobInfo = AccessTools.Method(typeof(Patch_GenConstruct_HandleBlockingThingJob), nameof(Patch_GenConstruct_HandleBlockingThingJob.SmoothItJob));
 
-		List<CodeInstruction> list = instructions.ToList();
-		yield return list[0];
-		
-		for (int i = 1; i < list.Count; i++)
-		{
-			yield return list[i];
-			if (list[i - 1].LoadsField(mineableInfo))
-			{
-				Label otherwise = iLGenerator.DefineLabel();
-				list[i + 1].labels.Add(otherwise);
-				
-				//Explicitly preserve the opcode and operand to safely load 'thing'
-				yield return new CodeInstruction(list[i - 3].opcode, list[i - 3].operand);
-				yield return new CodeInstruction(OpCodes.Ldarg_0); // Thing constructible
-				yield return new CodeInstruction(OpCodes.Call, ToBeSmoothedInfo);
-				yield return new CodeInstruction(OpCodes.Brfalse, otherwise);
+        List<CodeInstruction> list = instructions.ToList();
+        yield return list[0];
 
-				yield return new CodeInstruction(OpCodes.Ldarg_1); // worker
-				// Explicitly preserve opcode and operand here too
-				yield return new CodeInstruction(list[i - 3].opcode, list[i - 3].operand);
-				yield return new CodeInstruction(OpCodes.Ldarg_2); // forced
-				yield return new CodeInstruction(OpCodes.Call, SmoothItJobInfo);
-				yield return new CodeInstruction(OpCodes.Ret);
-			}
-		}
-	}
+        for (int i = 1; i < list.Count; i++)
+        {
+            yield return list[i];
+            if (list[i - 1].LoadsField(mineableInfo))
+            {
+                Label otherwise = iLGenerator.DefineLabel();
+                list[i + 1].labels.Add(otherwise);
 
-	public static bool ToBeSmoothed(Thing thing, Thing constructible) => 
-		ToBeSmoothed(thing, constructible.def);
+                //Explicitly preserve the opcode and operand to safely load 'thing'
+                yield return new CodeInstruction(list[i - 3].opcode, list[i - 3].operand);
+                yield return new CodeInstruction(OpCodes.Ldarg_0); // Thing constructible
+                yield return new CodeInstruction(OpCodes.Call, ToBeSmoothedInfo);
+                yield return new CodeInstruction(OpCodes.Brfalse, otherwise);
 
-	public static bool ToBeSmoothed(Thing thing, ThingDef constructibleDef)
-	{
-		ThingDef smoothedThing = thing.def.building?.smoothedThing;
-		return smoothedThing != null && 
-			!GenSpawn.SpawningWipes(GenConstruct.BuiltDefOf( constructibleDef), smoothedThing) &&
-			thing.Map.edificeGrid[thing.Position] == thing &&
-			thing.Map.designationManager.DesignationAt(thing.Position, DesignationDefOf.SmoothWall) != null;
-	}
+                yield return new CodeInstruction(OpCodes.Ldarg_1); // worker
+                                                                   // Explicitly preserve opcode and operand here too
+                yield return new CodeInstruction(list[i - 3].opcode, list[i - 3].operand);
+                yield return new CodeInstruction(OpCodes.Ldarg_2); // forced
+                yield return new CodeInstruction(OpCodes.Call, SmoothItJobInfo);
+                yield return new CodeInstruction(OpCodes.Ret);
+            }
+        }
+    }
 
-	public static Job SmoothItJob(Pawn worker, Thing thing, bool forced)
-	{
-		if (worker.story != null && worker.WorkTypeIsDisabled(WorkTypeDefOf.Construction))
-		{
-			JobFailReason.Is("TD.IncapableOfSmoothing".Translate());
-			return null;
-		}
-		if (worker.CanReserveAndReach(thing, PathEndMode.Touch, worker.NormalMaxDanger(), 1, -1, null, forced) && 
-			worker.CanReserve(thing.Position, 1, -1, null, forced))
-		{
-			return new Job(JobDefOf.SmoothWall, thing)
-			{
-				ignoreDesignations = true
-			};
-		}
-		return null;
-	}
+    public static bool ToBeSmoothed(Thing thing, Thing constructible) =>
+        ToBeSmoothed(thing, constructible.def);
+
+    public static bool ToBeSmoothed(Thing thing, ThingDef constructibleDef)
+    {
+        ThingDef smoothedThing = thing.def.building?.smoothedThing;
+        return smoothedThing != null &&
+            !GenSpawn.SpawningWipes(GenConstruct.BuiltDefOf(constructibleDef), smoothedThing) &&
+            thing.Map.edificeGrid[thing.Position] == thing &&
+            thing.Map.designationManager.DesignationAt(thing.Position, DesignationDefOf.SmoothWall) != null;
+    }
+
+    public static Job SmoothItJob(Pawn worker, Thing thing, bool forced)
+    {
+        if (worker.story != null && worker.WorkTypeIsDisabled(WorkTypeDefOf.Construction))
+        {
+            JobFailReason.Is("TD.IncapableOfSmoothing".Translate());
+            return null;
+        }
+        if (worker.CanReserveAndReach(thing, PathEndMode.Touch, worker.NormalMaxDanger(), 1, -1, null, forced) &&
+            worker.CanReserve(thing.Position, 1, -1, null, forced))
+        {
+            return new Job(JobDefOf.SmoothWall, thing)
+            {
+                ignoreDesignations = true
+            };
+        }
+        return null;
+    }
 }
 
 //It did create a problem! Frames counting as edifices meant they blocked blueprints
@@ -120,7 +120,7 @@ public static class FramesAreEdificesInSomeCasesAndAlsoInTheCompilerGeneratedMet
         // "IsEdificeOverNonEdifice" Isn't compiled away? Okay I'll use that
         AccessTools.FirstMethod(typeof(GenConstruct), method => method.Name.Contains("IsEdificeOverNonEdifice"));
 
-    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) => 
+    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
         FramesAreEdificesInSomeCases.Transpiler(instructions);
 }
 
@@ -139,18 +139,18 @@ public static class Patch_GenConstruct_CanConstruct
 
         foreach (var inst in instructions)
         {
-            if(inst.Calls(FirstBlockingThingInfo))
+            if (inst.Calls(FirstBlockingThingInfo))
             {
                 //yield return new CodeInstruction(OpCodes.Ldarg_S, 4);//JobDef jobForReservation
                 yield return CodeInstruction.LoadArgument(4);
                 yield return new CodeInstruction(OpCodes.Call, FirstBlockingThingNotHaulInfo);//JobDef jobForReservation
             }
             else
-            //JobDef jobForReservation
+                //JobDef jobForReservation
                 yield return inst;
         }
     }
-    
+
     //public static Thing FirstBlockingThing(Thing constructible, Pawn pawnToIgnore)
     public static Thing FirstBlockingThingNotHaul(Thing constructible, Pawn pawnToIgnore, JobDef jobForReservation)
     {
@@ -183,9 +183,9 @@ class Patch_GenConstruct_PlaceBlueprintForBuild
             var thingsAtCell = map.thingGrid.ThingsAt(cell);
             foreach (Thing mineThing in thingsAtCell)
             {
-                if (!mineThing.def.IsBlockingRock(sourceDef)) 
+                if (!mineThing.def.IsBlockingRock(sourceDef))
                     continue;
-                if (Patch_GenConstruct_HandleBlockingThingJob.ToBeSmoothed(mineThing, thingDef)) 
+                if (Patch_GenConstruct_HandleBlockingThingJob.ToBeSmoothed(mineThing, thingDef))
                     continue;
 
                 map.designationManager.AddDesignation(new Designation(mineThing, DesignationDefOf.Mine));

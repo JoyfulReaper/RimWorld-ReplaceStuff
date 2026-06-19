@@ -12,13 +12,13 @@
  */
 
 using HarmonyLib;
-using System.Linq;
 using System.Collections.Generic;
-using Verse;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using Verse;
 
-namespace Replace_Stuff.OverMineable.Patches;
+namespace Replace_Stuff.Terrain.Patches;
 
 //remove rock from rejection of CanInteractThroughCorners
 [HarmonyPatch(typeof(ThingDef), nameof(ThingDef.CanInteractThroughCorners), MethodType.Getter)]

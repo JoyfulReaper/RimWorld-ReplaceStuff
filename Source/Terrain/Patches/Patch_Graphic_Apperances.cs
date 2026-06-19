@@ -11,15 +11,15 @@
  * Licensed under the MIT License.
  */
 
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using HarmonyLib;
-using Verse;
-using UnityEngine;
 using System.Reflection.Emit;
+using UnityEngine;
+using Verse;
 
-namespace Replace_Stuff.OverMineable.Patches;
+namespace Replace_Stuff.Terrain.Patches;
 
 //Graphic_Appearances doesn't pass renderQueue along.
 //Fences blueprints uses Graphic_Appearances and nothing else does.
@@ -33,7 +33,7 @@ public static class GraphicAppearancesPassData
         MethodInfo GetInfo = AccessTools.Method(typeof(GraphicDatabase), nameof(GraphicDatabase.Get),
                 parameters: new Type[] { typeof(string), typeof(Shader), typeof(Vector2), typeof(Color) },
                 generics: new Type[] { typeof(Graphic_Single) });
-                
+
         MethodInfo GetWithDataInfo = AccessTools.Method(typeof(GraphicDatabase), nameof(GraphicDatabase.Get),
                 parameters: new Type[] { typeof(string), typeof(Shader), typeof(Vector2), typeof(Color), typeof(Color), typeof(GraphicData), typeof(string) },
                 generics: new Type[] { typeof(Graphic_Single) });
@@ -47,7 +47,7 @@ public static class GraphicAppearancesPassData
             {
                 // Create the first instruction of our injection sequence
                 CodeInstruction firstInjected = new CodeInstruction(OpCodes.Call, ColorWhiteInfo);
-                
+
                 // migrate compiler labels to prevent stack corruption on jump branches
                 if (inst.labels.Count > 0)
                 {
@@ -59,7 +59,7 @@ public static class GraphicAppearancesPassData
                 yield return new CodeInstruction(OpCodes.Ldarg_0);
                 yield return new CodeInstruction(OpCodes.Ldfld, dataInfo);
                 yield return new CodeInstruction(OpCodes.Ldnull);
-                
+
                 inst.operand = GetWithDataInfo;
                 yield return inst;
             }

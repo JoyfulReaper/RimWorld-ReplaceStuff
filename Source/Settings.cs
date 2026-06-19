@@ -11,7 +11,7 @@
  * Licensed under the MIT License.
  */
 
-using Replace_Stuff.PlaceBridges;
+using Replace_Stuff.Terrain.Bridging;
 using RimWorld;
 using System.Collections.Generic;
 using UnityEngine;

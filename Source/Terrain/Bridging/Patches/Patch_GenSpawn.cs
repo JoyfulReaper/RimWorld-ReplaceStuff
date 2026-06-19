@@ -11,11 +11,11 @@
  * Licensed under the MIT License.
  */
 
+using HarmonyLib;
 using RimWorld;
 using Verse;
-using HarmonyLib;
 
-namespace Replace_Stuff.PlaceBridges.Patches;
+namespace Replace_Stuff.Terrain.Bridging.Patches;
 
 [HarmonyPatch(typeof(GenSpawn), "SpawningWipes")]
 public static class Patch_GenSpawn

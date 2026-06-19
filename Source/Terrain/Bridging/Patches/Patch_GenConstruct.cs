@@ -11,16 +11,16 @@
  * Licensed under the MIT License.
  */
 
-using RimWorld;
 using HarmonyLib;
-using Verse;
 using Replace_Stuff.Replace.Patches;
+using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using Verse;
 
-namespace Replace_Stuff.PlaceBridges.Patches;
+namespace Replace_Stuff.Terrain.Bridging.Patches;
 
 /// <summary>
 /// Intercepts terrain validation to allow building on cells that can support bridges.
@@ -86,7 +86,7 @@ class CanPlaceBlueprint
         if (pos.GetThingList(map).Any(t =>
             t.def.entityDefToBuild is TerrainDef bpTDef &&
             bpTDef.affordances.Contains(neededDef)))
-                return true;
+            return true;
 
         //Player not choosing to build and bridges possible: ok (elsewhere in code will place blueprints)
         var tDef = map.terrainGrid.TerrainAt(pos);

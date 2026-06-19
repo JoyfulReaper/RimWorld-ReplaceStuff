@@ -13,9 +13,9 @@
 
 using HarmonyLib;
 using RimWorld;
-using Verse; 
+using Verse;
 
-namespace Replace_Stuff.PlaceBridges.Patches;
+namespace Replace_Stuff.Terrain.Bridging.Patches;
 
 [HarmonyPatch(typeof(Frame), nameof(Frame.Destroy))]
 public static class CancelFrame
