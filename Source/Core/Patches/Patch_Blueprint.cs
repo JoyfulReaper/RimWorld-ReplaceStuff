@@ -16,7 +16,7 @@ namespace Replace_Stuff.Core.Patches;
 public static class NewThingDeconstructWork_Blueprint
 {
     //public float WorkToBuild
-    public static void Postfix(Frame __instance, ref float __result)
+    public static void Postfix(Blueprint_Build __instance, ref float __result)
     {
         if (__instance.TryFindTarget(out Thing oldThing))
             __result += ReplacementFrame.WorkToDeconstructDef(oldThing.def, oldThing.Stuff);
