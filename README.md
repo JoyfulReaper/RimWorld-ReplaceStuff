@@ -1,79 +1,61 @@
-# Replace Stuff: Performance Edition
+# [RSPE-CORE: SYSTEMS ARCHITECTURE MANUAL]
 
-**Replace Stuff: Performance Edition** is a performance-focused fork of the original *Replace Stuff* mod for RimWorld.
-
-The goal is the same: **upgrade buildings in place** without the usual deconstruct, wait, and rebuild loop. This fork keeps the core gameplay while reorganizing the internals around a more explicit replacement pipeline, broader compatibility handling, and cleaner state restoration.
-
-> **⚠️ Alpha Warning:** This mod is still under active development. Back up your saves and report issues with logs and reproduction steps.
-
----
-
-## What This Version Adds
-
-### Seamless Upgrades
-
-* Replace walls, workbenches, storage, and other supported buildings without manually tearing them down first.
-* Builders handle the deconstruct-and-rebuild sequence automatically so colony flow stays intact.
-
-### State and Settings Preservation
-
-* Coolers and heaters keep their temperature targets.
-* Workbenches preserve bills and production setup.
-* Storage buildings keep settings, priorities, filters, and related state.
-* Wall attachments such as lights and vents are handled during wall upgrades.
-
-### Smarter Placement Logic
-
-* Stored items are handled safely during replacement.
-* Blueprints can interact with rock, fog, and bridge-adjacent cases more gracefully.
-* Over-wall coolers and vents are supported with RimWorld 1.6 compatibility in mind.
+**PROTOCOL ID:** RSPE-REPLACE-01  
+**CODENAME:** Replace Stuff: Performance Edition  
+**SYSTEM STATUS:** PRE-ALPHA / ACTIVE REFACTOR  
+**MAINTAINER:** K. GIVLER (ADMIN)  
 
 ---
 
-## Documentation for Modders:
-It's on the **[Replace Stuff: Performance Edition Wiki](https://github.com/JoyfulReaper/RimWorld-ReplaceStuff/wiki)**!
+## 1.0 SYSTEM OVERVIEW
 
-## Technical Notes
+**Replace Stuff: Performance Edition** is a performance-focused continuation, modernization, and refactor of the original *Replace Stuff* modification for RimWorld.
 
-The internal codebase has been reorganized around a centralized replacement flow:
+In the vanilla execution environment, upgrading structural components (e.g., replacing a wooden wall with granite) requires complete deconstruction prior to reconstruction. This legacy process introduces systemic vulnerabilities, including defensive breaches, structural exposure to ambient outdoor temperatures, and potential roof collapses. Replacing utility infrastructure also causes data loss, wiping out storage settings, cooler configurations, and manual building setups.
 
-* `ReplacementPipeline` coordinates the replacement sequence.
-* `ReplacementValidator` handles cached rule checks and compatibility decisions.
-* `ReplacementUtility` and related helpers keep the implementation modular.
-* `BuildingStateTransfer` and storage replacement logic preserve persistent data during rebuilds.
-* `ReplacementRegistry` and compatibility handlers allow XML- or code-driven integration for supported mods.
+This utility corrects these inefficiencies by allowing structures and utility buildings to be upgraded in-place without disrupting colony operations.
 
-The patch layout is now grouped by feature area:
+## 2.0 FUNCTIONAL CAPABILITIES
 
-* `Replace/Patches` for replacement flow, reservations, and attachments.
-* `NewThing/Patches` for blueprint and frame placement.
-* `OverMineable/Patches` for rock, fog, and mining-related cases.
-* `PlaceBridges/Patches` for bridge terrain and placement logic.
-* `DestroyedRestore/Patches` for state capture and rebuild support.
+The framework executes three primary automation protocols to handle structural replacement:
 
----
+* **In-Place Upgrades:** Structures are targeted via a dedicated replacement frame. The original asset remains completely operational and intact until the replacement construction sequence concludes, eliminating structural gaps.
+* **State Preservation:** The system intercepts the replacement sequence to transfer critical operational states from the legacy asset to the newly constructed asset.
+* **Dynamic Mod Compatibility:** Replacement frames are generated dynamically at runtime. This allows assets from third-party modifications to utilize the replacement pipeline automatically without requiring hardcoded configuration patches.
 
-## Compatibility
+## 3.0 STATE TRANSFER MATRIX
 
-This fork is centered on RimWorld 1.6 and is intended to be easier to extend for modded buildings and replacement rules than the original layout.
+The underlying architecture relies on a generic state transfer system designed to automatically handle component data. Current and planned state serialization includes:
 
-Supported compatibility work currently includes:
+| Data Category | Target Metrics | Status |
+| --- | --- | --- |
+| **Logistics** | Storage priorities and item filter configurations | DEBUGGING |
+| **Thermal Control** | Target cooler temperature settings | DEBUGGING |
+| **Structural / Identity** | Building orientation, rotation, and pawn ownership assignments | DEBUGGING |
+| **Extended Assets** | Complex third-party component data modules | DEVELOPMENT PHASE |
 
-* Registry-based replacement handlers.
-* Legacy replacement bridges for older data and behavior.
-* Third-party support hooks such as QualityBuilder and interchangeable item groups.
-* Expanded support for storage, wall attachments, and other complex replacement targets.
+## 4.0 DEVELOPMENT FOCUS & ROADMAP
 
----
+> **⚠️ SYSTEM NOTICE:** This optimization suite is currently in its pre-alpha development phase. Core systems are undergoing active refactoring. Users should back up critical simulation saves and report runtime anomalies via the GitHub issue tracker.
 
-## Credits
+Current optimization vectors are concentrated on the following subsystems:
 
-* Original mod concept and foundation: Uuugggg / Alex Tearse-Doyle.
-* Fork and performance edition work: Kyle Givler.
-* Earlier optimization and compatibility ideas: Hexnet111 and other community contributors.
+* Implementing a cleaner, decoupled code architecture.
+* Minimizing CPU cycles and optimizing performance bottlenecks.
+* Establishing a highly maintainable, lightweight core codebase.
+* Increasing reliability of data state transfers.
+* Streamlining compatibility entry points for external mods.
 
-### Source Code
+## 5.0 HISTORICAL DATA & ACKNOWLEDGMENTS
 
-The code for this project is open source. If you encounter bugs or want to contribute to the performance or compatibility effort, visit:
+This modernization suite is built upon foundational assets developed by the upstream open-source community:
 
-**[GitHub: RimWorld-ReplaceStuff](https://github.com/JoyfulReaper/RimWorld-ReplaceStuff)**
+* **Uuugggg (Alex Tearse-Doyle):** Original architect who established the core concept and execution framework.
+* **MemeGoddess & Hexnet111:** Upstream maintainers who preserved codebase compatibility for modern environments and identified core performance bottlenecks.
+* **The Git Contributors:** Open-source contributors who provided patches, bug tracking, and code maintenance over an eight-year operational cycle.
+
+## 6.0 LEGAL & COMPLIANCE
+
+**COPYRIGHT NOTICE:** © 2026 Kyle Givler.
+
+**DISTRIBUTION:** This software adaptation is provided under open-source compliance standards. The maintainer assumes no responsibility for broken save states or structural failures within unbacked simulation environments. Use at your own risk.
