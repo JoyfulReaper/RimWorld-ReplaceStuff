@@ -207,6 +207,8 @@ public static class ReplacementMatcher
 
         foreach (IntVec3 checkPos in GenAdj.OccupiedRect(pos, rotation, newDef.Size))
         {
+            if (!checkPos.InBounds(map))
+                continue;
             foreach (Thing oThing in checkPos.GetThingList(map))
             {
                 if (!newDef.CanReplace(oThing.def))
