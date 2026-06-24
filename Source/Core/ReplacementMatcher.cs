@@ -40,9 +40,6 @@ public static class ReplacementMatcher
     private static readonly Dictionary<int, (System.WeakReference<Thing> WeakRef, LinkedListNode<int> Node)> _thingReplacementCache = new();
 
     [Unsaved]
-    private static readonly Queue<int> _cacheOrder = new();
-
-    [Unsaved]
     private static readonly LinkedList<int> _lruList = new();
 
     private const int MAX_CACHE_SIZE = 500;
