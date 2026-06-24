@@ -37,10 +37,13 @@ public static class ReplacementMatcher
     private static readonly Dictionary<(string, string), bool> _replacementCache = new();
 
     [Unsaved]
-    private static readonly Dictionary<int, System.WeakReference<Thing>> _thingReplacementCache = new();
+    private static readonly Dictionary<int, (System.WeakReference<Thing> WeakRef, LinkedListNode<int> Node)> _thingReplacementCache = new();
 
     [Unsaved]
     private static readonly Queue<int> _cacheOrder = new();
+
+    [Unsaved]
+    private static readonly LinkedList<int> _lruList = new();
 
     private const int MAX_CACHE_SIZE = 500;
 
@@ -163,43 +166,36 @@ public static class ReplacementMatcher
 
         var thingID = newThing.thingIDNumber;
 
-        if (_thingReplacementCache.TryGetValue(thingID, out var weakRef))
+        if (_thingReplacementCache.TryGetValue(thingID, out var cacheEntry))
         {
-            // Check if the cached thing is valid
-            if (weakRef.TryGetTarget(out oldThing) && !oldThing.Destroyed)
+            if (cacheEntry.WeakRef.TryGetTarget(out oldThing) && !oldThing.Destroyed)
+            {
+                _lruList.Remove(cacheEntry.Node);
+                _lruList.AddFirst(cacheEntry.Node);
                 return true;
+            }
 
-            // If it was destroyed/null, clean it up
+            _lruList.Remove(cacheEntry.Node);
             _thingReplacementCache.Remove(thingID);
         }
 
-        // Perform the expensive search
         var result = newThing.def.TryFindTarget(newThing.Position, newThing.Rotation, newThing.Map, out oldThing);
 
-        // Only cache positive results
-        if (result && oldThing != null)
+        if (newThing.def == oldThing?.def && newThing.Stuff == oldThing?.Stuff)
         {
-            // Don't cache identical replacements
-            if (newThing.def == oldThing.def && newThing.Stuff == oldThing.Stuff)
-            {
-                oldThing = null;
-                return false;
-            }
-
-            // Cache Management: Evict oldest if full
-            while (_thingReplacementCache.Count >= MAX_CACHE_SIZE)
-            {
-                if (_cacheOrder.Count == 0)
-                    break;
-
-                int oldestID = _cacheOrder.Dequeue();
-                _thingReplacementCache.Remove(oldestID);
-            }
-
-            _thingReplacementCache[thingID] = new System.WeakReference<Thing>(oldThing);
-            if (_cacheOrder.Count == 0)
-                _cacheOrder.Enqueue(thingID);
+            oldThing = null;
+            return false;
         }
+
+        if (_thingReplacementCache.Count >= MAX_CACHE_SIZE)
+        {
+            int oldestID = _lruList.Last.Value;
+            _lruList.RemoveLast();
+            _thingReplacementCache.Remove(oldestID);
+        }
+
+        var newNode = _lruList.AddFirst(thingID);
+        _thingReplacementCache[thingID] = (new System.WeakReference<Thing>(oldThing), newNode);
 
         return result;
     }
