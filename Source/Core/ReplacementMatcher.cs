@@ -34,7 +34,7 @@ public static class ReplacementMatcher
     private static readonly List<ReplacementRule> _replacements = new();
 
     [Unsaved]
-    private static readonly Dictionary<(ThingDef, ThingDef), bool> _replacementCache = new();
+    private static readonly Dictionary<(string, string), bool> _replacementCache = new();
 
     [Unsaved]
     private static readonly Dictionary<int, System.WeakReference<Thing>> _thingReplacementCache = new();
@@ -109,44 +109,43 @@ public static class ReplacementMatcher
 
     public static bool CanReplace(this ThingDef newDef, ThingDef oldDef)
     {
-        if (!oldDef.building?.IsDeconstructible ?? false)
+        if (oldDef?.building?.IsDeconstructible != true)
             return false;
 
         newDef = GenConstruct.BuiltDefOf(newDef) as ThingDef;
+        if (newDef == null)
+            return false;
 
         if (newDef == oldDef && !newDef.MadeFromStuff)
-        {
             return false;
-        }
 
-        if (_replacementCache.TryGetValue((newDef, oldDef), out var result))
-        {
+        var newName = newDef?.defName;
+        var oldName = oldDef?.defName;
+
+        if (newName == null || oldName == null)
+            return false;
+
+        var key = (newName, oldName);
+
+        if (_replacementCache.TryGetValue(key, out var result))
             return result;
-        }
 
-        // 1.6 added some tags for replacement. Add them here so Replace Stuff does them in-place
         try
         {
-            if (newDef != null)
+            if (GenConstruct.HasMatchingReplacementTag(newDef, oldDef))
             {
-                if (GenConstruct.HasMatchingReplacementTag(newDef, oldDef))
-                {
-                    _replacementCache.Add((newDef, oldDef), true);
-                    return true;
-                }
+                _replacementCache[key] = true;
+                return true;
             }
         }
-#pragma warning disable CS0168 // Variable is declared but never used
-        catch (Exception ex)
-#pragma warning restore CS0168 // Variable is declared but never used
+        catch
         {
             Debugger.Break();
         }
 
-        // Bypasses the predicates loop entirely if items belong to an explicit XML registry list.
         if (ReplacementRegistry.AreInterchangeable(newDef, oldDef))
         {
-            _replacementCache.Add((newDef, oldDef), true);
+            _replacementCache[key] = true;
             return true;
         }
 
@@ -155,11 +154,11 @@ public static class ReplacementMatcher
             if (!r.Matches(newDef, oldDef))
                 continue;
 
-            _replacementCache.Add((newDef, oldDef), true);
+            _replacementCache[key] = true;
             return true;
         }
 
-        _replacementCache.Add((newDef, oldDef), false);
+        _replacementCache[key] = false;
         return false;
     }
 
@@ -196,8 +195,11 @@ public static class ReplacementMatcher
             }
 
             // Cache Management: Evict oldest if full
-            if (_thingReplacementCache.Count >= MAX_CACHE_SIZE)
+            while (_thingReplacementCache.Count >= MAX_CACHE_SIZE)
             {
+                if (_cacheOrder.Count == 0)
+                    break;
+
                 int oldestID = _cacheOrder.Dequeue();
                 _thingReplacementCache.Remove(oldestID);
             }

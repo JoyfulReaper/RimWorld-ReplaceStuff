@@ -55,7 +55,7 @@ internal static class ReplacementPipeline
         DeconstructDropStuff(oldThing);
 
         // oldThing loses its Map and Spawned status here
-        oldThing.Destroy(DestroyMode.Vanish); // TODO Do we need this? SpawningWipes destroyes it I think. verify
+        //oldThing.Destroy(DestroyMode.Vanish); // TODO Do we need this? SpawningWipes destroyes it I think. verify
 
         SpawnReplacement(newThing, replacementFrame);
 
