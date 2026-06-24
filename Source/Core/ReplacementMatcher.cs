@@ -122,20 +122,19 @@ public static class ReplacementMatcher
         var newName = newDef?.defName;
         var oldName = oldDef?.defName;
 
-        if (newName == null || oldName == null)
+        if (string.IsNullOrEmpty(newName) || string.IsNullOrEmpty(oldName))
             return false;
 
         var key = (newName, oldName);
 
-        if (_replacementCache.TryGetValue(key, out var result))
-            return result;
+        if (_replacementCache.TryGetValue(key, out var cached))
+            return cached;
 
         try
         {
             if (GenConstruct.HasMatchingReplacementTag(newDef, oldDef))
             {
-                _replacementCache[key] = true;
-                return true;
+                return _replacementCache[key] = true;
             }
         }
         catch
@@ -144,22 +143,15 @@ public static class ReplacementMatcher
         }
 
         if (ReplacementRegistry.AreInterchangeable(newDef, oldDef))
-        {
-            _replacementCache[key] = true;
-            return true;
-        }
+            return _replacementCache[key] = true;
 
         foreach (var r in _replacements)
         {
-            if (!r.Matches(newDef, oldDef))
-                continue;
-
-            _replacementCache[key] = true;
-            return true;
+            if (r.Matches(newDef, oldDef))
+                return _replacementCache[key] = true;
         }
 
-        _replacementCache[key] = false;
-        return false;
+        return _replacementCache[key] = false;
     }
 
     public static bool TryFindTarget(this Thing newThing, out Thing oldThing)
@@ -205,7 +197,13 @@ public static class ReplacementMatcher
             }
 
             _thingReplacementCache[thingID] = new System.WeakReference<Thing>(oldThing);
-            _cacheOrder.Enqueue(thingID);
+            if (_cacheOrder.Count == 0 || _cacheOrder.Peek() != thingID)
+                _cacheOrder.Enqueue(thingID);
+
+            if ((_thingReplacementCache.Count & 127) == 0)
+            {
+                _cacheOrder.Clear();
+            }
         }
 
         return result;
