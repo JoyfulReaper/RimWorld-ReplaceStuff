@@ -197,13 +197,8 @@ public static class ReplacementMatcher
             }
 
             _thingReplacementCache[thingID] = new System.WeakReference<Thing>(oldThing);
-            if (_cacheOrder.Count == 0 || _cacheOrder.Peek() != thingID)
+            if (_cacheOrder.Count == 0)
                 _cacheOrder.Enqueue(thingID);
-
-            if ((_thingReplacementCache.Count & 127) == 0)
-            {
-                _cacheOrder.Clear();
-            }
         }
 
         return result;
