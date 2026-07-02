@@ -34,8 +34,11 @@ public static class ReplacementMatcher
     private static readonly List<ReplacementRule> _replacements = new();
 
     [Unsaved]
-    private static readonly Dictionary<(string, string), bool> _replacementCache = new();
+    private static readonly Dictionary<(ThingDef NewDef, ThingDef OldDef), bool> _replacementCache = new();
 
+    // Cache replacement targets without keeping Thing instances alive.
+    // Entries are weak and bounded because frames can be canceled/destroyed
+    // without reaching the normal construction completion path.
     [Unsaved]
     private static readonly Dictionary<int, (System.WeakReference<Thing> WeakRef, LinkedListNode<int> Node)> _thingReplacementCache = new();
 
@@ -87,6 +90,7 @@ public static class ReplacementMatcher
     public static void AddRule(Predicate<ThingDef> newCheck, Predicate<ThingDef> oldCheck = null)
     {
         _replacements.Add(new ReplacementRule(newCheck, oldCheck ?? newCheck));
+        _replacementCache.Clear();
     }
 
     // Holds predicates and execution hooks
@@ -118,13 +122,7 @@ public static class ReplacementMatcher
         if (newDef == oldDef && !newDef.MadeFromStuff)
             return false;
 
-        var newName = newDef?.defName;
-        var oldName = oldDef?.defName;
-
-        if (string.IsNullOrEmpty(newName) || string.IsNullOrEmpty(oldName))
-            return false;
-
-        var key = (newName, oldName);
+        var key = (newDef, oldDef);
 
         if (_replacementCache.TryGetValue(key, out var cached))
             return cached;
@@ -132,9 +130,7 @@ public static class ReplacementMatcher
         try
         {
             if (GenConstruct.HasMatchingReplacementTag(newDef, oldDef))
-            {
                 return _replacementCache[key] = true;
-            }
         }
         catch
         {
@@ -153,6 +149,7 @@ public static class ReplacementMatcher
         return _replacementCache[key] = false;
     }
 
+
     public static bool TryFindTarget(this Thing newThing, out Thing oldThing)
     {
         oldThing = null;
@@ -164,7 +161,12 @@ public static class ReplacementMatcher
 
         if (_thingReplacementCache.TryGetValue(thingID, out var cacheEntry))
         {
-            if (cacheEntry.WeakRef.TryGetTarget(out oldThing) && !oldThing.Destroyed)
+            if (cacheEntry.WeakRef.TryGetTarget(out oldThing) &&
+                oldThing != null &&
+                !oldThing.Destroyed &&
+                oldThing.Map == newThing.Map &&
+                GenAdj.OccupiedRect(newThing.Position, newThing.Rotation, newThing.def.Size)
+                    .Contains(oldThing.Position))
             {
                 _lruList.Remove(cacheEntry.Node);
                 _lruList.AddFirst(cacheEntry.Node);
@@ -173,17 +175,25 @@ public static class ReplacementMatcher
 
             _lruList.Remove(cacheEntry.Node);
             _thingReplacementCache.Remove(thingID);
+            oldThing = null;
         }
 
-        var result = newThing.def.TryFindTarget(newThing.Position, newThing.Rotation, newThing.Map, out oldThing);
+        var result = newThing.def.TryFindTarget(
+            newThing.Position,
+            newThing.Rotation,
+            newThing.Map,
+            out oldThing);
 
-        if (newThing.def == oldThing?.def && newThing.Stuff == oldThing?.Stuff)
+        if (!result || oldThing == null)
+            return false;
+
+        if (newThing.def == oldThing.def && newThing.Stuff == oldThing.Stuff)
         {
             oldThing = null;
             return false;
         }
 
-        if (_thingReplacementCache.Count >= MAX_CACHE_SIZE)
+        if (_thingReplacementCache.Count >= MAX_CACHE_SIZE && _lruList.Last != null)
         {
             int oldestID = _lruList.Last.Value;
             _lruList.RemoveLast();
@@ -193,7 +203,7 @@ public static class ReplacementMatcher
         var newNode = _lruList.AddFirst(thingID);
         _thingReplacementCache[thingID] = (new System.WeakReference<Thing>(oldThing), newNode);
 
-        return result;
+        return true;
     }
 
     public static bool TryFindTarget(this ThingDef newDef, IntVec3 pos, Rot4 rotation, Map map, out Thing oldThing)
@@ -208,6 +218,7 @@ public static class ReplacementMatcher
         {
             if (!checkPos.InBounds(map))
                 continue;
+
             foreach (Thing oThing in checkPos.GetThingList(map))
             {
                 if (!newDef.CanReplace(oThing.def))
@@ -233,6 +244,8 @@ public static class ReplacementMatcher
 
     public static bool CanReplace(this Thing newThing, Thing oldThing)
     {
-        return newThing.def.CanReplace(oldThing.def);
+        return newThing?.def != null &&
+               oldThing?.def != null &&
+               newThing.def.CanReplace(oldThing.def);
     }
 }
